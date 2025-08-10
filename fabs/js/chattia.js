@@ -32,9 +32,9 @@ function initChatbot() {
   /* === Theme toggle === */
   const themeCtrl = qs('#themeCtrl');
   themeCtrl.onclick = () => {
-    const dark = themeCtrl.textContent === ' Dark';
+    const dark = themeCtrl.textContent === 'Dark';
     document.body.classList.toggle('dark', dark);
-    themeCtrl.textContent = dark ? 'Light' : ' Dark';
+    themeCtrl.textContent = dark ? 'Light' : 'Dark';
   };
 
   /* === Chatbot core === */
