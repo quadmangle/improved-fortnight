@@ -234,7 +234,7 @@ async function handleFormSubmit(event) {
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Generate and set the CSRF token when the page loads
-  const csrfToken = generateCsrfToken();
+  let csrfToken = generateCsrfToken();
   setCookie('csrf_token', csrfToken, 1);
   const navToggle = document.querySelector('.nav-menu-toggle');
   const navLinks = document.querySelector('.nav-links');

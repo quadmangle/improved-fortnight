@@ -4,10 +4,10 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "NODE_PATH=./node_modules node --test"
+    "test": "NODE_PATH=./node_modules node --test --test-concurrency=1"
   },
   "devDependencies": {
-    "jsdom": "24.0.0"
+    "jsdom": "26.1.0"
   },
   "keywords": [],
   "author": "",
