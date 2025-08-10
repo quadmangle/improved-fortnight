@@ -254,6 +254,7 @@ li {
   width: 100%;
   text-align: center;
   padding: var(--space-sm) 0;
+  padding-bottom: env(safe-area-inset-bottom);
   background: var(--clr-background);
   color: var(--clr-text);
   font-size: 0.9rem;
