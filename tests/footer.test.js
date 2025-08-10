@@ -63,3 +63,13 @@ test('footer text updates on language toggle', () => {
   updateContent();
   assert.strictEqual(footer.textContent.trim(), translations.es['footer-copyright']);
 });
+
+test('footer uses safe-area padding', () => {
+  const css = fs.readFileSync(path.join(root, 'css', 'style.css'), 'utf-8');
+  const footerRule = css.match(/\.ops-footer\s*{[^}]*}/);
+  assert.ok(footerRule, 'ops-footer rule missing');
+  assert.match(
+    footerRule[0],
+    /padding-bottom:\s*env\(\s*safe-area-inset-bottom\s*\)/
+  );
+});
