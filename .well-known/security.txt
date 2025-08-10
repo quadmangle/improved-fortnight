@@ -1,0 +1,7 @@
+Contact: mailto:cy.sec526007g@gmail.com
+Contact: https://opsonlinesupport.com/security
+Preferred-Languages: en, es
+Policy: https://opsonlinesupport.com/security/policy
+Hiring: https://opsonlinesupport.com/careers
+Encryption: https://opsonlinesupport.com/security/pgp.txt
+Expires: 2026-08-10T00:00:00.000Z
