@@ -181,16 +181,9 @@ async function handleFormSubmit(event) {
   }
 
   const formData = new FormData(event.target);
-  const hcaptchaResponse = formData.get('h-captcha-response');
-
-  if (!hcaptchaResponse) {
-    alert('Please complete the CAPTCHA.');
-    return;
-  }
-
   const sanitized = {};
   formData.forEach((value, key) => {
-    if (key !== 'hp' && key !== 'h-captcha-response') {
+    if (key !== 'hp') {
       sanitized[key] = sanitizeInput(value);
     }
   });
@@ -206,7 +199,7 @@ async function handleFormSubmit(event) {
         'Accept': 'application/json'
       },
       mode: 'cors',
-      body: JSON.stringify({ ...sanitized, 'h-captcha-response': hcaptchaResponse })
+      body: JSON.stringify(sanitized)
     });
 
     if (response.ok) {
