@@ -25,6 +25,13 @@ test('nav toggles align with fab margins', () => {
   const block = match[0];
   assert.ok(/right:\s*var\(--space-sm\)/.test(block), 'toggles should use space-sm variable for right positioning');
   assert.ok(/bottom:\s*var\(--space-sm\)/.test(block), 'toggles should use space-sm variable for bottom positioning');
+  assert.ok(/margin:\s*0/.test(block), 'toggles should have zero margin');
+  assert.ok(/padding:\s*0/.test(block), 'toggles should have zero padding');
+
+  const navToggleMatch = css.match(/@media\s*\(max-width:\s*768px\)[\s\S]*?\.nav-menu-toggle\s*{[\s\S]*?}/);
+  assert.ok(navToggleMatch, 'mobile nav-menu-toggle styles not found');
+  const navBlock = navToggleMatch[0];
+  assert.ok(/margin:\s*0/.test(navBlock), 'nav-menu-toggle should have zero margin');
 });
 
 // Ensure clicking outside or on backdrop closes mobile menu

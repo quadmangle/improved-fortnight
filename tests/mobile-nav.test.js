@@ -29,6 +29,8 @@ test('mobile nav links use off-canvas layout', () => {
   assert.ok(navLinks.includes('right: 0'), 'nav links should align to the right');
   assert.ok(navLinks.includes('transform: translateX(100%)'), 'nav links should be translated off screen');
   assert.ok(navLinks.includes('transition: transform 0.3s'), 'nav links should animate when toggled');
+  assert.ok(navLinks.includes('background: rgba(var(--clr-background-rgb), 0.85)'), 'nav links should have semi-transparent background');
+  assert.ok(navLinks.includes('z-index: 900'), 'nav links should sit below toggles');
 
   const openMatch = css.match(/@media \(max-width: 768px\)[\s\S]*?\.nav-links\.open\s*{[\s\S]*?transform: translateX\(0\)[^}]*}/);
   assert.ok(openMatch, 'nav links should slide in when open');
