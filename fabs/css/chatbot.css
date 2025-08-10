@@ -68,6 +68,7 @@ body.dark{--clr-bg:var(--clr-bg-dark);--clr-tx:var(--clr-tx-dark)}
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
+  margin-left: auto;
 }
 #chatbot-input{flex:1;background:transparent;border:none;color:#000;font-size:.95rem;padding:.55rem .6rem}
 #chatbot-input::placeholder{color:#000}
