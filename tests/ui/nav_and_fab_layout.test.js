@@ -14,8 +14,8 @@ test('fab container fixed to viewport corner', () => {
   assert.ok(match, 'fab-container styles not found');
   const block = match[0];
   assert.ok(/position:\s*fixed/.test(block), 'fab container should be fixed');
-  assert.ok(/bottom:\s*30px/.test(block), 'fab container should be 30px from bottom');
-  assert.ok(/right:\s*10px/.test(block), 'fab container should be 10px from right');
+  assert.ok(/bottom:\s*20px/.test(block), 'fab container should be 20px from bottom');
+  assert.ok(/right:\s*15px/.test(block), 'fab container should be 15px from right');
 });
 
 test('nav toggles align with fab right margin', () => {
