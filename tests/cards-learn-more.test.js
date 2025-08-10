@@ -16,6 +16,10 @@ test('learn-more buttons link to service pages', () => {
 
   const dom = new JSDOM(html, { runScripts: 'outside-only', url: 'http://example.com/' });
   const { window } = dom;
+  window.fetch = async () => ({
+    ok: true,
+    json: async () => ({ token: 'mock-csrf-token' }),
+  });
   window.currentLanguage = 'en';
   window.translations = {
     services: {
