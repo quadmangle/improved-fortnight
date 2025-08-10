@@ -732,7 +732,8 @@ body.dark .ops-modal {
 
   .nav-menu-toggle {
     display: block;
-    margin-top: 0;
+    margin: 0;
+    align-self: flex-end;
   }
 
   .nav-backdrop {
@@ -754,6 +755,8 @@ body.dark .ops-modal {
     position: fixed;
     bottom: var(--space-sm);  /* 10px bottom margin */
     right: var(--space-sm);   /* 10px right margin */
+    margin: 0;
+    padding: 0;
     flex-direction: column;
     align-items: flex-end;
     gap: var(--space-sm);     /* consistent 10px spacing */
