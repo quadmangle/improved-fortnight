@@ -80,7 +80,7 @@ body.dark{--clr-bg:var(--clr-bg-dark);--clr-tx:var(--clr-tx-dark)}
   transition:.3s;
   padding:0;
 }
-#chatbot-send i,#chatbot-close i{font-size:0.25em;transition:transform .3s}
+#chatbot-send i,#chatbot-close i{font-size:20px;transition:transform .3s}
 #chatbot-send:hover i{transform:rotate(-45deg)}
 #chatbot-send:disabled{background:#555;cursor:not-allowed}
 #chatbot-close{margin-left:0}
