@@ -1,9 +1,13 @@
 const express = require('express');
 const session = require('express-session');
 const crypto = require('crypto');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { body, validationResult } = require('express-validator');
 
 const app = express();
 
+app.use(helmet());
 app.use(express.json());
 const isProduction = process.env.NODE_ENV === 'production';
 const sessionSecret = process.env.SESSION_SECRET;
@@ -34,13 +38,33 @@ function generateToken() {
   return crypto.randomBytes(32).toString('hex');
 }
 
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // Limit each IP to 100 requests per windowMs
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+app.use('/api/', apiLimiter);
+
 app.get('/api/csrf-token', (req, res) => {
   const token = generateToken();
   req.session.csrfToken = { value: token, expires: Date.now() + 10 * 60 * 1000 };
   res.json({ token });
 });
 
-app.post('/api/contact', (req, res) => {
+const contactValidation = [
+  body('name').trim().isLength({ min: 1 }).escape(),
+  body('email').isEmail().normalizeEmail(),
+  body('message').trim().isLength({ min: 1 }).escape(),
+];
+
+app.post('/api/contact', contactValidation, (req, res) => {
+  const errors = validationResult(req);
+  if (!errors.isEmpty()) {
+    return res.status(400).json({ errors: errors.array() });
+  }
+
   const { csrfToken } = req.body;
   const sessionToken = req.session.csrfToken;
   if (
