@@ -12,7 +12,7 @@
     Cross-Origin-Resource-Policy = "same-origin"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
     Cache-Control = "no-store"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; img-src 'self' data:; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://your-cloudflare-worker.example.com; frame-ancestors 'none'; form-action 'self'; base-uri 'none'; object-src 'none'; require-trusted-types-for 'script'; upgrade-insecure-requests"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' https://cdnjs.cloudflare.com https://*.hcaptcha.com; style-src 'self' https://cdnjs.cloudflare.com https://*.hcaptcha.com; img-src 'self' data: https://*.hcaptcha.com; font-src 'self' https://cdnjs.cloudflare.com; connect-src 'self' https://*.workers.dev https://*.hcaptcha.com; frame-src https://*.hcaptcha.com; frame-ancestors 'none'; form-action 'self'; base-uri 'none'; object-src 'none'; require-trusted-types-for 'script'; upgrade-insecure-requests"
 
 [[headers]]
   for = "/*.css"

@@ -8,8 +8,10 @@ crons = ["1 0 * * *", "13 15 * * *"]
 [kv_namespaces]
 [[kv_namespaces]]
 binding = "AUDIT_LOG"
+# This is a placeholder. Replace with your actual KV namespace ID in production.
 id = "your_kv_namespace_id"
 
 [vars]
+# This is a placeholder. Replace with your actual Google Apps Script URL.
 APPS_SCRIPT_URL = "https://Apps Script here"
 # SECURITY_EMAIL and PRIVATE_KEY should be added via `wrangler secret put`
