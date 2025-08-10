@@ -18,6 +18,14 @@ test('fab container fixed to viewport corner', () => {
   assert.ok(/right:\s*10px/.test(block), 'fab container should be 10px from right');
 });
 
+test('nav toggles align with fab right margin', () => {
+  const css = fs.readFileSync(path.join(root, 'css', 'style.css'), 'utf-8');
+  const match = css.match(/\.toggles\s*{[\s\S]*?}/);
+  assert.ok(match, 'toggles styles not found');
+  const block = match[0];
+  assert.ok(/right:\s*var\(--space-sm\)/.test(block), 'toggles should use space-sm variable for right positioning');
+});
+
 // Ensure clicking outside or on backdrop closes mobile menu
 
 test('mobile menu closes on backdrop or outside click', async () => {
