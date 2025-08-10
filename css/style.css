@@ -643,10 +643,6 @@ body.dark .ops-modal {
     padding: 0 15px;
     max-width: 100%;
   }
-  .toggles {
-    position: static;
-    margin-top: var(--space-sm);
-  }
 }
 
 @media (max-width: 500px) {
@@ -666,6 +662,9 @@ body.dark .ops-modal {
 @media (max-width: 768px) {
   /* When the viewport is narrow the nav may overflow horizontally;
      enable horizontal scrolling so the controls remain reachable. */
+  body {
+    padding-bottom: calc(var(--space-lg) * 4 + var(--space-sm)); /* extra space for fixed toggles */
+  }
   .ops-nav {
     flex-direction: row;
     justify-content: space-between;
@@ -692,14 +691,6 @@ body.dark .ops-modal {
   .contact-form-section {
     padding: 0 15px;
     max-width: 100%;
-  }
-
-  .toggles {
-    flex-direction: row;
-    position: static;
-    margin-bottom: 0;
-    align-items: center;
-    align-self: auto;
   }
 
   .nav-links {
@@ -752,6 +743,16 @@ body.dark .ops-modal {
 
   .nav-backdrop.open {
     display: block;
+  }
+
+  .toggles {
+    position: fixed;
+    bottom: var(--space-sm);  /* 10px bottom margin */
+    right: var(--space-sm);   /* 10px right margin */
+    flex-direction: column;
+    align-items: flex-end;
+    gap: var(--space-sm);     /* consistent 10px spacing */
+    z-index: 1000;
   }
 }
 

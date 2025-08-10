@@ -5,15 +5,27 @@ const crypto = require('crypto');
 const app = express();
 
 app.use(express.json());
+const isProduction = process.env.NODE_ENV === 'production';
+const sessionSecret = process.env.SESSION_SECRET;
+
+if (isProduction) {
+  app.set('trust proxy', 1); // Trust the first proxy
+}
+
+if (isProduction && (!sessionSecret || sessionSecret === 'dev-secret')) {
+  console.error('FATAL ERROR: SESSION_SECRET is not set in production.');
+  process.exit(1);
+}
+
 app.use(
   session({
-    secret: process.env.SESSION_SECRET || 'dev-secret',
+    secret: sessionSecret || 'dev-secret',
     resave: false,
     saveUninitialized: true,
     cookie: {
       httpOnly: true,
       sameSite: 'strict',
-      secure: false,
+      secure: isProduction,
     },
   })
 );

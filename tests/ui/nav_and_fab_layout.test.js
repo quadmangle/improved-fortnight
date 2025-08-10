@@ -18,12 +18,13 @@ test('fab container fixed to viewport corner', () => {
   assert.ok(/right:\s*15px/.test(block), 'fab container should be 15px from right');
 });
 
-test('nav toggles align with fab right margin', () => {
+test('nav toggles align with fab margins', () => {
   const css = fs.readFileSync(path.join(root, 'css', 'style.css'), 'utf-8');
-  const match = css.match(/\.toggles\s*{[\s\S]*?}/);
-  assert.ok(match, 'toggles styles not found');
+  const match = css.match(/@media\s*\(max-width:\s*768px\)[\s\S]*?\.toggles\s*{[\s\S]*?}/);
+  assert.ok(match, 'mobile toggles styles not found');
   const block = match[0];
   assert.ok(/right:\s*var\(--space-sm\)/.test(block), 'toggles should use space-sm variable for right positioning');
+  assert.ok(/bottom:\s*var\(--space-sm\)/.test(block), 'toggles should use space-sm variable for bottom positioning');
 });
 
 // Ensure clicking outside or on backdrop closes mobile menu
