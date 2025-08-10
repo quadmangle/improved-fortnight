@@ -190,7 +190,6 @@ function createChatbotModal() {
   form.appendChild(input);
   const send = new Element('button');
   send.id = 'chatbot-send';
-  send.disabled = true;
   form.appendChild(send);
 
   const closeBtn = new Element('button');
@@ -200,21 +199,6 @@ function createChatbotModal() {
   closeBtn.textContent = 'Close';
   form.appendChild(closeBtn);
   formContainer.appendChild(form);
-
-  const label = new Element('label');
-  label.className = 'human-check';
-  const guard = new Element('input');
-  guard.id = 'human-check';
-  guard.type = 'checkbox';
-  label.appendChild(guard);
-  const humanLabel = new Element('span');
-  humanLabel.id = 'human-label';
-  humanLabel.dataset.en = 'I am human';
-  humanLabel.dataset.es = 'Soy humano';
-  humanLabel.textContent = 'I am human';
-  label.appendChild(humanLabel);
-
-  formContainer.appendChild(label);
   container.appendChild(formContainer);
   return container;
 }
@@ -281,12 +265,8 @@ test('chatbot modal initializes and handlers work', async () => {
   themeCtrl.onclick();
   assert.ok(document.body.classList.contains('dark'));
 
-  // Test guard enabling send button
-  const guard = document.getElementById('human-check');
+  // Send button should be enabled by default
   const send = document.getElementById('chatbot-send');
-  assert.ok(send.disabled);
-  guard.checked = true;
-  guard.onchange();
   assert.ok(!send.disabled);
 
   // Test chat submit
