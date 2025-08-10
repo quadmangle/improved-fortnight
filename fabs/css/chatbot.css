@@ -57,6 +57,7 @@ body.dark{--clr-bg:var(--clr-bg-dark);--clr-tx:var(--clr-tx-dark)}
 }
 #chatbot-header .ctrl{cursor:pointer;font-size:.75rem;font-weight:500;user-select:none;opacity:.85}
 #chatbot-header .ctrl:hover{opacity:1}
+#chatbot-header #themeCtrl{display:inline-block;width:5ch;text-align:left}
 #chat-log{flex:1;overflow-y:auto;padding:1rem;background:#1b0e2d;color:#eee;font-size:.94rem}
 .chat-msg{margin:.5rem 0;max-width:90%}
 .user{margin-left:auto;background:var(--clr-primary);color:#000;padding:.5rem .7rem;border-radius:14px 14px 0 14px}
