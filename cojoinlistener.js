@@ -132,8 +132,16 @@ document.addEventListener('DOMContentLoaded', () => {
         const url = `fabs/${modalId}.html`;
         const response = await fetch(url, { credentials: 'same-origin' });
         const responseURL = response.url || '';
-        if (responseURL && !responseURL.startsWith(window.location.origin)) {
-          throw new Error('Cross-origin fetch blocked');
+        if (responseURL && typeof window !== 'undefined' && window.location) {
+          const currentOrigin = window.location.origin;
+          try {
+            const resOrigin = new URL(responseURL, window.location.href).origin;
+            if (currentOrigin && currentOrigin !== 'null' && resOrigin !== currentOrigin) {
+              throw new Error('Cross-origin fetch blocked');
+            }
+          } catch (err) {
+            console.error('URL parsing error:', err);
+          }
         }
         const type = (response.headers && response.headers.get
           ? response.headers.get('Content-Type')
