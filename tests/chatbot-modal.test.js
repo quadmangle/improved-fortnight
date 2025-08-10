@@ -272,11 +272,13 @@ test('chatbot modal initializes and handlers work', async () => {
   // Test chat submit
   const form = document.getElementById('chatbot-input-row');
   const log = document.getElementById('chat-log');
+  const container = document.getElementById('chatbot-container');
   input.value = 'Hi';
   await form.onsubmit({ preventDefault() {} });
   assert.strictEqual(log.children.length, 2);
   assert.strictEqual(log.children[0].textContent, 'Hi');
   assert.strictEqual(log.children[1].textContent, 'hello');
+  assert.strictEqual(container.style.display, 'flex');
   assert.ok(!send.disabled);
 
   // Close the modal via the close button and ensure focus returns to the FAB
