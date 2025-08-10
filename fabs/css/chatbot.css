@@ -86,5 +86,3 @@ body.dark{--clr-bg:var(--clr-bg-dark);--clr-tx:var(--clr-tx-dark)}
 #chatbot-send:hover i{transform:rotate(-45deg)}
 #chatbot-send:disabled{background:#555;cursor:not-allowed}
 #chatbot-close{order:1;margin-left:0}
-.human-check{color:#ddd;font-size:.85rem;display:flex;align-items:center;margin-top:.3rem}
-.human-check input{margin-right:.4rem}

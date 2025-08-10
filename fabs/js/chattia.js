@@ -15,8 +15,7 @@ function initChatbot() {
   /* === Language toggle === */
   const langCtrl = qs('#langCtrl'),
         transNodes = qsa('[data-en]'),
-        phNodes = qsa('[data-en-ph]'),
-        humanLab = qs('#human-label');
+        phNodes = qsa('[data-en-ph]');
 
   langCtrl.onclick = () => {
     const toES = langCtrl.textContent === 'ES';
@@ -28,9 +27,6 @@ function initChatbot() {
 
     // Update placeholders
     phNodes.forEach(node => node.placeholder = toES ? node.dataset.esPh : node.dataset.enPh);
-    if (humanLab) {
-      humanLab.textContent = toES ? humanLab.dataset.es : humanLab.dataset.en;
-    }
   };
 
   /* === Theme toggle === */
@@ -45,13 +41,10 @@ function initChatbot() {
   const log = qs('#chat-log'),
         form = qs('#chatbot-input-row'),
         input = qs('#chatbot-input'),
-        send = qs('#chatbot-send'),
-        guard = qs('#human-check');
+        send = qs('#chatbot-send');
 
-  if (guard) {
-    guard.onchange = () => send.disabled = !guard.checked;
-  } else {
-    // No human verification checkbox present; enable sending by default
+  // Enable sending by default
+  if (send) {
     send.disabled = false;
   }
 
@@ -73,7 +66,6 @@ function initChatbot() {
   if (form) {
     form.onsubmit = async e => {
       e.preventDefault();
-      if (!guard || !guard.checked) return;
 
       const msg = input.value.trim();
       if (!msg) return;
