@@ -158,20 +158,20 @@ function createChatbotModal() {
   title.textContent = 'OPS AI Chatbot';
   header.appendChild(title);
 
-  const controls = new Element('div');
+  const headerControls = new Element('div');
   const langCtrl = new Element('span');
   langCtrl.id = 'langCtrl';
   langCtrl.className = 'ctrl';
   langCtrl.textContent = 'ES';
-  controls.appendChild(langCtrl);
+  headerControls.appendChild(langCtrl);
 
   const themeCtrl = new Element('span');
   themeCtrl.id = 'themeCtrl';
   themeCtrl.className = 'ctrl';
   themeCtrl.textContent = 'Dark';
-  controls.appendChild(themeCtrl);
+  headerControls.appendChild(themeCtrl);
 
-  header.appendChild(controls);
+  header.appendChild(headerControls);
   container.appendChild(header);
 
   const log = new Element('div');
@@ -182,22 +182,30 @@ function createChatbotModal() {
   formContainer.id = 'chatbot-form-container';
   const form = new Element('form');
   form.id = 'chatbot-input-row';
-  const input = new Element('input');
+
+  const input = new Element('textarea');
   input.id = 'chatbot-input';
+  input.setAttribute('rows', '4');
   input.setAttribute('data-en-ph', 'Type your message...');
   input.setAttribute('data-es-ph', 'Escriba su mensaje...');
   input.placeholder = 'Type your message...';
   form.appendChild(input);
+
+  const inputControls = new Element('div');
+  inputControls.id = 'chatbot-controls';
+
   const send = new Element('button');
   send.id = 'chatbot-send';
-  form.appendChild(send);
+  inputControls.appendChild(send);
 
   const closeBtn = new Element('button');
   closeBtn.id = 'chatbot-close';
   closeBtn.className = 'modal-close';
   closeBtn.setAttribute('aria-label', 'Close');
   closeBtn.textContent = 'Close';
-  form.appendChild(closeBtn);
+  inputControls.appendChild(closeBtn);
+
+  form.appendChild(inputControls);
   formContainer.appendChild(form);
   container.appendChild(formContainer);
   return container;
