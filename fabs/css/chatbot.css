@@ -41,14 +41,14 @@ body.dark{--clr-bg:var(--clr-bg-dark);--clr-tx:var(--clr-tx-dark)}
   cursor: move;
 }
 #chatbot-header #title{color:#000;}
-@media (max-width: 767px) {
+@media (max-width: 1024px) {
   #chatbot-container {
-    width: 100%;
-    height: 100%;
-    border-radius: 0;
-    top: 0;
-    left: 0;
-    transform: none;
+    width: 50vw;
+    height: 35vh;
+    border-radius: 18px;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     overflow-y: auto;
   }
   #chatbot-header {
