@@ -82,6 +82,33 @@ app.post('/api/contact', contactValidation, (req, res) => {
   res.json({ ok: true });
 });
 
+// Chatbot message handling with nonce validation
+app.post('/api/chat/reset', (req, res) => {
+  req.session.chatNonce = null;
+  res.json({ ok: true });
+});
+
+app.post('/api/chat', (req, res) => {
+  const { message, nonce } = req.body || {};
+  if (!nonce || typeof nonce !== 'string') {
+    return res.status(400).json({ error: 'Missing nonce' });
+  }
+
+  const now = Date.now();
+  const sessionNonce = req.session.chatNonce;
+  if (!sessionNonce || sessionNonce.expires < now) {
+    req.session.chatNonce = { value: nonce, expires: now + 10 * 60 * 1000 };
+  } else if (sessionNonce.value !== nonce) {
+    return res.status(403).json({ error: 'Invalid nonce' });
+  } else {
+    // refresh expiry
+    req.session.chatNonce.expires = now + 10 * 60 * 1000;
+  }
+
+  // Placeholder response; integrate with chatbot backend here.
+  res.json({ reply: 'ok', echoed: message });
+});
+
 module.exports = app;
 
 if (require.main === module) {

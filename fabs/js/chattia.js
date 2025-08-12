@@ -41,7 +41,43 @@ function initChatbot() {
   const log = qs('#chat-log'),
         form = qs('#chatbot-input-row'),
         input = qs('#chatbot-input'),
-        send = qs('#chatbot-send');
+        send = qs('#chatbot-send'),
+        closeBtn = qs('#chatbot-close');
+
+  // Nonce used to tie messages to a single conversation
+  const RESET_MS = 10 * 60 * 1000; // auto-reset after 10 minutes
+  let nonce = generateNonce();
+  let resetTimer;
+
+  function generateNonce() {
+    const arr = new Uint8Array(16);
+    crypto.getRandomValues(arr);
+    return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function scheduleReset() {
+    clearTimeout(resetTimer);
+    resetTimer = setTimeout(resetConversation, RESET_MS);
+  }
+
+  async function resetConversation() {
+    if (log) {
+      log.innerHTML = '';
+    }
+    nonce = generateNonce();
+    scheduleReset();
+    try {
+      await fetch('/api/chat/reset', { method: 'POST' });
+    } catch (err) {
+      console.error('Chat reset failed:', err);
+    }
+  }
+
+  scheduleReset();
+  if (closeBtn) {
+    closeBtn.addEventListener('click', resetConversation);
+  }
+  window.resetChatbotConversation = resetConversation;
 
   // Enable sending by default
   if (send) {
@@ -86,7 +122,8 @@ function initChatbot() {
             'Authorization': 'Bearer placeholder_token'
           },
           body: JSON.stringify({
-            message: sanitizedMsg
+            message: sanitizedMsg,
+            nonce
           })
         });
         const d = await r.json();
@@ -97,6 +134,7 @@ function initChatbot() {
         // logError(err);
         log.lastChild.textContent = 'Error: Can’t reach AI.';
       }
+      scheduleReset();
       send.disabled = false;
     };
   }

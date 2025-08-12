@@ -223,7 +223,7 @@ test('chatbot modal initializes and handlers work', async () => {
   const window = { document };
   window.addEventListener = () => {};
   window.dispatchEvent = () => {};
-  const context = vm.createContext({ window, document, console, setTimeout, fetch: null });
+  const context = vm.createContext({ window, document, console, setTimeout, clearTimeout, fetch: null, crypto: require('crypto').webcrypto });
   context.window.initDraggableModal = () => {};
 
   // fetch stub for modal and chat responses
@@ -306,7 +306,7 @@ test('chatbot not initialized when HTML missing', async () => {
   const window = { document };
   window.addEventListener = () => {};
   window.dispatchEvent = () => {};
-  const context = vm.createContext({ window, document, console, fetch: null, setTimeout });
+  const context = vm.createContext({ window, document, console, fetch: null, setTimeout, clearTimeout, crypto: require('crypto').webcrypto });
   context.window.initDraggableModal = () => {};
 
   // fetch stub returning no chatbot container
@@ -330,7 +330,7 @@ test('chatbot FAB click is idempotent', async () => {
   const window = { document };
   window.addEventListener = () => {};
   window.dispatchEvent = () => {};
-  const context = vm.createContext({ window, document, console, fetch: null, setTimeout });
+  const context = vm.createContext({ window, document, console, fetch: null, setTimeout, clearTimeout, crypto: require('crypto').webcrypto });
   context.window.initDraggableModal = () => {};
 
   // fetch stub for modal and chat responses
@@ -361,5 +361,52 @@ test('chatbot FAB click is idempotent', async () => {
   // Ensure only one chatbot container exists
   const containers = document.querySelectorAll('#chatbot-container');
   assert.strictEqual(containers.length, 1, 'only one chatbot container appended');
+});
+
+test('nonce included in chat payload and refreshed after reset', async () => {
+  const document = new Document();
+  const window = { document };
+  window.addEventListener = () => {};
+  window.dispatchEvent = () => {};
+  let lastBody;
+
+  const context = vm.createContext({ window, document, console, fetch: null, setTimeout, clearTimeout, crypto: require('crypto').webcrypto });
+  context.window.initDraggableModal = () => {};
+
+  const chatbotHtml = '<div id="chatbot-container"></div>';
+  context.fetch = async (url, opts = {}) => {
+    if (url.endsWith('chatbot.html')) {
+      return { text: async () => chatbotHtml };
+    }
+    if (url === '/api/chat/reset') {
+      return { json: async () => ({ ok: true }) };
+    }
+    lastBody = opts.body;
+    return { json: async () => ({ reply: 'ok' }) };
+  };
+
+  runScripts(context, ['fabs/js/chattia.js', 'cojoinlistener.js']);
+
+  document.dispatchEvent({ type: 'DOMContentLoaded' });
+  const chatbotFab = document.getElementById('fab-chatbot');
+  chatbotFab.eventHandlers.click[0]();
+  await new Promise(r => setImmediate(r));
+
+  const form = document.getElementById('chatbot-input-row');
+  const input = document.getElementById('chatbot-input');
+
+  input.value = 'first';
+  await form.onsubmit({ preventDefault() {} });
+  const payload1 = JSON.parse(lastBody);
+  assert.ok(payload1.nonce, 'nonce present in first payload');
+
+  const firstNonce = payload1.nonce;
+  window.resetChatbotConversation();
+
+  input.value = 'second';
+  await form.onsubmit({ preventDefault() {} });
+  const payload2 = JSON.parse(lastBody);
+  assert.ok(payload2.nonce, 'nonce present in second payload');
+  assert.notStrictEqual(payload2.nonce, firstNonce, 'nonce refreshed after reset');
 });
 
