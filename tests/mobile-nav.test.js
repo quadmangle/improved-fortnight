@@ -44,6 +44,20 @@ test('ops-nav enables horizontal scrolling when cramped', () => {
   assert.ok(navBlock.includes('overflow-x: auto'), '.ops-nav should allow horizontal scrolling');
 });
 
+test('nav toggle sits above floating action button', () => {
+  const styleCss = fs.readFileSync(path.join(root, 'css', 'style.css'), 'utf-8');
+  const toggleMatch = styleCss.match(/@media \(max-width: 768px\)[\s\S]*?\.nav-menu-toggle\s*{[\s\S]*?z-index:\s*(\d+)/);
+  assert.ok(toggleMatch, 'nav-menu-toggle z-index missing');
+  const navZ = parseInt(toggleMatch[1], 10);
+
+  const fabCss = fs.readFileSync(path.join(root, 'fabs', 'css', 'cojoin.css'), 'utf-8');
+  const fabMatch = fabCss.match(/\.fab-container\s*{[\s\S]*?z-index:\s*(\d+)/);
+  assert.ok(fabMatch, 'fab-container z-index missing');
+  const fabZ = parseInt(fabMatch[1], 10);
+
+  assert.ok(navZ > fabZ, 'nav toggle should have higher z-index than FAB');
+});
+
 // Verify HTML structure defaults (nav links closed)
 const pages = ['index.html', 'contact-center.html', 'it-support.html', 'professional-services.html'];
 for (const page of pages) {
