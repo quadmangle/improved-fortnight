@@ -38,7 +38,7 @@
   --space-3xl: 60px;
 
   /* Layout */
-  --ops-nav-height: 75px; /* height of sticky ops-nav bar */
+  --nav-header-height: 85px; /* height of sticky nav header */
 }
 
 /* Dark Theme Variables */
@@ -701,9 +701,9 @@ body.dark .ops-modal {
 
   .nav-links {
     position: fixed;
-    top: var(--ops-nav-height); /* offset below ops-nav */
+    top: var(--nav-header-height); /* offset below nav header */
     right: 0;
-    height: calc(100% - var(--ops-nav-height)); /* fill remaining viewport */
+    height: calc(100% - var(--nav-header-height)); /* fill remaining viewport */
     width: 70%;
     max-width: 300px;
     display: flex;
@@ -737,6 +737,8 @@ body.dark .ops-modal {
     display: block;
     margin: 0;
     align-self: flex-end;
+    position: relative;
+    z-index: 1002;
   }
 
   .nav-backdrop {
@@ -763,7 +765,7 @@ body.dark .ops-modal {
     flex-direction: column;
     align-items: flex-end;
     gap: var(--space-sm);     /* consistent 10px spacing */
-    z-index: 1000;
+    z-index: 1001;
   }
 }
 

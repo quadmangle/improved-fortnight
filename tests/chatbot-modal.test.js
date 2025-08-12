@@ -157,7 +157,6 @@ function querySelectorFrom(root, selector, all) {
 function createChatbotModal() {
   const container = new Element('div');
   container.id = 'chatbot-container';
-
   const header = new Element('div');
   header.id = 'chatbot-header';
   const title = new Element('span');
@@ -166,32 +165,26 @@ function createChatbotModal() {
   title.dataset.es = 'Chatbot OPS AI';
   title.textContent = 'OPS AI Chatbot';
   header.appendChild(title);
-
   const headerControls = new Element('div');
   const langCtrl = new Element('span');
   langCtrl.id = 'langCtrl';
   langCtrl.className = 'ctrl';
   langCtrl.textContent = 'ES';
   headerControls.appendChild(langCtrl);
-
   const themeCtrl = new Element('span');
   themeCtrl.id = 'themeCtrl';
   themeCtrl.className = 'ctrl';
   themeCtrl.textContent = 'Dark';
   headerControls.appendChild(themeCtrl);
-
   header.appendChild(headerControls);
   container.appendChild(header);
-
   const log = new Element('div');
   log.id = 'chat-log';
   container.appendChild(log);
-
   const formContainer = new Element('div');
   formContainer.id = 'chatbot-form-container';
   const form = new Element('form');
   form.id = 'chatbot-input-row';
-
   const input = new Element('textarea');
   input.id = 'chatbot-input';
   input.setAttribute('rows', '4');
@@ -199,14 +192,11 @@ function createChatbotModal() {
   input.setAttribute('data-es-ph', 'Escriba su mensaje...');
   input.placeholder = 'Type your message...';
   form.appendChild(input);
-
   const inputControls = new Element('div');
   inputControls.id = 'chatbot-controls';
-
   const send = new Element('button');
   send.id = 'chatbot-send';
   inputControls.appendChild(send);
-
   const closeBtn = new Element('button');
   closeBtn.id = 'chatbot-close';
   closeBtn.className = 'modal-close';
@@ -261,18 +251,14 @@ test('chatbot modal initializes and handlers work', async () => {
   chatbotFab.focus();
   chatbotFab.eventHandlers.click[0]();
   await new Promise(r => setImmediate(r));
-
   assert.ok(called, 'initChatbot called after loading modal');
-
   const closeBtn = document.getElementById('chatbot-close');
   assert.ok(closeBtn, 'close button present');
   assert.strictEqual(closeBtn.getAttribute('aria-label'), 'Close');
-
   const input = document.getElementById('chatbot-input');
   assert.strictEqual(document.activeElement, input, 'focus moved to input');
   assert.strictEqual(input.tagName, 'TEXTAREA', 'chatbot input is a textarea');
   assert.strictEqual(input.getAttribute('rows'), '4');
-
   const send = document.getElementById('chatbot-send');
   const controls = document.getElementById('chatbot-controls');
   assert.ok(controls, 'controls container present');
@@ -323,14 +309,11 @@ test('chatbot not initialized when HTML missing', async () => {
 
   // Load scripts
   runScripts(context, ['fabs/js/chattia.js', 'cojoinlistener.js']);
-
   let called = false;
   context.window.initChatbot = () => { called = true; };
-
   document.dispatchEvent({ type: 'DOMContentLoaded' });
   const chatbotFab = document.getElementById('fab-chatbot');
   await chatbotFab.eventHandlers.click[0]();
-
   assert.ok(!called, 'initChatbot not called when HTML missing');
 });
 
@@ -373,13 +356,13 @@ test('chatbot FAB click is idempotent', async () => {
 });
 
 test('cleanupChatbot removes handlers and clears references', async () => {
+test('hideModal clears chatbot state and clearChatbot is idempotent', async () => {
   const document = new Document();
   const window = { document };
   window.addEventListener = () => {};
   window.dispatchEvent = () => {};
   const context = vm.createContext({ window, document, console, fetch: null, setTimeout });
   context.window.initDraggableModal = () => {};
-
   const chatbotHtml = '<div id="chatbot-container"></div>';
   context.fetch = async (url) => {
     if (url.endsWith('chatbot.html')) {
@@ -389,10 +372,8 @@ test('cleanupChatbot removes handlers and clears references', async () => {
   };
 
   runScripts(context, ['fabs/js/chattia.js']);
-
   document.body.innerHTML = '<div id="chatbot-container"></div>';
   context.window.initChatbot();
-
   const langCtrl = document.getElementById('langCtrl');
   const themeCtrl = document.getElementById('themeCtrl');
   const form = document.getElementById('chatbot-input-row');
@@ -413,7 +394,6 @@ test('cleanupChatbot removes handlers and clears references', async () => {
   langCtrl.textContent = 'ES';
   document.body.className = '';
   log.children = [];
-
   context.window.cleanupChatbot();
 
   // References should be nulled in module scope
@@ -437,12 +417,10 @@ test('cleanupChatbot removes handlers and clears references', async () => {
   assert.strictEqual(langCtrl.textContent, 'ES');
   assert.strictEqual(langCtrl.onclick, null);
   assert.ok(!langCtrl.eventHandlers.click);
-
   themeCtrl.dispatchEvent({ type: 'click' });
   assert.ok(!document.body.classList.contains('dark'));
   assert.strictEqual(themeCtrl.onclick, null);
   assert.ok(!themeCtrl.eventHandlers.click);
-
   const before = log.children.length;
   input.value = 'Hi again';
   form.dispatchEvent({ type: 'submit', preventDefault() {} });
@@ -450,4 +428,3 @@ test('cleanupChatbot removes handlers and clears references', async () => {
   assert.strictEqual(form.onsubmit, null);
   assert.ok(!form.eventHandlers.submit);
 });
-
