@@ -70,7 +70,7 @@ body.dark{--clr-bg:var(--clr-bg-dark);--clr-tx:var(--clr-tx-dark)}
   gap: 0.25rem;
   margin-left: auto;
 }
-#chatbot-input{flex:1;background:transparent;border:none;color:#000;font-size:.95rem;padding:.55rem .6rem;min-height:4.5rem;resize:none;width:calc(100% - 2.6rem)}
+#chatbot-input{flex:1;background:transparent;border:none;color:#000;font-size:.95rem;padding:.55rem .6rem;min-height:4.5rem;resize:none}
 #chatbot-input::placeholder{color:#000}
 #chatbot-send, #chatbot-close{
   display:flex;
