@@ -737,6 +737,8 @@ body.dark .ops-modal {
     display: block;
     margin: 0;
     align-self: flex-end;
+    position: relative;
+    z-index: 1002;
   }
 
   .nav-backdrop {
@@ -763,7 +765,7 @@ body.dark .ops-modal {
     flex-direction: column;
     align-items: flex-end;
     gap: var(--space-sm);     /* consistent 10px spacing */
-    z-index: 1000;
+    z-index: 1001;
   }
 }
 
