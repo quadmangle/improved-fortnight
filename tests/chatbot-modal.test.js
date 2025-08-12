@@ -79,6 +79,15 @@ class Element {
   addEventListener(event, handler) {
     (this.eventHandlers[event] ||= []).push(handler);
   }
+  removeEventListener(event, handler) {
+    const list = this.eventHandlers[event];
+    if (!list) return;
+    this.eventHandlers[event] = list.filter(h => h !== handler);
+    if (!this.eventHandlers[event].length) delete this.eventHandlers[event];
+  }
+  dispatchEvent(evt) {
+    (this.eventHandlers[evt.type] || []).forEach(h => h.call(this, evt));
+  }
   querySelector(selector) {
     return querySelectorFrom(this, selector, false);
   }
@@ -148,7 +157,6 @@ function querySelectorFrom(root, selector, all) {
 function createChatbotModal() {
   const container = new Element('div');
   container.id = 'chatbot-container';
-
   const header = new Element('div');
   header.id = 'chatbot-header';
   const title = new Element('span');
@@ -157,32 +165,26 @@ function createChatbotModal() {
   title.dataset.es = 'Chatbot OPS AI';
   title.textContent = 'OPS AI Chatbot';
   header.appendChild(title);
-
   const headerControls = new Element('div');
   const langCtrl = new Element('span');
   langCtrl.id = 'langCtrl';
   langCtrl.className = 'ctrl';
   langCtrl.textContent = 'ES';
   headerControls.appendChild(langCtrl);
-
   const themeCtrl = new Element('span');
   themeCtrl.id = 'themeCtrl';
   themeCtrl.className = 'ctrl';
   themeCtrl.textContent = 'Dark';
   headerControls.appendChild(themeCtrl);
-
   header.appendChild(headerControls);
   container.appendChild(header);
-
   const log = new Element('div');
   log.id = 'chat-log';
   container.appendChild(log);
-
   const formContainer = new Element('div');
   formContainer.id = 'chatbot-form-container';
   const form = new Element('form');
   form.id = 'chatbot-input-row';
-
   const input = new Element('textarea');
   input.id = 'chatbot-input';
   input.setAttribute('rows', '4');
@@ -190,14 +192,11 @@ function createChatbotModal() {
   input.setAttribute('data-es-ph', 'Escriba su mensaje...');
   input.placeholder = 'Type your message...';
   form.appendChild(input);
-
   const inputControls = new Element('div');
   inputControls.id = 'chatbot-controls';
-
   const send = new Element('button');
   send.id = 'chatbot-send';
   inputControls.appendChild(send);
-
   const closeBtn = new Element('button');
   closeBtn.id = 'chatbot-close';
   closeBtn.className = 'modal-close';
@@ -252,18 +251,14 @@ test('chatbot modal initializes and handlers work', async () => {
   chatbotFab.focus();
   chatbotFab.eventHandlers.click[0]();
   await new Promise(r => setImmediate(r));
-
   assert.ok(called, 'initChatbot called after loading modal');
-
   const closeBtn = document.getElementById('chatbot-close');
   assert.ok(closeBtn, 'close button present');
   assert.strictEqual(closeBtn.getAttribute('aria-label'), 'Close');
-
   const input = document.getElementById('chatbot-input');
   assert.strictEqual(document.activeElement, input, 'focus moved to input');
   assert.strictEqual(input.tagName, 'TEXTAREA', 'chatbot input is a textarea');
   assert.strictEqual(input.getAttribute('rows'), '4');
-
   const send = document.getElementById('chatbot-send');
   const controls = document.getElementById('chatbot-controls');
   assert.ok(controls, 'controls container present');
@@ -314,14 +309,11 @@ test('chatbot not initialized when HTML missing', async () => {
 
   // Load scripts
   runScripts(context, ['fabs/js/chattia.js', 'cojoinlistener.js']);
-
   let called = false;
   context.window.initChatbot = () => { called = true; };
-
   document.dispatchEvent({ type: 'DOMContentLoaded' });
   const chatbotFab = document.getElementById('fab-chatbot');
   await chatbotFab.eventHandlers.click[0]();
-
   assert.ok(!called, 'initChatbot not called when HTML missing');
 });
 
@@ -363,56 +355,76 @@ test('chatbot FAB click is idempotent', async () => {
   assert.strictEqual(containers.length, 1, 'only one chatbot container appended');
 });
 
+test('cleanupChatbot removes handlers and clears references', async () => {
 test('hideModal clears chatbot state and clearChatbot is idempotent', async () => {
   const document = new Document();
   const window = { document };
   window.addEventListener = () => {};
   window.dispatchEvent = () => {};
-  const sessionStorage = {
-    store: {},
-    setItem(k, v) { this.store[k] = String(v); },
-    getItem(k) { return Object.prototype.hasOwnProperty.call(this.store, k) ? this.store[k] : null; },
-    removeItem(k) { delete this.store[k]; }
-  };
-  window.sessionStorage = sessionStorage;
-  const context = vm.createContext({ window, document, console, setTimeout, clearTimeout, fetch: null, sessionStorage });
+  const context = vm.createContext({ window, document, console, fetch: null, setTimeout });
   context.window.initDraggableModal = () => {};
-
   const chatbotHtml = '<div id="chatbot-container"></div>';
-  context.fetch = async () => ({ text: async () => chatbotHtml });
+  context.fetch = async (url) => {
+    if (url.endsWith('chatbot.html')) {
+      return { text: async () => chatbotHtml };
+    }
+    return { json: async () => ({ reply: 'ok' }) };
+  };
 
-  runScripts(context, ['fabs/js/chattia.js', 'cojoinlistener.js']);
-
-  document.dispatchEvent({ type: 'DOMContentLoaded' });
-
-  const chatbotFab = document.getElementById('fab-chatbot');
-  chatbotFab.eventHandlers.click[0]();
-  await new Promise(r => setImmediate(r));
-
+  runScripts(context, ['fabs/js/chattia.js']);
+  document.body.innerHTML = '<div id="chatbot-container"></div>';
+  context.window.initChatbot();
+  const langCtrl = document.getElementById('langCtrl');
+  const themeCtrl = document.getElementById('themeCtrl');
+  const form = document.getElementById('chatbot-input-row');
+  const input = document.getElementById('chatbot-input');
   const log = document.getElementById('chat-log');
-  const msg = new Element('div');
-  msg.textContent = 'hi';
-  log.appendChild(msg);
-  sessionStorage.setItem('chatbotSession', 'abc');
-  sessionStorage.setItem('chatbotHistory', '[]');
-  window.chatbotIdleTimer = setTimeout(() => {}, 1000);
 
-  let clearCount = 0;
-  const realClear = context.window.clearChatbot;
-  context.window.clearChatbot = () => { clearCount++; realClear(); };
+  // Handlers should fire before cleanup
+  langCtrl.dispatchEvent({ type: 'click' });
+  assert.strictEqual(document.documentElement.lang, 'es');
+  themeCtrl.dispatchEvent({ type: 'click' });
+  assert.ok(document.body.classList.contains('dark'));
+  input.value = 'Hi';
+  await form.eventHandlers.submit[0]({ preventDefault() {} });
+  assert.strictEqual(log.children.length, 2);
 
-  const closeBtn = document.getElementById('chatbot-close');
-  closeBtn.eventHandlers.click[0]();
+  // Reset state to detect post-cleanup changes
+  document.documentElement.lang = 'en';
+  langCtrl.textContent = 'ES';
+  document.body.className = '';
+  log.children = [];
+  context.window.cleanupChatbot();
 
-  assert.strictEqual(clearCount, 1, 'clearChatbot called once on close');
-  assert.strictEqual(log.children.length, 0, 'chat log cleared');
-  assert.strictEqual(sessionStorage.getItem('chatbotSession'), null, 'session cleared');
-  assert.strictEqual(window.chatbotIdleTimer, null, 'idle timer cleared');
+  // References should be nulled in module scope
+  for (const name of [
+    'langCtrl',
+    'themeCtrl',
+    'log',
+    'form',
+    'input',
+    'send',
+    'langClickHandler',
+    'themeClickHandler',
+    'formSubmitHandler'
+  ]) {
+    assert.strictEqual(vm.runInContext(name, context), null, `${name} should be null`);
+  }
 
-  // Calling clearChatbot again should be safe and keep state cleared
-  context.window.clearChatbot();
-  assert.strictEqual(log.children.length, 0, 'chat log still cleared after second call');
-  assert.strictEqual(sessionStorage.getItem('chatbotHistory'), null, 'session variables remain cleared');
-  assert.strictEqual(window.chatbotIdleTimer, null, 'idle timer remains cleared');
+  // No handlers should fire after cleanup
+  langCtrl.dispatchEvent({ type: 'click' });
+  assert.strictEqual(document.documentElement.lang, 'en');
+  assert.strictEqual(langCtrl.textContent, 'ES');
+  assert.strictEqual(langCtrl.onclick, null);
+  assert.ok(!langCtrl.eventHandlers.click);
+  themeCtrl.dispatchEvent({ type: 'click' });
+  assert.ok(!document.body.classList.contains('dark'));
+  assert.strictEqual(themeCtrl.onclick, null);
+  assert.ok(!themeCtrl.eventHandlers.click);
+  const before = log.children.length;
+  input.value = 'Hi again';
+  form.dispatchEvent({ type: 'submit', preventDefault() {} });
+  assert.strictEqual(log.children.length, before);
+  assert.strictEqual(form.onsubmit, null);
+  assert.ok(!form.eventHandlers.submit);
 });
-
