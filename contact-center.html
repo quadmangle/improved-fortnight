@@ -11,6 +11,7 @@
   <link rel="stylesheet" href="fabs/css/cojoin.css">
   <link rel="stylesheet" href="fabs/css/chatbot.css">
   <script src="https://js.hcaptcha.com/1/api.js" async defer></script>
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.2.6/purify.min.js" integrity="sha384-JEyTNhjM6R1ElGoJns4U2Ln4ofPcqzSsynQkmEc/KGy6336qAZl70tDLufbkla+3" crossorigin="anonymous" defer></script>
 </head>
 <body class="page-contact-center">
@@ -60,7 +61,7 @@
       </figure>
     </section>
 
-    <section id="form" class="contact-form-section">
+    <section id="form" class="contact-form-section bot-trap">
       <h2 data-key="form-heading">Request Your Free Needs Assessment</h2>
       <form>
         <input type="text" placeholder="" data-key="form-name" required />
@@ -70,7 +71,24 @@
         <div class="honeypot" aria-hidden="true">
           <label for="hp-field">Leave this field blank</label>
           <input type="text" id="hp-field" name="hp" tabindex="-1" autocomplete="off" />
+          <label for="hp-comments">Comments</label>
+          <textarea id="hp-comments" name="comments" tabindex="-1" autocomplete="off"></textarea>
+          <label for="hp-website">Website</label>
+          <input type="url" id="hp-website" name="website" tabindex="-1" autocomplete="off" />
         </div>
+
+        <!--
+          CAPTCHA for Bot Trap
+          - hCaptcha and reCAPTCHA widgets are included below.
+          - Replace the dummy `data-sitekey` with your actual site keys.
+          - These are intentionally placed in a hidden form to act as a bot trap.
+        -->
+        <!-- hCaptcha -->
+        <div class="h-captcha" data-sitekey="10000000-0000-0000-0000-000000000001"></div>
+
+        <!-- Google reCAPTCHA -->
+        <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
+
         <button type="submit" class="submit-button" data-key="form-submit">Request Now</button>
       </form>
     </section>
