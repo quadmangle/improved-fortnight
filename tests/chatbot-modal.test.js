@@ -278,11 +278,18 @@ test('chatbot modal initializes and handlers work', async () => {
   langCtrl.dispatchEvent({ type: 'click' });
   assert.strictEqual(document.documentElement.lang, 'es');
   assert.strictEqual(langCtrl.textContent, 'EN');
+  langCtrl.dispatchEvent({ type: 'click' });
+  assert.strictEqual(document.documentElement.lang, 'en');
+  assert.strictEqual(langCtrl.textContent, 'ES');
 
   // Test theme toggle
   const themeCtrl = document.getElementById('themeCtrl');
   themeCtrl.dispatchEvent({ type: 'click' });
   assert.ok(document.body.classList.contains('dark'));
+  assert.strictEqual(themeCtrl.textContent, 'Light');
+  themeCtrl.dispatchEvent({ type: 'click' });
+  assert.ok(!document.body.classList.contains('dark'));
+  assert.strictEqual(themeCtrl.textContent, 'Dark');
 
   // Send button should be enabled by default
   assert.ok(!send.disabled);

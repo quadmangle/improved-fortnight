@@ -56,15 +56,18 @@ function initChatbot() {
         phNodes = qsa('[data-en-ph]');
 
   langClickHandler = () => {
-    const toES = langCtrl.textContent === 'ES';
-    document.documentElement.lang = toES ? 'es' : 'en';
-    langCtrl.textContent = toES ? 'EN' : 'ES';
-
-    // Update text content
-    transNodes.forEach(node => node.textContent = toES ? node.dataset.es : node.dataset.en);
-
-    // Update placeholders
-    phNodes.forEach(node => node.placeholder = toES ? node.dataset.esPh : node.dataset.enPh);
+    const toEnglish = langCtrl.textContent === 'EN';
+    if (toEnglish) {
+      document.documentElement.lang = 'en';
+      langCtrl.textContent = 'ES';
+      transNodes.forEach(node => (node.textContent = node.dataset.en));
+      phNodes.forEach(node => (node.placeholder = node.dataset.enPh));
+    } else {
+      document.documentElement.lang = 'es';
+      langCtrl.textContent = 'EN';
+      transNodes.forEach(node => (node.textContent = node.dataset.es));
+      phNodes.forEach(node => (node.placeholder = node.dataset.esPh));
+    }
   };
   if (langCtrl) {
     langCtrl.addEventListener('click', langClickHandler);
@@ -77,9 +80,14 @@ function initChatbot() {
     window.themeCtrl = themeCtrl;
   }
   themeClickHandler = () => {
-    const dark = themeCtrl.textContent === 'Dark';
-    document.body.classList.toggle('dark', dark);
-    themeCtrl.textContent = dark ? 'Light' : 'Dark';
+    const toDark = themeCtrl.textContent === 'Dark';
+    if (toDark) {
+      document.body.classList.add('dark');
+      themeCtrl.textContent = 'Light';
+    } else {
+      document.body.classList.remove('dark');
+      themeCtrl.textContent = 'Dark';
+    }
   };
   if (themeCtrl) {
     themeCtrl.addEventListener('click', themeClickHandler);
