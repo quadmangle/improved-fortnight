@@ -261,6 +261,14 @@ test('chatbot modal initializes and handlers work', async () => {
 
   const input = document.getElementById('chatbot-input');
   assert.strictEqual(document.activeElement, input, 'focus moved to input');
+  assert.strictEqual(input.tagName, 'TEXTAREA', 'chatbot input is a textarea');
+  assert.strictEqual(input.getAttribute('rows'), '4');
+
+  const send = document.getElementById('chatbot-send');
+  const controls = document.getElementById('chatbot-controls');
+  assert.ok(controls, 'controls container present');
+  assert.strictEqual(controls.children[0], send, 'send button present in controls');
+  assert.strictEqual(controls.children[1], closeBtn, 'close button present in controls');
 
   // Test language toggle
   const langCtrl = document.getElementById('langCtrl');
@@ -274,7 +282,6 @@ test('chatbot modal initializes and handlers work', async () => {
   assert.ok(document.body.classList.contains('dark'));
 
   // Send button should be enabled by default
-  const send = document.getElementById('chatbot-send');
   assert.ok(!send.disabled);
 
   // Test chat submit
