@@ -36,6 +36,9 @@
   --space-xl: 40px;
   --space-2xl: 50px;
   --space-3xl: 60px;
+
+  /* Layout */
+  --ops-nav-height: 75px; /* height of sticky ops-nav bar */
 }
 
 /* Dark Theme Variables */
@@ -698,9 +701,9 @@ body.dark .ops-modal {
 
   .nav-links {
     position: fixed;
-    top: 0;
+    top: var(--ops-nav-height); /* offset below ops-nav */
     right: 0;
-    height: 100%;
+    height: calc(100% - var(--ops-nav-height)); /* fill remaining viewport */
     width: 70%;
     max-width: 300px;
     display: flex;
@@ -712,7 +715,7 @@ body.dark .ops-modal {
     transform: translateX(100%);
     transition: transform 0.3s ease;
     padding: var(--space-xl) var(--space-md);
-    z-index: 900;
+    z-index: 900; /* below .ops-nav (z-index 1000) */
     pointer-events: none;
   }
 
