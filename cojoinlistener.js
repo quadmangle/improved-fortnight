@@ -220,11 +220,11 @@ document.addEventListener('DOMContentLoaded', () => {
    */
   function hideModal(modal) {
     if (modal) {
-      if (modal.id === 'chatbot-container' && typeof window.clearChatbot === 'function') {
+      if (modal.id === 'chatbot-container' && typeof window.cleanupChatbot === 'function') {
         try {
-          window.clearChatbot();
+          window.cleanupChatbot();
         } catch (err) {
-          console.error('clearChatbot failed:', err);
+          console.error('cleanupChatbot failed:', err);
         }
       }
       modal.style.display = 'none';

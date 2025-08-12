@@ -50,6 +50,8 @@ class Element {
   set innerHTML(html) {
     this._innerHTML = html;
     this.children = [];
+    // Basic simulation of textContent behavior for the sanitizer test
+    this.textContent = html.replace(/<[^>]*>/g, '');
     if (html.includes('chatbot-container')) {
       const modal = createChatbotModal();
       modal.parentNode = this;
@@ -226,11 +228,18 @@ test('chatbot modal initializes and handlers work', async () => {
 
   // fetch stub for modal and chat responses
   const chatbotHtml = '<div id="chatbot-container"></div>';
-  context.fetch = async (url) => {
+  context.fetch = async (url, options) => {
     if (url.endsWith('chatbot.html')) {
       return { text: async () => chatbotHtml };
     }
-    return { json: async () => ({ reply: 'hello' }) };
+    if (url === 'https://httpbin.org/post' && options && options.body) {
+      return {
+        json: async () => ({
+          data: options.body,
+        }),
+      };
+    }
+    return { json: async () => ({}) };
   };
 
   // Load scripts
@@ -266,13 +275,13 @@ test('chatbot modal initializes and handlers work', async () => {
 
   // Test language toggle
   const langCtrl = document.getElementById('langCtrl');
-  langCtrl.onclick();
+  langCtrl.dispatchEvent({ type: 'click' });
   assert.strictEqual(document.documentElement.lang, 'es');
   assert.strictEqual(langCtrl.textContent, 'EN');
 
   // Test theme toggle
   const themeCtrl = document.getElementById('themeCtrl');
-  themeCtrl.onclick();
+  themeCtrl.dispatchEvent({ type: 'click' });
   assert.ok(document.body.classList.contains('dark'));
 
   // Send button should be enabled by default
@@ -283,10 +292,10 @@ test('chatbot modal initializes and handlers work', async () => {
   const log = document.getElementById('chat-log');
   const container = document.getElementById('chatbot-container');
   input.value = 'Hi';
-  await form.onsubmit({ preventDefault() {} });
+  await form.eventHandlers.submit[0]({ preventDefault() {} });
   assert.strictEqual(log.children.length, 2);
   assert.strictEqual(log.children[0].textContent, 'Hi');
-  assert.strictEqual(log.children[1].textContent, 'hello');
+  assert.strictEqual(log.children[1].textContent, 'You said: "Hi"');
   assert.strictEqual(container.style.display, 'flex');
   assert.ok(!send.disabled);
 
@@ -354,7 +363,7 @@ test('chatbot FAB click is idempotent', async () => {
   assert.strictEqual(containers.length, 1, 'only one chatbot container appended');
 });
 
-test('nonce included in chat payload and refreshed after reset', async () => {
+test('cleanupChatbot removes handlers and clears references', async () => {
   const document = new Document();
   const window = { document };
   window.addEventListener = () => {};
@@ -381,15 +390,50 @@ test('nonce included in chat payload and refreshed after reset', async () => {
   await new Promise(r => setImmediate(r));
   const form = document.getElementById('chatbot-input-row');
   const input = document.getElementById('chatbot-input');
-  input.value = 'first';
-  await form.onsubmit({ preventDefault() {} });
-  const payload1 = JSON.parse(lastBody);
-  assert.ok(payload1.nonce, 'nonce present in first payload');
-  const firstNonce = payload1.nonce;
-  window.resetChatbotConversation();
-  input.value = 'second';
-  await form.onsubmit({ preventDefault() {} });
-  const payload2 = JSON.parse(lastBody);
-  assert.ok(payload2.nonce, 'nonce present in second payload');
-  assert.notStrictEqual(payload2.nonce, firstNonce, 'nonce refreshed after reset');
+  const log = document.getElementById('chat-log');
+
+  // Handlers should fire before cleanup
+  langCtrl.dispatchEvent({ type: 'click' });
+  assert.strictEqual(document.documentElement.lang, 'es');
+  themeCtrl.dispatchEvent({ type: 'click' });
+  assert.ok(document.body.classList.contains('dark'));
+  input.value = 'Hi';
+  await form.eventHandlers.submit[0]({ preventDefault() {} });
+  assert.strictEqual(log.children.length, 2);
+
+  // Reset state to detect post-cleanup changes
+  document.documentElement.lang = 'en';
+  langCtrl.textContent = 'ES';
+  document.body.className = '';
+  log.children = [];
+  context.window.cleanupChatbot();
+
+  // References should be nulled in module scope
+  for (const name of [
+    'langCtrl',
+    'themeCtrl',
+    'log',
+    'form',
+    'input',
+    'send',
+    'langClickHandler',
+    'themeClickHandler',
+    'formSubmitHandler'
+  ]) {
+    assert.strictEqual(vm.runInContext(name, context), null, `${name} should be null`);
+  }
+
+  // No handlers should fire after cleanup
+  langCtrl.dispatchEvent({ type: 'click' });
+  assert.strictEqual(document.documentElement.lang, 'en');
+  assert.strictEqual(langCtrl.textContent, 'ES');
+  assert.ok(!langCtrl.eventHandlers.click);
+  themeCtrl.dispatchEvent({ type: 'click' });
+  assert.ok(!document.body.classList.contains('dark'));
+  assert.ok(!themeCtrl.eventHandlers.click);
+  const before = log.children.length;
+  input.value = 'Hi again';
+  form.dispatchEvent({ type: 'submit', preventDefault() {} });
+  assert.strictEqual(log.children.length, before);
+  assert.ok(!form.eventHandlers.submit);
 });

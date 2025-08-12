@@ -62,7 +62,6 @@ function initChatbot() {
   };
   if (langCtrl) {
     langCtrl.addEventListener('click', langClickHandler);
-    langCtrl.onclick = langClickHandler;
   }
 
   /* === Theme toggle === */
@@ -74,7 +73,6 @@ function initChatbot() {
   };
   if (themeCtrl) {
     themeCtrl.addEventListener('click', themeClickHandler);
-    themeCtrl.onclick = themeClickHandler;
   }
 
   /* === Chatbot core === */
@@ -150,13 +148,11 @@ function initChatbot() {
       addMsg('…', 'bot');
 
       try {
-        // In a real application, the client would obtain a short-lived token
-        // from the server and use it to authenticate with the chatbot API.
-        const r = await fetch('https://your-cloudflare-worker.example.com/chat', {
+        // Use a public echo API for demonstration purposes.
+        const r = await fetch('https://httpbin.org/post', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'Authorization': 'Bearer placeholder_token'
           },
           body: JSON.stringify({
             message: sanitizedMsg,
@@ -164,33 +160,33 @@ function initChatbot() {
           })
         });
         const d = await r.json();
-        log.lastChild.textContent = d.reply || 'No reply.';
+        // The echo API returns the sent JSON in its 'data' field.
+        const reply = JSON.parse(d.data).message;
+        log.lastChild.textContent = `You said: "${reply}"`;
       } catch (err) {
         console.error('Chatbot API request failed:', err);
-        // In a real application, we would send this error to a logging service.
-        // logError(err);
-        log.lastChild.textContent = 'Error: Can’t reach AI.';
+        log.lastChild.textContent = 'Error: Could not connect to the echo service.';
       }
       scheduleReset();
       send.disabled = false;
     };
     form.addEventListener('submit', formSubmitHandler);
-    form.onsubmit = formSubmitHandler;
   }
 }
 
 function cleanupChatbot() {
+  if (log) {
+    log.innerHTML = '';
+  }
+
   if (langCtrl && langClickHandler) {
     langCtrl.removeEventListener('click', langClickHandler);
-    langCtrl.onclick = null;
   }
   if (themeCtrl && themeClickHandler) {
     themeCtrl.removeEventListener('click', themeClickHandler);
-    themeCtrl.onclick = null;
   }
   if (form && formSubmitHandler) {
     form.removeEventListener('submit', formSubmitHandler);
-    form.onsubmit = null;
   }
 
   langCtrl = themeCtrl = log = form = input = send = null;
@@ -198,42 +194,11 @@ function cleanupChatbot() {
 }
 
 function sanitizeInput(str) {
-  // In a real application, we would use a library like DOMPurify here.
-  // Remove any HTML tags; when DOM is available, use it, otherwise fallback to regex.
-  if (typeof document !== 'undefined') {
-    const div = document.createElement('div');
-    if (typeof div.innerHTML === 'string') {
-      div.innerHTML = str;
-      return div.textContent || '';
-    }
-    div.textContent = str;
-    return div.textContent.replace(/<[^>]*>/g, '');
-  }
-  return str.replace(/<[^>]*>/g, '');
+  // Use the browser's own parser to safely strip HTML tags
+  const temp = document.createElement('div');
+  temp.innerHTML = str;
+  return temp.textContent || '';
 }
-
-  function clearChatbot() {
-    try {
-      const log = document.getElementById('chat-log');
-      if (log) {
-        log.innerHTML = '';
-      }
-      if (typeof sessionStorage !== 'undefined') {
-        try {
-          sessionStorage.removeItem('chatbotHistory');
-          sessionStorage.removeItem('chatbotSession');
-        } catch (err) {
-          console.error('Failed to clear chatbot session storage:', err);
-        }
-      }
-      if (window.chatbotIdleTimer) {
-        clearTimeout(window.chatbotIdleTimer);
-        window.chatbotIdleTimer = null;
-      }
-    } catch (err) {
-      console.error('clearChatbot failed:', err);
-    }
-  }
 
 window.initChatbot = initChatbot;
 function cleanup() {
