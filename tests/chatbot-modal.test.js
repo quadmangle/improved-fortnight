@@ -205,7 +205,6 @@ function createChatbotModal() {
   closeBtn.setAttribute('aria-label', 'Close');
   closeBtn.textContent = 'Close';
   inputControls.appendChild(closeBtn);
-
   form.appendChild(inputControls);
   formContainer.appendChild(form);
   container.appendChild(formContainer);
@@ -224,7 +223,7 @@ test('chatbot modal initializes and handlers work', async () => {
   const window = { document };
   window.addEventListener = () => {};
   window.dispatchEvent = () => {};
-  const context = vm.createContext({ window, document, console, setTimeout, fetch: null });
+  const context = vm.createContext({ window, document, console, setTimeout, clearTimeout, fetch: null, crypto: require('crypto').webcrypto });
   context.window.initDraggableModal = () => {};
 
   // fetch stub for modal and chat responses
@@ -310,7 +309,7 @@ test('chatbot not initialized when HTML missing', async () => {
   const window = { document };
   window.addEventListener = () => {};
   window.dispatchEvent = () => {};
-  const context = vm.createContext({ window, document, console, fetch: null, setTimeout });
+  const context = vm.createContext({ window, document, console, fetch: null, setTimeout, clearTimeout, crypto: require('crypto').webcrypto });
   context.window.initDraggableModal = () => {};
 
   // fetch stub returning no chatbot container
@@ -331,7 +330,7 @@ test('chatbot FAB click is idempotent', async () => {
   const window = { document };
   window.addEventListener = () => {};
   window.dispatchEvent = () => {};
-  const context = vm.createContext({ window, document, console, fetch: null, setTimeout });
+  const context = vm.createContext({ window, document, console, fetch: null, setTimeout, clearTimeout, crypto: require('crypto').webcrypto });
   context.window.initDraggableModal = () => {};
 
   // fetch stub for modal and chat responses
@@ -369,21 +368,26 @@ test('cleanupChatbot removes handlers and clears references', async () => {
   const window = { document };
   window.addEventListener = () => {};
   window.dispatchEvent = () => {};
-  const context = vm.createContext({ window, document, console, fetch: null, setTimeout });
+  let lastBody;
+  const context = vm.createContext({ window, document, console, fetch: null, setTimeout, clearTimeout, crypto: require('crypto').webcrypto });
   context.window.initDraggableModal = () => {};
   const chatbotHtml = '<div id="chatbot-container"></div>';
-  context.fetch = async (url) => {
+  context.fetch = async (url, opts = {}) => {
     if (url.endsWith('chatbot.html')) {
       return { text: async () => chatbotHtml };
     }
+    if (url === '/api/chat/reset') {
+      return { json: async () => ({ ok: true }) };
+    }
+    lastBody = opts.body;
     return { json: async () => ({ reply: 'ok' }) };
   };
 
-  runScripts(context, ['fabs/js/chattia.js']);
-  document.body.innerHTML = '<div id="chatbot-container"></div>';
-  context.window.initChatbot();
-  const langCtrl = document.getElementById('langCtrl');
-  const themeCtrl = document.getElementById('themeCtrl');
+  runScripts(context, ['fabs/js/chattia.js', 'cojoinlistener.js']);
+  document.dispatchEvent({ type: 'DOMContentLoaded' });
+  const chatbotFab = document.getElementById('fab-chatbot');
+  chatbotFab.eventHandlers.click[0]();
+  await new Promise(r => setImmediate(r));
   const form = document.getElementById('chatbot-input-row');
   const input = document.getElementById('chatbot-input');
   const log = document.getElementById('chat-log');

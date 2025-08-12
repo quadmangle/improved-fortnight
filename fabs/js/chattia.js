@@ -14,6 +14,35 @@ function initChatbot() {
 
   const chatbotContainer = qs('#chatbot-container');
   if (!chatbotContainer) return;
+  function generateNonce() {
+    return (window.crypto && typeof window.crypto.randomUUID === 'function')
+      ? window.crypto.randomUUID()
+      : Math.random().toString(36).slice(2);
+  }
+
+  async function registerNonce(n) {
+    try {
+      const res = await fetch('https://your-cloudflare-worker.example.com/nonce', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nonce: n })
+      });
+      return res.ok;
+    } catch (err) {
+      console.error('Nonce registration failed:', err);
+      return false;
+    }
+  }
+
+  let nonce = generateNonce();
+  (async () => {
+    while (!(await registerNonce(nonce))) {
+      nonce = generateNonce();
+    }
+    if (typeof sessionStorage !== 'undefined' && sessionStorage.setItem) {
+      sessionStorage.setItem('chatNonce', nonce);
+    }
+  })();
 
   /* === Language toggle === */
   langCtrl = qs('#langCtrl');
@@ -47,10 +76,45 @@ function initChatbot() {
   }
 
   /* === Chatbot core === */
-  log = qs('#chat-log');
-  form = qs('#chatbot-input-row');
-  input = qs('#chatbot-input');
-  send = qs('#chatbot-send');
+  const log = qs('#chat-log'),
+        form = qs('#chatbot-input-row'),
+        input = qs('#chatbot-input'),
+        send = qs('#chatbot-send'),
+        closeBtn = qs('#chatbot-close');
+
+  // Nonce used to tie messages to a single conversation
+  const RESET_MS = 10 * 60 * 1000; // auto-reset after 10 minutes
+  let nonce = generateNonce();
+  let resetTimer;
+  function generateNonce() {
+    const arr = new Uint8Array(16);
+    crypto.getRandomValues(arr);
+    return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
+  }
+
+  function scheduleReset() {
+    clearTimeout(resetTimer);
+    resetTimer = setTimeout(resetConversation, RESET_MS);
+  }
+
+  async function resetConversation() {
+    if (log) {
+      log.innerHTML = '';
+    }
+    nonce = generateNonce();
+    scheduleReset();
+    try {
+      await fetch('/api/chat/reset', { method: 'POST' });
+    } catch (err) {
+      console.error('Chat reset failed:', err);
+    }
+  }
+
+  scheduleReset();
+  if (closeBtn) {
+    closeBtn.addEventListener('click', resetConversation);
+  }
+  window.resetChatbotConversation = resetConversation;
 
   // Enable sending by default
   if (send) {
@@ -75,10 +139,8 @@ function initChatbot() {
   if (form) {
     formSubmitHandler = async e => {
       e.preventDefault();
-
       const msg = input.value.trim();
       if (!msg) return;
-
       const sanitizedMsg = sanitizeInput(msg);
       addMsg(sanitizedMsg, 'user');
       input.value = '';
@@ -93,7 +155,8 @@ function initChatbot() {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            message: sanitizedMsg
+            message: sanitizedMsg,
+            nonce
           })
         });
         const d = await r.json();
@@ -104,6 +167,7 @@ function initChatbot() {
         console.error('Chatbot API request failed:', err);
         log.lastChild.textContent = 'Error: Could not connect to the echo service.';
       }
+      scheduleReset();
       send.disabled = false;
     };
     form.addEventListener('submit', formSubmitHandler);
@@ -137,4 +201,9 @@ function sanitizeInput(str) {
 }
 
 window.initChatbot = initChatbot;
-window.cleanupChatbot = cleanupChatbot;
+function cleanup() {
+  if (typeof sessionStorage !== 'undefined' && sessionStorage.removeItem) {
+    sessionStorage.removeItem('chatNonce');
+  }
+}
+window.cleanup = cleanup;
