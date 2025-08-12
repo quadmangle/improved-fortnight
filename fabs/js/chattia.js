@@ -6,7 +6,7 @@
  */
 
 let langCtrl, themeCtrl, log, form, input, send;
-let langClickHandler, themeClickHandler, formSubmitHandler;
+let langClickHandler, themeClickHandler, formSubmitHandler, resetTimer;
 
 function initChatbot() {
   const qs = s => document.querySelector(s),
@@ -14,7 +14,7 @@ function initChatbot() {
 
   const chatbotContainer = qs('#chatbot-container');
   if (!chatbotContainer) return;
-  function generateNonce() {
+  function generateSessionNonce() {
     return (window.crypto && typeof window.crypto.randomUUID === 'function')
       ? window.crypto.randomUUID()
       : Math.random().toString(36).slice(2);
@@ -34,18 +34,24 @@ function initChatbot() {
     }
   }
 
-  let nonce = generateNonce();
+  let sessionNonce = generateSessionNonce();
   (async () => {
-    while (!(await registerNonce(nonce))) {
-      nonce = generateNonce();
+    let attempts = 0;
+    while (attempts < 3 && !(await registerNonce(sessionNonce))) {
+      sessionNonce = generateSessionNonce();
+      attempts++;
     }
     if (typeof sessionStorage !== 'undefined' && sessionStorage.setItem) {
-      sessionStorage.setItem('chatNonce', nonce);
+      sessionStorage.setItem('chatNonce', sessionNonce);
     }
   })();
 
   /* === Language toggle === */
   langCtrl = qs('#langCtrl');
+  globalThis.langCtrl = langCtrl;
+  if (typeof window !== 'undefined') {
+    window.langCtrl = langCtrl;
+  }
   const transNodes = qsa('[data-en]'),
         phNodes = qsa('[data-en-ph]');
 
@@ -66,6 +72,10 @@ function initChatbot() {
 
   /* === Theme toggle === */
   themeCtrl = qs('#themeCtrl');
+  globalThis.themeCtrl = themeCtrl;
+  if (typeof window !== 'undefined') {
+    window.themeCtrl = themeCtrl;
+  }
   themeClickHandler = () => {
     const dark = themeCtrl.textContent === 'Dark';
     document.body.classList.toggle('dark', dark);
@@ -76,17 +86,16 @@ function initChatbot() {
   }
 
   /* === Chatbot core === */
-  const log = qs('#chat-log'),
-        form = qs('#chatbot-input-row'),
-        input = qs('#chatbot-input'),
-        send = qs('#chatbot-send'),
-        closeBtn = qs('#chatbot-close');
+  log = qs('#chat-log');
+  form = qs('#chatbot-input-row');
+  input = qs('#chatbot-input');
+  send = qs('#chatbot-send');
+  const closeBtn = qs('#chatbot-close');
 
   // Nonce used to tie messages to a single conversation
   const RESET_MS = 10 * 60 * 1000; // auto-reset after 10 minutes
-  let nonce = generateNonce();
-  let resetTimer;
-  function generateNonce() {
+  let conversationNonce = generateConversationNonce();
+  function generateConversationNonce() {
     const arr = new Uint8Array(16);
     crypto.getRandomValues(arr);
     return Array.from(arr, b => b.toString(16).padStart(2, '0')).join('');
@@ -95,13 +104,16 @@ function initChatbot() {
   function scheduleReset() {
     clearTimeout(resetTimer);
     resetTimer = setTimeout(resetConversation, RESET_MS);
+    if (typeof resetTimer.unref === 'function') {
+      resetTimer.unref();
+    }
   }
 
   async function resetConversation() {
     if (log) {
       log.innerHTML = '';
     }
-    nonce = generateNonce();
+    conversationNonce = generateConversationNonce();
     scheduleReset();
     try {
       await fetch('/api/chat/reset', { method: 'POST' });
@@ -156,7 +168,7 @@ function initChatbot() {
           },
           body: JSON.stringify({
             message: sanitizedMsg,
-            nonce
+            nonce: conversationNonce
           })
         });
         const d = await r.json();
@@ -177,6 +189,10 @@ function initChatbot() {
 function cleanupChatbot() {
   if (log) {
     log.innerHTML = '';
+  }
+  if (resetTimer) {
+    clearTimeout(resetTimer);
+    resetTimer = null;
   }
 
   if (langCtrl && langClickHandler) {
@@ -201,6 +217,7 @@ function sanitizeInput(str) {
 }
 
 window.initChatbot = initChatbot;
+window.cleanupChatbot = cleanupChatbot;
 function cleanup() {
   if (typeof sessionStorage !== 'undefined' && sessionStorage.removeItem) {
     sessionStorage.removeItem('chatNonce');

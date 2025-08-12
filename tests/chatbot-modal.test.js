@@ -391,6 +391,7 @@ test('cleanupChatbot removes handlers and clears references', async () => {
   const form = document.getElementById('chatbot-input-row');
   const input = document.getElementById('chatbot-input');
   const log = document.getElementById('chat-log');
+  const { langCtrl, themeCtrl } = context.window;
 
   // Handlers should fire before cleanup
   langCtrl.dispatchEvent({ type: 'click' });
