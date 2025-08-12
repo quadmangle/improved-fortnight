@@ -117,4 +117,28 @@ function initChatbot() {
     return str.replace(/<[^>]*>/g, '');
   }
 
+  function clearChatbot() {
+    try {
+      const log = document.getElementById('chat-log');
+      if (log) {
+        log.innerHTML = '';
+      }
+      if (typeof sessionStorage !== 'undefined') {
+        try {
+          sessionStorage.removeItem('chatbotHistory');
+          sessionStorage.removeItem('chatbotSession');
+        } catch (err) {
+          console.error('Failed to clear chatbot session storage:', err);
+        }
+      }
+      if (window.chatbotIdleTimer) {
+        clearTimeout(window.chatbotIdleTimer);
+        window.chatbotIdleTimer = null;
+      }
+    } catch (err) {
+      console.error('clearChatbot failed:', err);
+    }
+  }
+
 window.initChatbot = initChatbot;
+window.clearChatbot = clearChatbot;
