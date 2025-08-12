@@ -79,6 +79,15 @@ class Element {
   addEventListener(event, handler) {
     (this.eventHandlers[event] ||= []).push(handler);
   }
+  removeEventListener(event, handler) {
+    const list = this.eventHandlers[event];
+    if (!list) return;
+    this.eventHandlers[event] = list.filter(h => h !== handler);
+    if (!this.eventHandlers[event].length) delete this.eventHandlers[event];
+  }
+  dispatchEvent(evt) {
+    (this.eventHandlers[evt.type] || []).forEach(h => h.call(this, evt));
+  }
   querySelector(selector) {
     return querySelectorFrom(this, selector, false);
   }
@@ -361,5 +370,84 @@ test('chatbot FAB click is idempotent', async () => {
   // Ensure only one chatbot container exists
   const containers = document.querySelectorAll('#chatbot-container');
   assert.strictEqual(containers.length, 1, 'only one chatbot container appended');
+});
+
+test('cleanupChatbot removes handlers and clears references', async () => {
+  const document = new Document();
+  const window = { document };
+  window.addEventListener = () => {};
+  window.dispatchEvent = () => {};
+  const context = vm.createContext({ window, document, console, fetch: null, setTimeout });
+  context.window.initDraggableModal = () => {};
+
+  const chatbotHtml = '<div id="chatbot-container"></div>';
+  context.fetch = async (url) => {
+    if (url.endsWith('chatbot.html')) {
+      return { text: async () => chatbotHtml };
+    }
+    return { json: async () => ({ reply: 'ok' }) };
+  };
+
+  runScripts(context, ['fabs/js/chattia.js']);
+
+  document.body.innerHTML = '<div id="chatbot-container"></div>';
+  context.window.initChatbot();
+
+  const langCtrl = document.getElementById('langCtrl');
+  const themeCtrl = document.getElementById('themeCtrl');
+  const form = document.getElementById('chatbot-input-row');
+  const input = document.getElementById('chatbot-input');
+  const log = document.getElementById('chat-log');
+
+  // Handlers should fire before cleanup
+  langCtrl.dispatchEvent({ type: 'click' });
+  assert.strictEqual(document.documentElement.lang, 'es');
+  themeCtrl.dispatchEvent({ type: 'click' });
+  assert.ok(document.body.classList.contains('dark'));
+  input.value = 'Hi';
+  await form.eventHandlers.submit[0]({ preventDefault() {} });
+  assert.strictEqual(log.children.length, 2);
+
+  // Reset state to detect post-cleanup changes
+  document.documentElement.lang = 'en';
+  langCtrl.textContent = 'ES';
+  document.body.className = '';
+  log.children = [];
+
+  context.window.cleanupChatbot();
+
+  // References should be nulled in module scope
+  for (const name of [
+    'langCtrl',
+    'themeCtrl',
+    'log',
+    'form',
+    'input',
+    'send',
+    'langClickHandler',
+    'themeClickHandler',
+    'formSubmitHandler'
+  ]) {
+    assert.strictEqual(vm.runInContext(name, context), null, `${name} should be null`);
+  }
+
+  // No handlers should fire after cleanup
+  langCtrl.dispatchEvent({ type: 'click' });
+  assert.strictEqual(document.documentElement.lang, 'en');
+  assert.strictEqual(langCtrl.textContent, 'ES');
+  assert.strictEqual(langCtrl.onclick, null);
+  assert.ok(!langCtrl.eventHandlers.click);
+
+  themeCtrl.dispatchEvent({ type: 'click' });
+  assert.ok(!document.body.classList.contains('dark'));
+  assert.strictEqual(themeCtrl.onclick, null);
+  assert.ok(!themeCtrl.eventHandlers.click);
+
+  const before = log.children.length;
+  input.value = 'Hi again';
+  form.dispatchEvent({ type: 'submit', preventDefault() {} });
+  assert.strictEqual(log.children.length, before);
+  assert.strictEqual(form.onsubmit, null);
+  assert.ok(!form.eventHandlers.submit);
 });
 

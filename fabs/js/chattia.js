@@ -5,6 +5,9 @@
  * It handles language toggles, theme changes, and chat interactions.
  */
 
+let langCtrl, themeCtrl, log, form, input, send;
+let langClickHandler, themeClickHandler, formSubmitHandler;
+
 function initChatbot() {
   const qs = s => document.querySelector(s),
         qsa = s => [...document.querySelectorAll(s)];
@@ -13,11 +16,11 @@ function initChatbot() {
   if (!chatbotContainer) return;
 
   /* === Language toggle === */
-  const langCtrl = qs('#langCtrl'),
-        transNodes = qsa('[data-en]'),
+  langCtrl = qs('#langCtrl');
+  const transNodes = qsa('[data-en]'),
         phNodes = qsa('[data-en-ph]');
 
-  langCtrl.onclick = () => {
+  langClickHandler = () => {
     const toES = langCtrl.textContent === 'ES';
     document.documentElement.lang = toES ? 'es' : 'en';
     langCtrl.textContent = toES ? 'EN' : 'ES';
@@ -28,20 +31,28 @@ function initChatbot() {
     // Update placeholders
     phNodes.forEach(node => node.placeholder = toES ? node.dataset.esPh : node.dataset.enPh);
   };
+  if (langCtrl) {
+    langCtrl.addEventListener('click', langClickHandler);
+    langCtrl.onclick = langClickHandler;
+  }
 
   /* === Theme toggle === */
-  const themeCtrl = qs('#themeCtrl');
-  themeCtrl.onclick = () => {
+  themeCtrl = qs('#themeCtrl');
+  themeClickHandler = () => {
     const dark = themeCtrl.textContent === 'Dark';
     document.body.classList.toggle('dark', dark);
     themeCtrl.textContent = dark ? 'Light' : 'Dark';
   };
+  if (themeCtrl) {
+    themeCtrl.addEventListener('click', themeClickHandler);
+    themeCtrl.onclick = themeClickHandler;
+  }
 
   /* === Chatbot core === */
-  const log = qs('#chat-log'),
-        form = qs('#chatbot-input-row'),
-        input = qs('#chatbot-input'),
-        send = qs('#chatbot-send');
+  log = qs('#chat-log');
+  form = qs('#chatbot-input-row');
+  input = qs('#chatbot-input');
+  send = qs('#chatbot-send');
 
   // Enable sending by default
   if (send) {
@@ -64,7 +75,7 @@ function initChatbot() {
   }
 
   if (form) {
-    form.onsubmit = async e => {
+    formSubmitHandler = async e => {
       e.preventDefault();
 
       const msg = input.value.trim();
@@ -99,22 +110,43 @@ function initChatbot() {
       }
       send.disabled = false;
     };
+    form.addEventListener('submit', formSubmitHandler);
+    form.onsubmit = formSubmitHandler;
   }
 }
 
-  function sanitizeInput(str) {
-    // In a real application, we would use a library like DOMPurify here.
-    // Remove any HTML tags; when DOM is available, use it, otherwise fallback to regex.
-    if (typeof document !== 'undefined') {
-      const div = document.createElement('div');
-      if (typeof div.innerHTML === 'string') {
-        div.innerHTML = str;
-        return div.textContent || '';
-      }
-      div.textContent = str;
-      return div.textContent.replace(/<[^>]*>/g, '');
-    }
-    return str.replace(/<[^>]*>/g, '');
+function cleanupChatbot() {
+  if (langCtrl && langClickHandler) {
+    langCtrl.removeEventListener('click', langClickHandler);
+    langCtrl.onclick = null;
+  }
+  if (themeCtrl && themeClickHandler) {
+    themeCtrl.removeEventListener('click', themeClickHandler);
+    themeCtrl.onclick = null;
+  }
+  if (form && formSubmitHandler) {
+    form.removeEventListener('submit', formSubmitHandler);
+    form.onsubmit = null;
   }
 
+  langCtrl = themeCtrl = log = form = input = send = null;
+  langClickHandler = themeClickHandler = formSubmitHandler = null;
+}
+
+function sanitizeInput(str) {
+  // In a real application, we would use a library like DOMPurify here.
+  // Remove any HTML tags; when DOM is available, use it, otherwise fallback to regex.
+  if (typeof document !== 'undefined') {
+    const div = document.createElement('div');
+    if (typeof div.innerHTML === 'string') {
+      div.innerHTML = str;
+      return div.textContent || '';
+    }
+    div.textContent = str;
+    return div.textContent.replace(/<[^>]*>/g, '');
+  }
+  return str.replace(/<[^>]*>/g, '');
+}
+
 window.initChatbot = initChatbot;
+window.cleanupChatbot = cleanupChatbot;
