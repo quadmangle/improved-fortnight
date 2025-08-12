@@ -8,11 +8,12 @@ process.env.NODE_ENV = 'test';
 const app = require('../server.js');
 
 test.describe('API Tests', () => {
-  test.describe('CSRF Protection', () => {
-    let agent;
+    test.describe('CSRF Protection', () => {
+      let agent;
 
-    test.beforeEach(() => {
+    test.beforeEach(async () => {
       agent = request.agent(app);
+      await agent.post('/api/session').expect(204);
     });
 
     test('should get a CSRF token', async () => {
@@ -72,9 +73,10 @@ test.describe('API Tests', () => {
       const appProd = require('../server.js');
 
       const agent = request.agent(appProd);
-      const response = await agent.get('/api/csrf-token')
+      const response = await agent
+        .post('/api/session')
         .set('X-Forwarded-Proto', 'https')
-        .expect(200);
+        .expect(204);
       const cookieHeader = response.headers['set-cookie'];
 
       assert(cookieHeader, 'Set-Cookie header should be present');
@@ -87,7 +89,7 @@ test.describe('API Tests', () => {
       const appDev = require('../server.js');
 
       const agent = request.agent(appDev);
-      const response = await agent.get('/api/csrf-token').expect(200);
+      const response = await agent.post('/api/session').expect(204);
       const cookieHeader = response.headers['set-cookie'];
 
       assert(cookieHeader, 'Set-Cookie header should be present');

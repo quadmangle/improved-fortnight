@@ -5,19 +5,51 @@
  * It handles language toggles, theme changes, and chat interactions.
  */
 
+let langCtrl, themeCtrl, log, form, input, send;
+let langClickHandler, themeClickHandler, formSubmitHandler;
+
 function initChatbot() {
   const qs = s => document.querySelector(s),
         qsa = s => [...document.querySelectorAll(s)];
 
   const chatbotContainer = qs('#chatbot-container');
   if (!chatbotContainer) return;
+  function generateNonce() {
+    return (window.crypto && typeof window.crypto.randomUUID === 'function')
+      ? window.crypto.randomUUID()
+      : Math.random().toString(36).slice(2);
+  }
+
+  async function registerNonce(n) {
+    try {
+      const res = await fetch('https://your-cloudflare-worker.example.com/nonce', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nonce: n })
+      });
+      return res.ok;
+    } catch (err) {
+      console.error('Nonce registration failed:', err);
+      return false;
+    }
+  }
+
+  let nonce = generateNonce();
+  (async () => {
+    while (!(await registerNonce(nonce))) {
+      nonce = generateNonce();
+    }
+    if (typeof sessionStorage !== 'undefined' && sessionStorage.setItem) {
+      sessionStorage.setItem('chatNonce', nonce);
+    }
+  })();
 
   /* === Language toggle === */
-  const langCtrl = qs('#langCtrl'),
-        transNodes = qsa('[data-en]'),
+  langCtrl = qs('#langCtrl');
+  const transNodes = qsa('[data-en]'),
         phNodes = qsa('[data-en-ph]');
 
-  langCtrl.onclick = () => {
+  langClickHandler = () => {
     const toES = langCtrl.textContent === 'ES';
     document.documentElement.lang = toES ? 'es' : 'en';
     langCtrl.textContent = toES ? 'EN' : 'ES';
@@ -28,14 +60,22 @@ function initChatbot() {
     // Update placeholders
     phNodes.forEach(node => node.placeholder = toES ? node.dataset.esPh : node.dataset.enPh);
   };
+  if (langCtrl) {
+    langCtrl.addEventListener('click', langClickHandler);
+    langCtrl.onclick = langClickHandler;
+  }
 
   /* === Theme toggle === */
-  const themeCtrl = qs('#themeCtrl');
-  themeCtrl.onclick = () => {
+  themeCtrl = qs('#themeCtrl');
+  themeClickHandler = () => {
     const dark = themeCtrl.textContent === 'Dark';
     document.body.classList.toggle('dark', dark);
     themeCtrl.textContent = dark ? 'Light' : 'Dark';
   };
+  if (themeCtrl) {
+    themeCtrl.addEventListener('click', themeClickHandler);
+    themeCtrl.onclick = themeClickHandler;
+  }
 
   /* === Chatbot core === */
   const log = qs('#chat-log'),
@@ -48,7 +88,6 @@ function initChatbot() {
   const RESET_MS = 10 * 60 * 1000; // auto-reset after 10 minutes
   let nonce = generateNonce();
   let resetTimer;
-
   function generateNonce() {
     const arr = new Uint8Array(16);
     crypto.getRandomValues(arr);
@@ -100,12 +139,10 @@ function initChatbot() {
   }
 
   if (form) {
-    form.onsubmit = async e => {
+    formSubmitHandler = async e => {
       e.preventDefault();
-
       const msg = input.value.trim();
       if (!msg) return;
-
       const sanitizedMsg = sanitizeInput(msg);
       addMsg(sanitizedMsg, 'user');
       input.value = '';
@@ -137,22 +174,71 @@ function initChatbot() {
       scheduleReset();
       send.disabled = false;
     };
+    form.addEventListener('submit', formSubmitHandler);
+    form.onsubmit = formSubmitHandler;
   }
 }
 
-  function sanitizeInput(str) {
-    // In a real application, we would use a library like DOMPurify here.
-    // Remove any HTML tags; when DOM is available, use it, otherwise fallback to regex.
-    if (typeof document !== 'undefined') {
-      const div = document.createElement('div');
-      if (typeof div.innerHTML === 'string') {
-        div.innerHTML = str;
-        return div.textContent || '';
-      }
-      div.textContent = str;
-      return div.textContent.replace(/<[^>]*>/g, '');
+function cleanupChatbot() {
+  if (langCtrl && langClickHandler) {
+    langCtrl.removeEventListener('click', langClickHandler);
+    langCtrl.onclick = null;
+  }
+  if (themeCtrl && themeClickHandler) {
+    themeCtrl.removeEventListener('click', themeClickHandler);
+    themeCtrl.onclick = null;
+  }
+  if (form && formSubmitHandler) {
+    form.removeEventListener('submit', formSubmitHandler);
+    form.onsubmit = null;
+  }
+
+  langCtrl = themeCtrl = log = form = input = send = null;
+  langClickHandler = themeClickHandler = formSubmitHandler = null;
+}
+
+function sanitizeInput(str) {
+  // In a real application, we would use a library like DOMPurify here.
+  // Remove any HTML tags; when DOM is available, use it, otherwise fallback to regex.
+  if (typeof document !== 'undefined') {
+    const div = document.createElement('div');
+    if (typeof div.innerHTML === 'string') {
+      div.innerHTML = str;
+      return div.textContent || '';
     }
-    return str.replace(/<[^>]*>/g, '');
+    div.textContent = str;
+    return div.textContent.replace(/<[^>]*>/g, '');
+  }
+  return str.replace(/<[^>]*>/g, '');
+}
+
+  function clearChatbot() {
+    try {
+      const log = document.getElementById('chat-log');
+      if (log) {
+        log.innerHTML = '';
+      }
+      if (typeof sessionStorage !== 'undefined') {
+        try {
+          sessionStorage.removeItem('chatbotHistory');
+          sessionStorage.removeItem('chatbotSession');
+        } catch (err) {
+          console.error('Failed to clear chatbot session storage:', err);
+        }
+      }
+      if (window.chatbotIdleTimer) {
+        clearTimeout(window.chatbotIdleTimer);
+        window.chatbotIdleTimer = null;
+      }
+    } catch (err) {
+      console.error('clearChatbot failed:', err);
+    }
   }
 
 window.initChatbot = initChatbot;
+function cleanup() {
+  if (typeof sessionStorage !== 'undefined' && sessionStorage.removeItem) {
+    sessionStorage.removeItem('chatNonce');
+  }
+}
+window.cleanup = cleanup;

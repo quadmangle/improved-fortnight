@@ -38,6 +38,49 @@ function generateToken() {
   return crypto.randomBytes(32).toString('hex');
 }
 
+function generateNonce() {
+  const array = new Uint8Array(16); // 128-bit nonce
+  crypto.webcrypto.getRandomValues(array);
+  return Buffer.from(array).toString('hex');
+}
+
+function parseCookies(header) {
+  const list = {};
+  if (!header) return list;
+  header.split(';').forEach((cookie) => {
+    const parts = cookie.split('=');
+    const key = parts.shift().trim();
+    const value = decodeURIComponent(parts.join('='));
+    list[key] = value;
+  });
+  return list;
+}
+
+function requireNonce(req, res, next) {
+  const cookies = parseCookies(req.headers.cookie);
+  const clientNonce = cookies.nonce;
+  const sessionNonce = req.session.nonce;
+
+  if (
+    !clientNonce ||
+    !sessionNonce ||
+    clientNonce !== sessionNonce.value ||
+    Date.now() > sessionNonce.expires
+  ) {
+    return res.status(403).json({ error: 'Invalid nonce' });
+  }
+
+  const newNonce = generateNonce();
+  req.session.nonce = { value: newNonce, expires: Date.now() + 10 * 60 * 1000 };
+  res.cookie('nonce', newNonce, {
+    httpOnly: true,
+    sameSite: 'strict',
+    secure: isProduction,
+  });
+
+  next();
+}
+
 const apiLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100, // Limit each IP to 100 requests per windowMs
@@ -46,6 +89,19 @@ const apiLimiter = rateLimit({
 });
 
 app.use('/api/', apiLimiter);
+
+app.post('/api/session', (req, res) => {
+  const nonce = generateNonce();
+  req.session.nonce = { value: nonce, expires: Date.now() + 10 * 60 * 1000 };
+  res.cookie('nonce', nonce, {
+    httpOnly: true,
+    sameSite: 'strict',
+    secure: isProduction,
+  });
+  res.status(204).end();
+});
+
+app.use('/api/', requireNonce);
 
 app.get('/api/csrf-token', (req, res) => {
   const token = generateToken();

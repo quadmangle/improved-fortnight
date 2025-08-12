@@ -79,6 +79,15 @@ class Element {
   addEventListener(event, handler) {
     (this.eventHandlers[event] ||= []).push(handler);
   }
+  removeEventListener(event, handler) {
+    const list = this.eventHandlers[event];
+    if (!list) return;
+    this.eventHandlers[event] = list.filter(h => h !== handler);
+    if (!this.eventHandlers[event].length) delete this.eventHandlers[event];
+  }
+  dispatchEvent(evt) {
+    (this.eventHandlers[evt.type] || []).forEach(h => h.call(this, evt));
+  }
   querySelector(selector) {
     return querySelectorFrom(this, selector, false);
   }
@@ -148,7 +157,6 @@ function querySelectorFrom(root, selector, all) {
 function createChatbotModal() {
   const container = new Element('div');
   container.id = 'chatbot-container';
-
   const header = new Element('div');
   header.id = 'chatbot-header';
   const title = new Element('span');
@@ -157,32 +165,26 @@ function createChatbotModal() {
   title.dataset.es = 'Chatbot OPS AI';
   title.textContent = 'OPS AI Chatbot';
   header.appendChild(title);
-
   const headerControls = new Element('div');
   const langCtrl = new Element('span');
   langCtrl.id = 'langCtrl';
   langCtrl.className = 'ctrl';
   langCtrl.textContent = 'ES';
   headerControls.appendChild(langCtrl);
-
   const themeCtrl = new Element('span');
   themeCtrl.id = 'themeCtrl';
   themeCtrl.className = 'ctrl';
   themeCtrl.textContent = 'Dark';
   headerControls.appendChild(themeCtrl);
-
   header.appendChild(headerControls);
   container.appendChild(header);
-
   const log = new Element('div');
   log.id = 'chat-log';
   container.appendChild(log);
-
   const formContainer = new Element('div');
   formContainer.id = 'chatbot-form-container';
   const form = new Element('form');
   form.id = 'chatbot-input-row';
-
   const input = new Element('textarea');
   input.id = 'chatbot-input';
   input.setAttribute('rows', '4');
@@ -190,21 +192,17 @@ function createChatbotModal() {
   input.setAttribute('data-es-ph', 'Escriba su mensaje...');
   input.placeholder = 'Type your message...';
   form.appendChild(input);
-
   const inputControls = new Element('div');
   inputControls.id = 'chatbot-controls';
-
   const send = new Element('button');
   send.id = 'chatbot-send';
   inputControls.appendChild(send);
-
   const closeBtn = new Element('button');
   closeBtn.id = 'chatbot-close';
   closeBtn.className = 'modal-close';
   closeBtn.setAttribute('aria-label', 'Close');
   closeBtn.textContent = 'Close';
   inputControls.appendChild(closeBtn);
-
   form.appendChild(inputControls);
   formContainer.appendChild(form);
   container.appendChild(formContainer);
@@ -252,18 +250,14 @@ test('chatbot modal initializes and handlers work', async () => {
   chatbotFab.focus();
   chatbotFab.eventHandlers.click[0]();
   await new Promise(r => setImmediate(r));
-
   assert.ok(called, 'initChatbot called after loading modal');
-
   const closeBtn = document.getElementById('chatbot-close');
   assert.ok(closeBtn, 'close button present');
   assert.strictEqual(closeBtn.getAttribute('aria-label'), 'Close');
-
   const input = document.getElementById('chatbot-input');
   assert.strictEqual(document.activeElement, input, 'focus moved to input');
   assert.strictEqual(input.tagName, 'TEXTAREA', 'chatbot input is a textarea');
   assert.strictEqual(input.getAttribute('rows'), '4');
-
   const send = document.getElementById('chatbot-send');
   const controls = document.getElementById('chatbot-controls');
   assert.ok(controls, 'controls container present');
@@ -314,14 +308,11 @@ test('chatbot not initialized when HTML missing', async () => {
 
   // Load scripts
   runScripts(context, ['fabs/js/chattia.js', 'cojoinlistener.js']);
-
   let called = false;
   context.window.initChatbot = () => { called = true; };
-
   document.dispatchEvent({ type: 'DOMContentLoaded' });
   const chatbotFab = document.getElementById('fab-chatbot');
   await chatbotFab.eventHandlers.click[0]();
-
   assert.ok(!called, 'initChatbot not called when HTML missing');
 });
 
@@ -369,10 +360,8 @@ test('nonce included in chat payload and refreshed after reset', async () => {
   window.addEventListener = () => {};
   window.dispatchEvent = () => {};
   let lastBody;
-
   const context = vm.createContext({ window, document, console, fetch: null, setTimeout, clearTimeout, crypto: require('crypto').webcrypto });
   context.window.initDraggableModal = () => {};
-
   const chatbotHtml = '<div id="chatbot-container"></div>';
   context.fetch = async (url, opts = {}) => {
     if (url.endsWith('chatbot.html')) {
@@ -386,27 +375,21 @@ test('nonce included in chat payload and refreshed after reset', async () => {
   };
 
   runScripts(context, ['fabs/js/chattia.js', 'cojoinlistener.js']);
-
   document.dispatchEvent({ type: 'DOMContentLoaded' });
   const chatbotFab = document.getElementById('fab-chatbot');
   chatbotFab.eventHandlers.click[0]();
   await new Promise(r => setImmediate(r));
-
   const form = document.getElementById('chatbot-input-row');
   const input = document.getElementById('chatbot-input');
-
   input.value = 'first';
   await form.onsubmit({ preventDefault() {} });
   const payload1 = JSON.parse(lastBody);
   assert.ok(payload1.nonce, 'nonce present in first payload');
-
   const firstNonce = payload1.nonce;
   window.resetChatbotConversation();
-
   input.value = 'second';
   await form.onsubmit({ preventDefault() {} });
   const payload2 = JSON.parse(lastBody);
   assert.ok(payload2.nonce, 'nonce present in second payload');
   assert.notStrictEqual(payload2.nonce, firstNonce, 'nonce refreshed after reset');
 });
-

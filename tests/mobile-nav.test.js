@@ -31,6 +31,14 @@ test('mobile nav links use off-canvas layout', () => {
   assert.ok(navLinks.includes('transition: transform 0.3s'), 'nav links should animate when toggled');
   assert.ok(navLinks.includes('background: rgba(var(--clr-background-rgb), 0.85)'), 'nav links should have semi-transparent background');
   assert.ok(navLinks.includes('z-index: 900'), 'nav links should sit below toggles');
+  assert.ok(
+    navLinks.includes('top: var(--nav-header-height)') || navLinks.includes('top: 85px'),
+    'nav links should offset below header'
+  );
+  assert.ok(
+    navLinks.includes('height: calc(100% - var(--nav-header-height))') || navLinks.includes('height: calc(100% - 85px)'),
+    'nav links should account for header height'
+  );
 
   const openMatch = css.match(/@media \(max-width: 768px\)[\s\S]*?\.nav-links\.open\s*{[\s\S]*?transform: translateX\(0\)[^}]*}/);
   assert.ok(openMatch, 'nav links should slide in when open');
@@ -42,6 +50,20 @@ test('ops-nav enables horizontal scrolling when cramped', () => {
   assert.ok(navMatch, '.ops-nav rules for mobile not found');
   const navBlock = navMatch[0];
   assert.ok(navBlock.includes('overflow-x: auto'), '.ops-nav should allow horizontal scrolling');
+});
+
+test('nav toggle sits above floating action button', () => {
+  const styleCss = fs.readFileSync(path.join(root, 'css', 'style.css'), 'utf-8');
+  const toggleMatch = styleCss.match(/@media \(max-width: 768px\)[\s\S]*?\.nav-menu-toggle\s*{[\s\S]*?z-index:\s*(\d+)/);
+  assert.ok(toggleMatch, 'nav-menu-toggle z-index missing');
+  const navZ = parseInt(toggleMatch[1], 10);
+
+  const fabCss = fs.readFileSync(path.join(root, 'fabs', 'css', 'cojoin.css'), 'utf-8');
+  const fabMatch = fabCss.match(/\.fab-container\s*{[\s\S]*?z-index:\s*(\d+)/);
+  assert.ok(fabMatch, 'fab-container z-index missing');
+  const fabZ = parseInt(fabMatch[1], 10);
+
+  assert.ok(navZ > fabZ, 'nav toggle should have higher z-index than FAB');
 });
 
 // Verify HTML structure defaults (nav links closed)
