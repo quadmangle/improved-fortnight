@@ -363,3 +363,56 @@ test('chatbot FAB click is idempotent', async () => {
   assert.strictEqual(containers.length, 1, 'only one chatbot container appended');
 });
 
+test('hideModal clears chatbot state and clearChatbot is idempotent', async () => {
+  const document = new Document();
+  const window = { document };
+  window.addEventListener = () => {};
+  window.dispatchEvent = () => {};
+  const sessionStorage = {
+    store: {},
+    setItem(k, v) { this.store[k] = String(v); },
+    getItem(k) { return Object.prototype.hasOwnProperty.call(this.store, k) ? this.store[k] : null; },
+    removeItem(k) { delete this.store[k]; }
+  };
+  window.sessionStorage = sessionStorage;
+  const context = vm.createContext({ window, document, console, setTimeout, clearTimeout, fetch: null, sessionStorage });
+  context.window.initDraggableModal = () => {};
+
+  const chatbotHtml = '<div id="chatbot-container"></div>';
+  context.fetch = async () => ({ text: async () => chatbotHtml });
+
+  runScripts(context, ['fabs/js/chattia.js', 'cojoinlistener.js']);
+
+  document.dispatchEvent({ type: 'DOMContentLoaded' });
+
+  const chatbotFab = document.getElementById('fab-chatbot');
+  chatbotFab.eventHandlers.click[0]();
+  await new Promise(r => setImmediate(r));
+
+  const log = document.getElementById('chat-log');
+  const msg = new Element('div');
+  msg.textContent = 'hi';
+  log.appendChild(msg);
+  sessionStorage.setItem('chatbotSession', 'abc');
+  sessionStorage.setItem('chatbotHistory', '[]');
+  window.chatbotIdleTimer = setTimeout(() => {}, 1000);
+
+  let clearCount = 0;
+  const realClear = context.window.clearChatbot;
+  context.window.clearChatbot = () => { clearCount++; realClear(); };
+
+  const closeBtn = document.getElementById('chatbot-close');
+  closeBtn.eventHandlers.click[0]();
+
+  assert.strictEqual(clearCount, 1, 'clearChatbot called once on close');
+  assert.strictEqual(log.children.length, 0, 'chat log cleared');
+  assert.strictEqual(sessionStorage.getItem('chatbotSession'), null, 'session cleared');
+  assert.strictEqual(window.chatbotIdleTimer, null, 'idle timer cleared');
+
+  // Calling clearChatbot again should be safe and keep state cleared
+  context.window.clearChatbot();
+  assert.strictEqual(log.children.length, 0, 'chat log still cleared after second call');
+  assert.strictEqual(sessionStorage.getItem('chatbotHistory'), null, 'session variables remain cleared');
+  assert.strictEqual(window.chatbotIdleTimer, null, 'idle timer remains cleared');
+});
+

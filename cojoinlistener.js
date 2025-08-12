@@ -220,6 +220,13 @@ document.addEventListener('DOMContentLoaded', () => {
    */
   function hideModal(modal) {
     if (modal) {
+      if (modal.id === 'chatbot-container' && typeof window.clearChatbot === 'function') {
+        try {
+          window.clearChatbot();
+        } catch (err) {
+          console.error('clearChatbot failed:', err);
+        }
+      }
       modal.style.display = 'none';
       activeModal = null;
     }
