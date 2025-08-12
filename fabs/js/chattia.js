@@ -14,6 +14,35 @@ function initChatbot() {
 
   const chatbotContainer = qs('#chatbot-container');
   if (!chatbotContainer) return;
+  function generateNonce() {
+    return (window.crypto && typeof window.crypto.randomUUID === 'function')
+      ? window.crypto.randomUUID()
+      : Math.random().toString(36).slice(2);
+  }
+
+  async function registerNonce(n) {
+    try {
+      const res = await fetch('https://your-cloudflare-worker.example.com/nonce', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nonce: n })
+      });
+      return res.ok;
+    } catch (err) {
+      console.error('Nonce registration failed:', err);
+      return false;
+    }
+  }
+
+  let nonce = generateNonce();
+  (async () => {
+    while (!(await registerNonce(nonce))) {
+      nonce = generateNonce();
+    }
+    if (typeof sessionStorage !== 'undefined' && sessionStorage.setItem) {
+      sessionStorage.setItem('chatNonce', nonce);
+    }
+  })();
 
   /* === Language toggle === */
   langCtrl = qs('#langCtrl');
@@ -97,7 +126,10 @@ function initChatbot() {
             'Authorization': 'Bearer placeholder_token'
           },
           body: JSON.stringify({
-            message: sanitizedMsg
+            message: sanitizedMsg,
+            nonce: (typeof sessionStorage !== 'undefined' && sessionStorage.getItem)
+              ? sessionStorage.getItem('chatNonce')
+              : nonce
           })
         });
         const d = await r.json();
@@ -172,4 +204,9 @@ function sanitizeInput(str) {
   }
 
 window.initChatbot = initChatbot;
-window.cleanupChatbot = cleanupChatbot;
+function cleanup() {
+  if (typeof sessionStorage !== 'undefined' && sessionStorage.removeItem) {
+    sessionStorage.removeItem('chatNonce');
+  }
+}
+window.cleanup = cleanup;

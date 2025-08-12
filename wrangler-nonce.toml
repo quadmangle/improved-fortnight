@@ -1,0 +1,8 @@
+name = "nonce-worker"
+main = "worker/nonceWorker.js"
+compatibility_date = "2024-06-20"
+
+[[kv_namespaces]]
+binding = "USED_NONCES"
+# Replace with your KV namespace ID in production.
+id = "your_used_nonces_namespace_id"
