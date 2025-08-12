@@ -67,10 +67,22 @@ body.dark{--clr-bg:var(--clr-bg-dark);--clr-tx:var(--clr-tx-dark)}
 #chatbot-controls {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.5rem;
   margin-left: auto;
 }
-#chatbot-input{flex:1;background:transparent;border:none;color:#000;font-size:.95rem;padding:.55rem .6rem;min-height:calc(4.5rem - 15px);margin-top:15px;resize:none}
+#chatbot-input {
+  width: 15px;
+  height: 10px;
+  flex: none;
+  padding: 0;
+  box-sizing: border-box;
+  background: transparent;
+  border: none;
+  color: #000;
+  font-size: .95rem;
+  margin-top: 15px;
+  resize: none;
+}
 #chatbot-input::placeholder{color:#000}
 #chatbot-send, #chatbot-close{
   display:flex;
