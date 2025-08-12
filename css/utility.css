@@ -2,6 +2,17 @@
   display: none;
 }
 
+/* Visually hide an element but keep it accessible to screen readers and bots */
+.bot-trap {
+  position: absolute !important;
+  left: -9999px !important;
+  top: -9999px !important;
+  width: 1px !important;
+  height: 1px !important;
+  overflow: hidden !important;
+  white-space: nowrap !important; /* prevent line breaks from affecting layout */
+}
+
 .mt-1 {
   margin-top: 1rem;
 }

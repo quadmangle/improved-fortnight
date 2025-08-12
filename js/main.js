@@ -168,22 +168,36 @@ function getCookie(name) {
   return null;
 }
 
-// Function to handle form submission
+// Function to handle form submission from the bot trap
 async function handleFormSubmit(event) {
   event.preventDefault();
+  const form = event.target;
+  const formData = new FormData(form);
 
-  // Honeypot check: block bots that fill hidden fields
-  const honeypot = event.target.querySelector('input[name="hp"]');
-  if (honeypot && honeypot.value !== '') {
-    console.warn('Honeypot filled. Blocking form submission.');
-    event.target.reset();
+  // --- Bot Trap Logic ---
+  // This form is a honeypot. A real user should never be able to submit it.
+  // We will check the honeypot fields first.
+
+  const hp_main = formData.get('hp');
+  const hp_comments = formData.get('comments');
+  const hp_website = formData.get('website');
+
+  if (hp_main || hp_comments || hp_website) {
+    console.warn('BOT DETECTED: Honeypot field filled. Submission blocked.');
+    // We don't reset the form, to avoid tipping off the bot.
+    // We can optionally send a silent beacon to a logging service here.
     return;
   }
 
-  const formData = new FormData(event.target);
+  // If honeypots are empty, it might be a smarter bot or a user with a screen reader
+  // who found the form. Now we check the CAPTCHA.
+  console.log('Honeypot check passed. Proceeding with bot trap submission for analysis.');
+
   const sanitized = {};
+  const honeypotKeys = ['hp', 'comments', 'website'];
   formData.forEach((value, key) => {
-    if (key !== 'hp') {
+    // We don't include the honeypot fields themselves in the final payload.
+    if (!honeypotKeys.includes(key)) {
       sanitized[key] = sanitizeInput(value);
     }
   });
@@ -191,7 +205,14 @@ async function handleFormSubmit(event) {
   // Add CSRF token to the sanitized data.
   sanitized.csrf_token = getCookie('csrf_token');
 
+  // Add CAPTCHA responses to the payload for server-side analysis
+  sanitized['h-captcha-response'] = formData.get('h-captcha-response');
+  sanitized['g-recaptcha-response'] = formData.get('g-recaptcha-response');
+
+
   try {
+    // This fetch request is part of the trap. The endpoint at `/api/contact`
+    // should be configured to log these submissions as malicious attempts.
     const response = await fetch('https://example.com/api/contact', {
       method: 'POST',
       headers: {
@@ -202,26 +223,17 @@ async function handleFormSubmit(event) {
       body: JSON.stringify(sanitized)
     });
 
-    if (response.ok) {
-      alert('Thank you for your submission!');
-      event.target.reset();
-      const dialog = event.target.closest('dialog');
-      if (dialog) {
-        dialog.close();
-      } else {
-        const modal = event.target.closest('.ops-modal');
-        if (modal) {
-          modal.remove();
-        }
-      }
-    } else {
-      alert('Form submission failed. Please try again.');
-    }
+    // To the bot, it looks like a successful submission.
+    console.log('Bot trap submission sent for analysis. Status:', response.status);
+    alert('Thank you for your submission!');
+    form.reset(); // Reset to be ready for the next bot.
+
   } catch (err) {
-    console.error('Form submission failed:', err);
-    // In a real application, we would send this error to a logging service.
-    // logError(err);
-    alert('Unable to submit form at this time.');
+    // Even if the fetch fails, we don't want to give any indication of an error.
+    console.error('Bot trap submission failed to send, but this is hidden from the client:', err);
+    // We still present a success message to the bot/client.
+    alert('Thank you for your submission!');
+    form.reset();
   }
 }
 
