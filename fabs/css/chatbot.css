@@ -71,7 +71,7 @@ body.dark{--clr-bg:var(--clr-bg-dark);--clr-tx:var(--clr-tx-dark)}
   margin-left: auto;
 }
 #chatbot-input {
-  flex: 1;
+  flex: 0.5;
   padding: 0;
   box-sizing: border-box;
   background: transparent;
