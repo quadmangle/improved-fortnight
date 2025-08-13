@@ -79,6 +79,7 @@ body.dark{--clr-bg:var(--clr-bg-dark);--clr-tx:var(--clr-tx-dark)}
   color: #000;
   font-size: .95rem;
   resize: none;
+  margin-left: -.7rem;
 }
 #chatbot-input::placeholder{color:#000}
 #chatbot-send, #chatbot-close{
