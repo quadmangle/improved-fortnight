@@ -19,30 +19,30 @@
 
   <div id="chatbot-form-container">
     <form id="chatbot-input-grid" autocomplete="off">
-      <div id="input-toolbar" aria-label="Ops Online Support">
-        <div id="brand" data-en="Ops Online Support" data-es="Soporte en Línea OPS" title="Ops Online Support"></div>
-      </div>
-      <div id="input-main">
-        <textarea
-          id="chatbot-input"
-          rows="1"
-          placeholder="Type your message..."
-          required
-          maxlength="512"
-          data-en-ph="Type your message..."
-          data-es-ph="Escriba su mensaje..."
-        ></textarea>
-      </div>
-      <div id="button-stack">
-        <button id="chatbot-send" type="submit" class="btn" disabled aria-label="Send">
-          <i class="fa-solid fa-arrow-right"></i>
-        </button>
-        <button id="chatbot-clear" type="button" class="btn secondary" aria-label="Clear">
-          <i class="fa-solid fa-xmark"></i>
-        </button>
-      </div>
-    </form>
-    <label class="human-check">
+        <div id="input-toolbar" aria-label="Ops Online Support">
+          <div id="brand" data-en="Ops Online Support" data-es="Soporte en Línea OPS" title="Ops Online Support"></div>
+        </div>
+        <div id="input-main">
+          <textarea
+            id="chatbot-input"
+            rows="1"
+            placeholder="Type your message..."
+            required
+            maxlength="512"
+            data-en-ph="Type your message..."
+            data-es-ph="Escriba su mensaje..."
+          ></textarea>
+        </div>
+        <div id="button-stack">
+          <button id="chatbot-send" type="submit" class="btn" disabled aria-label="Send">
+            <i class="fa-solid fa-arrow-right"></i>
+          </button>
+          <button id="chatbot-exit" type="button" class="btn secondary" aria-label="Exit chat">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </form>
+      <label class="human-check">
       <input type="checkbox" id="human-check" />
       <span id="human-label" data-en="I am human" data-es="Soy humano">I am human</span>
     </label>
