@@ -621,34 +621,6 @@ body.dark .ops-modal {
   }
 }
 
-@media (max-width: 768px) {
-  /* Hide navigation links on small screens until toggled and allow
-     horizontal scrolling so users can swipe through the options */
-  .nav-links {
-    display: none;
-    flex-direction: row;
-    overflow-x: auto;
-    white-space: nowrap;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* When navigation is open, display links in a horizontal strip */
-  .nav-links.open {
-    display: flex;
-  }
-
-  h1 {
-    font-size: 2.2rem;
-  }
-  .cta-button.it-and-contact {
-    padding: 14px 30px;
-    font-size: 1.1rem;
-  }
-  .contact-form-section {
-    padding: 0 15px;
-    max-width: 100%;
-  }
-}
 
 @media (max-width: 500px) {
   .grid-container {
