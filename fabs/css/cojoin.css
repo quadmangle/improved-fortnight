@@ -199,6 +199,27 @@ form {
   flex-direction: column;
 }
 
+/* Ensure readable black text on the Join Us form for mobile and tablet screens */
+@media (max-width: 1024px) {
+  #joinForm,
+  #joinForm label,
+  #joinForm input,
+  #joinForm select,
+  #joinForm textarea,
+  #joinForm option,
+  #joinForm h1,
+  #joinForm h2,
+  #joinForm h3 {
+    color: #000;
+  }
+
+  #joinForm input::placeholder,
+  #joinForm textarea::placeholder {
+    color: #000;
+    opacity: 1;
+  }
+}
+
 label {
   display: block;
   margin-top: 1rem;
