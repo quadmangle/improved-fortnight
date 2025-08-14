@@ -63,18 +63,21 @@ test('Chattia chatbot core interactions', async () => {
   guard.dispatchEvent(new window.Event('change'));
   assert.ok(!send.disabled);
 
-  // minimize / open controls
-  const minimizeBtn = document.getElementById('minimizeBtn');
-  const openBtn = document.getElementById('chat-open-btn');
-  minimizeBtn.click();
-  assert.strictEqual(document.getElementById('chatbot-container').style.display, 'none');
-  openBtn.click();
-  assert.strictEqual(document.getElementById('chatbot-container').style.display, '');
-
   // drag enable on wide screens
   window.innerWidth = 1000;
   window.dispatchEvent(new window.Event('resize'));
   assert.ok(document.body.classList.contains('drag-enabled'));
+
+  // minimize / open controls while draggable
+  const containerEl = document.getElementById('chatbot-container');
+  const minimizeBtn = document.getElementById('minimizeBtn');
+  const openBtn = document.getElementById('chat-open-btn');
+  minimizeBtn.click();
+  assert.strictEqual(containerEl.style.display, 'none');
+  openBtn.click();
+  assert.strictEqual(containerEl.style.display, '');
+
+  // drag disabled on narrow screens
   window.innerWidth = 800;
   window.dispatchEvent(new window.Event('resize'));
   assert.ok(!document.body.classList.contains('drag-enabled'));

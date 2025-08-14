@@ -1,5 +1,5 @@
 (function(){
-  let langCtrl, themeCtrl, log, form, input, send, clearBtn, guard;
+  let langCtrl, themeCtrl, log, form, input, send, exitBtn, guard;
   let minimizeBtn, openBtn, container, header, inactivityTimer;
   let langHandler, themeHandler, formHandler, guardHandler, minimizeHandler, openHandler;
 
@@ -14,7 +14,7 @@
     form = qs('#chatbot-input-grid');
     input = qs('#chatbot-input');
     send = qs('#chatbot-send');
-    clearBtn = qs('#chatbot-clear');
+    exitBtn = qs('#chatbot-exit');
     guard = qs('#human-check');
     langCtrl = qs('#langCtrl');
     themeCtrl = qs('#themeCtrl');
@@ -99,7 +99,7 @@
       }
     };
     form.addEventListener('submit', formHandler);
-    clearBtn.addEventListener('click', () => { input.value=''; autoGrow(); });
+    if(exitBtn) exitBtn.addEventListener('click', endSession);
 
     function setVHUnit(h){ const vh = h ? (h/100) : (window.innerHeight/100); root.style.setProperty('--vh', vh + 'px'); }
     setVHUnit();
@@ -152,6 +152,7 @@
     }
     function onPointerDown(e){
       if(!allowDrag()) return;
+      if(e.target.closest('button, .ctrl')) return;
       dragActive=true;
       header.setPointerCapture?.(e.pointerId);
       ensureLeftTop();
@@ -269,11 +270,12 @@
     if(themeCtrl && themeHandler) themeCtrl.removeEventListener('click', themeHandler);
     if(form && formHandler) form.removeEventListener('submit', formHandler);
     if(guard && guardHandler) guard.removeEventListener('change', guardHandler);
+    if(exitBtn) exitBtn.removeEventListener('click', endSession);
     if(minimizeBtn && minimizeHandler) minimizeBtn.removeEventListener('click', minimizeHandler);
     if(openBtn && openHandler) openBtn.removeEventListener('click', openHandler);
     if(container) container.remove();
     if(openBtn) openBtn.remove();
-    langCtrl=themeCtrl=log=form=input=send=clearBtn=guard=null;
+    langCtrl=themeCtrl=log=form=input=send=exitBtn=guard=null;
     minimizeBtn=openBtn=container=header=null;
     inactivityTimer=null;
   }
