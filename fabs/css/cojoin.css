@@ -246,6 +246,12 @@ input, select, textarea {
   align-items: center;
 }
 
+.section-header > div {
+  display: flex;
+  gap: 0.3rem;
+  flex-shrink: 0;
+}
+
 .circle-btn {
   width: 28px;
   height: 28px;
@@ -257,7 +263,7 @@ input, select, textarea {
   font-size: 1.3rem;
   cursor: pointer;
   user-select: none;
-  margin-left: 0.3rem;
+  margin-left: 0;
 }
 
 .circle-btn.remove {
