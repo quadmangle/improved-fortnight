@@ -1,27 +1,50 @@
-<!-- This is a fragment, intended to be loaded dynamically -->
-<div id="chatbot-container" role="dialog" aria-modal="true">
+<!-- Chatbot fragment loaded dynamically -->
+<button id="chat-open-btn" aria-label="Open chat">
+  <i class="fa-solid fa-comments"></i>
+</button>
+<div id="chatbot-container" role="dialog" aria-modal="true" aria-label="Chattia">
   <div id="chatbot-header">
     <span id="title" data-en="Chattia" data-es="Chattia">Chattia</span>
-
-    <!-- tiny controls -->
     <div>
-      <span id="langCtrl" class="ctrl">ES</span>
+      <span id="langCtrl" class="ctrl" role="button" aria-label="Toggle language">EN</span>
       &nbsp;|&nbsp;
-      <span id="themeCtrl" class="ctrl">Dark</span>
+      <span id="themeCtrl" class="ctrl" role="button" aria-label="Toggle theme">Dark</span>
+      <button id="minimizeBtn" type="button" title="Minimize">
+        <i class="fa-solid fa-minus"></i>
+      </button>
     </div>
   </div>
 
   <div id="chat-log" aria-live="polite"></div>
 
   <div id="chatbot-form-container">
-    <form id="chatbot-input-row" autocomplete="off">
-      <textarea id="chatbot-input" rows="1" placeholder="Type your message..." required maxlength="256"
-                data-en-ph="Type your message..." data-es-ph="Escriba su mensaje..."></textarea>
-      <div id="chatbot-controls">
-        <button id="chatbot-send" type="submit" aria-label="Send"><i class="fas fa-arrow-right"></i></button>
-        <button id="chatbot-close" type="button" class="modal-close" aria-label="Close"><i class="fas fa-times"></i></button>
+    <form id="chatbot-input-grid" autocomplete="off">
+      <div id="input-toolbar" aria-label="Ops Online Support">
+        <div id="brand" data-en="Ops Online Support" data-es="Soporte en Línea OPS" title="Ops Online Support"></div>
+      </div>
+      <div id="input-main">
+        <textarea
+          id="chatbot-input"
+          rows="1"
+          placeholder="Type your message..."
+          required
+          maxlength="512"
+          data-en-ph="Type your message..."
+          data-es-ph="Escriba su mensaje..."
+        ></textarea>
+      </div>
+      <div id="button-stack">
+        <button id="chatbot-send" type="submit" class="btn" disabled aria-label="Send">
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+        <button id="chatbot-clear" type="button" class="btn secondary" aria-label="Clear">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
       </div>
     </form>
-   </div>
+    <label class="human-check">
+      <input type="checkbox" id="human-check" />
+      <span id="human-label" data-en="I am human" data-es="Soy humano">I am human</span>
+    </label>
+  </div>
 </div>
-
