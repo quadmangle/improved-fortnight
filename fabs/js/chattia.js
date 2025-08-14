@@ -152,6 +152,7 @@
     }
     function onPointerDown(e){
       if(!allowDrag()) return;
+      if(e.target.closest('button, .ctrl')) return;
       dragActive=true;
       header.setPointerCapture?.(e.pointerId);
       ensureLeftTop();
