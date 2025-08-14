@@ -155,7 +155,16 @@ document.addEventListener('DOMContentLoaded', () => {
         template.innerHTML = sanitized;
 
         const root = template.content || template;
-        modal = root.querySelector('.modal-container') || root.querySelector('#chatbot-container');
+        let openBtnEl;
+        if (modalId === 'chatbot') {
+          openBtnEl = root.querySelector('#chat-open-btn');
+          modal = root.querySelector('#chatbot-container');
+          if (openBtnEl && !document.getElementById('chat-open-btn')) {
+            document.body.appendChild(openBtnEl);
+          }
+        } else {
+          modal = root.querySelector('.modal-container');
+        }
         if (modal) {
           if (modalId !== 'chatbot') {
             modal.id = targetId;
