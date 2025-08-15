@@ -136,7 +136,7 @@ body.dark #chatbot-input{ color:#efeaf8; }
 .btn:active{ transform:scale(.98); }
 .btn[disabled]{ background:#6a5f77; cursor:not-allowed; opacity:.8; }
 .btn.secondary{ background:#ff66e7; }
-.human-check{ color:#ddd; font-size:.85rem; display:flex; align-items:center; margin-top:.55rem }
+.human-check{ display:none; }
 .human-check input{ margin-right:.4rem }
 @media(max-width:480px){
   #chatbot-container{ left:3vw; right:3vw; }

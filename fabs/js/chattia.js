@@ -105,7 +105,6 @@
       }finally{
         send.disabled=false;
         scheduleInactivity();
-        endSession();
       }
     };
     form.addEventListener('submit', formHandler);

@@ -128,21 +128,21 @@ test('Chattia chatbot exits on multiple triggers', async () => {
   exitBtn.click();
   assert.strictEqual(window1.document.getElementById('chatbot-container'), null);
 
-  // send button closes chatbot
+  // send button keeps chatbot open
   window1 = setup();
   let doc = window1.document;
   doc.getElementById('chatbot-input').value = 'Hi';
   doc.getElementById('chatbot-send').click();
   await new Promise((r) => setImmediate(r));
-  assert.strictEqual(doc.getElementById('chatbot-container'), null);
+  assert.notStrictEqual(doc.getElementById('chatbot-container'), null);
 
-  // Enter key submits and closes chatbot
+  // Enter key submits and keeps chatbot open
   window1 = setup();
   doc = window1.document;
   doc.getElementById('chatbot-input').value = 'Hi';
   doc.getElementById('chatbot-input').dispatchEvent(new window1.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
   await new Promise((r) => setImmediate(r));
-  assert.strictEqual(doc.getElementById('chatbot-container'), null);
+  assert.notStrictEqual(doc.getElementById('chatbot-container'), null);
 
   // ESC key closes chatbot
   window1 = setup();
