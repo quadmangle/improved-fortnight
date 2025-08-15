@@ -55,13 +55,12 @@ test('Chattia chatbot core interactions', async () => {
   themeCtrl.click();
   assert.ok(!document.body.classList.contains('dark'));
 
-  // send button gated by human check
+  // send button available and human trap hidden
   const guard = document.getElementById('human-check');
   const send = document.getElementById('chatbot-send');
-  assert.ok(send.disabled);
-  guard.checked = true;
-  guard.dispatchEvent(new window.Event('change'));
   assert.ok(!send.disabled);
+  const guardLabel = guard.closest('label');
+  assert.strictEqual(guardLabel.style.display, 'none');
 
   // drag enable on wide screens
   window.innerWidth = 1000;
@@ -91,7 +90,7 @@ test('Chattia chatbot core interactions', async () => {
     assert.ok(send.disabled);
   });
 
-test('Chattia chatbot exits on send and exit button', async () => {
+test('Chattia chatbot exits on multiple triggers', async () => {
   const htmlPath = path.join(__dirname, '..', 'fabs', 'chatbot.html');
   const jsPath = path.join(__dirname, '..', 'fabs', 'js', 'chattia.js');
   const html = fs.readFileSync(htmlPath, 'utf8');
@@ -121,19 +120,44 @@ test('Chattia chatbot exits on send and exit button', async () => {
 
   // exit button closes chatbot
   let window1 = setup();
-  const exitBtn = window1.document.getElementById('chatbot-exit');
+  let exitBtn = window1.document.getElementById('chatbot-exit');
   exitBtn.click();
   assert.strictEqual(window1.document.getElementById('chatbot-container'), null);
 
   // send button closes chatbot
   window1 = setup();
-  const doc = window1.document;
-  const guard = doc.getElementById('human-check');
-  const send = doc.getElementById('chatbot-send');
-  guard.checked = true;
-  guard.dispatchEvent(new window1.Event('change'));
+  let doc = window1.document;
   doc.getElementById('chatbot-input').value = 'Hi';
-  doc.getElementById('chatbot-input-grid').dispatchEvent(new window1.Event('submit', { cancelable: true }));
+  doc.getElementById('chatbot-send').click();
   await new Promise((r) => setImmediate(r));
   assert.strictEqual(doc.getElementById('chatbot-container'), null);
+
+  // Enter key submits and closes chatbot
+  window1 = setup();
+  doc = window1.document;
+  doc.getElementById('chatbot-input').value = 'Hi';
+  doc.getElementById('chatbot-input').dispatchEvent(new window1.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
+  await new Promise((r) => setImmediate(r));
+  assert.strictEqual(doc.getElementById('chatbot-container'), null);
+
+  // ESC key closes chatbot
+  window1 = setup();
+  window1.document.dispatchEvent(new window1.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  assert.strictEqual(window1.document.getElementById('chatbot-container'), null);
+
+  // clicking outside closes chatbot
+  window1 = setup();
+  const outside = window1.document.createElement('div');
+  window1.document.body.appendChild(outside);
+  outside.dispatchEvent(new window1.MouseEvent('click', { bubbles: true }));
+  assert.strictEqual(window1.document.getElementById('chatbot-container'), null);
+
+  // human trap triggers alert and closes
+  window1 = setup();
+  let alerted = false;
+  window1.alert = () => { alerted = true; };
+  const guard = window1.document.getElementById('human-check');
+  guard.dispatchEvent(new window1.MouseEvent('click', { bubbles: true }));
+  assert.ok(alerted);
+  assert.strictEqual(window1.document.getElementById('chatbot-container'), null);
 });
