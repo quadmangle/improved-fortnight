@@ -57,7 +57,6 @@
       }
     }
     buildBrand(brand.dataset.en || 'Ops Online Support');
-
     langCtrl.textContent='ES';
     langHandler = () => {
       const goES = langCtrl.textContent === 'ES';
@@ -68,7 +67,6 @@
       buildBrand(goES ? (brand.dataset.es || 'Soporte en Línea OPS') : (brand.dataset.en || 'Ops Online Support'));
     };
     langCtrl.addEventListener('click', langHandler);
-
     themeHandler = () => {
       const toDark = themeCtrl.textContent === 'Dark';
       document.body.classList.toggle('dark', toDark);
@@ -151,21 +149,19 @@
       }
     };
     document.addEventListener('click', outsideClickHandler);
-
     let inputFocused=false;
     function applyKeyboardMode(isOpen){
       document.body.classList.toggle('kb-open', !!isOpen);
       if(isOpen){ setTimeout(()=> input.scrollIntoView({ block:'nearest', behavior:'smooth' }), 50); }
     }
     function handleViewportChange(){
+      setVHUnit();
       const vv = window.visualViewport;
-      if(vv){
-        const keyboardLikelyOpen = inputFocused && (vv.height < window.innerHeight * 0.85);
-        applyKeyboardMode(keyboardLikelyOpen);
-      }else{
-        const keyboardLikelyOpen = inputFocused && (window.innerHeight < screen.height * 0.85);
-        applyKeyboardMode(keyboardLikelyOpen);
-      }
+      const keyboardLikelyOpen = inputFocused && (
+        vv ? (vv.height < window.innerHeight * 0.85)
+           : (window.innerHeight < screen.height * 0.85)
+      );
+      applyKeyboardMode(keyboardLikelyOpen);
     }
     let rAF; function onResize(){ cancelAnimationFrame(rAF); rAF = requestAnimationFrame(handleViewportChange); }
     if(window.visualViewport){
@@ -176,7 +172,6 @@
     window.addEventListener('orientationchange', ()=>{ setTimeout(handleViewportChange, 100); });
     input.addEventListener('focus', ()=>{ inputFocused=true; handleViewportChange(); });
     input.addEventListener('blur', ()=>{ inputFocused=false; applyKeyboardMode(false); });
-
     const DRAG_MIN_WIDTH=900;
     let dragActive=false, dragStart={x:0,y:0}, boxStart={x:0,y:0};
     function allowDrag(){ return window.innerWidth >= DRAG_MIN_WIDTH; }
@@ -240,7 +235,6 @@
     }
     bindDrag();
     window.addEventListener('resize', bindDrag);
-
     let brandHoverCooldown=0;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     function playShine(){
@@ -317,7 +311,6 @@
     minimizeBtn.addEventListener('click', minimizeHandler);
     if(openBtn) openBtn.addEventListener('click', openHandler);
     window.addEventListener('resize', applyChatVisibility);
-
     scheduleInactivity();
   }
 

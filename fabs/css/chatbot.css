@@ -33,9 +33,11 @@ body {
   position:fixed;
   left:4vw; right:4vw; bottom:calc(env(safe-area-inset-bottom) + 8px);
   width:auto;
-  height:80dvh;
-  max-height:85dvh;
-  background: var(--panel);
+  height:45vh;
+  max-height:45vh;
+  height:45dvh;
+  max-height:45dvh;
+var(--panel);
   border:2px solid var(--clr-accent);
   border-radius:18px;
   box-shadow:0 8px 32px #0006;
@@ -47,8 +49,10 @@ body {
   #chatbot-container{ width:380px; left:auto; right:24px; bottom:24px; }
 }
 body.kb-open #chatbot-container{
-  height:62dvh;
-  max-height:65dvh;
+  height:45vh;
+  max-height:45vh;
+  height:45dvh;
+  max-height:45dvh;
 }
 #chat-open-btn{
   position:fixed; right:20px; bottom:20px;
@@ -142,4 +146,3 @@ body.dark #chatbot-input{ color:#efeaf8; }
 @media(max-width:480px){
   #chatbot-container{ left:3vw; right:3vw; }
 }
-
