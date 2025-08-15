@@ -1,7 +1,7 @@
 (function(){
   let langCtrl, themeCtrl, log, form, input, send, exitBtn, guard;
   let minimizeBtn, openBtn, container, header, inactivityTimer, recaptchaId;
-  let langHandler, themeHandler, formHandler, guardHandler, minimizeHandler, openHandler, escHandler, outsideClickHandler;
+  let langHandler, themeHandler, formHandler, minimizeHandler, openHandler, escHandler, outsideClickHandler;
 
   function initChatbot(){
     const qs = s => document.querySelector(s),
@@ -63,14 +63,7 @@
     };
     themeCtrl.addEventListener('click', themeHandler);
 
-    guardHandler = () => {
-      if(window.grecaptcha && typeof window.grecaptcha.execute === 'function' && typeof recaptchaId !== 'undefined'){
-        window.grecaptcha.execute(recaptchaId);
-      }
-      window.alert('Session blocked');
-      endSession();
-    };
-    guard.addEventListener('click', guardHandler);
+    // Honeypot checkbox intentionally inert – it stays hidden and performs no action
 
     function autoGrow(){
       input.style.height='auto';
@@ -298,7 +291,6 @@
     if(langCtrl && langHandler) langCtrl.removeEventListener('click', langHandler);
     if(themeCtrl && themeHandler) themeCtrl.removeEventListener('click', themeHandler);
     if(form && formHandler) form.removeEventListener('submit', formHandler);
-    if(guard && guardHandler) guard.removeEventListener('click', guardHandler);
     if(exitBtn) exitBtn.removeEventListener('click', endSession);
     if(minimizeBtn && minimizeHandler) minimizeBtn.removeEventListener('click', minimizeHandler);
     if(openBtn && openHandler) openBtn.removeEventListener('click', openHandler);
