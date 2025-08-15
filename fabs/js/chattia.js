@@ -124,7 +124,6 @@
       }finally{
         send.disabled=false;
         scheduleInactivity();
-        endSession();
       }
     };
     form.addEventListener('submit', formHandler);
@@ -275,30 +274,38 @@
     });
 
     let isChatVisible=true;
+    function applyChatVisibility(){
+      if(isChatVisible){
+        container.style.display='';
+        container.removeAttribute('aria-hidden');
+        if(openBtn){
+          openBtn.style.display='none';
+          openBtn.setAttribute('aria-expanded','true');
+        }
+      }else{
+        container.style.display='none';
+        container.setAttribute('aria-hidden','true');
+        if(openBtn){
+          openBtn.style.display='inline-flex';
+          openBtn.setAttribute('aria-expanded','false');
+        }
+      }
+    }
     function minimizeChat(){
       isChatVisible=false;
       clearInactivity();
-      container.style.display='none';
-      container.setAttribute('aria-hidden','true');
-      if(openBtn){
-        openBtn.style.display='inline-flex';
-        openBtn.setAttribute('aria-expanded','false');
-      }
+      applyChatVisibility();
     }
     function openChat(){
       isChatVisible=true;
-      container.style.display='';
-      container.removeAttribute('aria-hidden');
-      if(openBtn){
-        openBtn.style.display='none';
-        openBtn.setAttribute('aria-expanded','true');
-      }
       scheduleInactivity();
+      applyChatVisibility();
     }
     minimizeHandler = minimizeChat;
     openHandler = openChat;
     minimizeBtn.addEventListener('click', minimizeHandler);
     if(openBtn) openBtn.addEventListener('click', openHandler);
+    window.addEventListener('resize', applyChatVisibility);
 
     scheduleInactivity();
   }
