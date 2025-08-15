@@ -28,6 +28,10 @@ test('Chattia chatbot core interactions', async () => {
   let inactivityFn;
   window.setTimeout = (fn, ms) => { if (ms === 60000) inactivityFn = fn; return 0; };
   window.clearTimeout = () => {};
+  window.hideActiveFabModal = () => {
+    const el = window.document.getElementById('chatbot-container');
+    if (el) el.style.display = 'none';
+  };
 
   const script = fs.readFileSync(jsPath, 'utf8');
   window.eval(script);
@@ -124,21 +128,21 @@ test('Chattia chatbot exits on multiple triggers', async () => {
   exitBtn.click();
   assert.strictEqual(window1.document.getElementById('chatbot-container'), null);
 
-  // send button closes chatbot
+  // send button keeps chatbot open
   window1 = setup();
   let doc = window1.document;
   doc.getElementById('chatbot-input').value = 'Hi';
   doc.getElementById('chatbot-send').click();
   await new Promise((r) => setImmediate(r));
-  assert.strictEqual(doc.getElementById('chatbot-container'), null);
+  assert.notStrictEqual(doc.getElementById('chatbot-container'), null);
 
-  // Enter key submits and closes chatbot
+  // Enter key submits and keeps chatbot open
   window1 = setup();
   doc = window1.document;
   doc.getElementById('chatbot-input').value = 'Hi';
   doc.getElementById('chatbot-input').dispatchEvent(new window1.KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
   await new Promise((r) => setImmediate(r));
-  assert.strictEqual(doc.getElementById('chatbot-container'), null);
+  assert.notStrictEqual(doc.getElementById('chatbot-container'), null);
 
   // ESC key closes chatbot
   window1 = setup();

@@ -1,5 +1,5 @@
 (function(){
-  let langCtrl, themeCtrl, log, form, input, send, exitBtn, guard;
+  let langCtrl, themeCtrl, log, form, input, send, exitBtn;
   let minimizeBtn, openBtn, container, header, inactivityTimer, recaptchaId;
   let langHandler, themeHandler, formHandler, minimizeHandler, openHandler, escHandler, outsideClickHandler;
 
@@ -15,7 +15,6 @@
     input = qs('#chatbot-input');
     send = qs('#chatbot-send');
     exitBtn = qs('#chatbot-exit');
-    guard = qs('#human-check');
     langCtrl = qs('#langCtrl');
     themeCtrl = qs('#themeCtrl');
     minimizeBtn = qs('#minimizeBtn');
@@ -106,7 +105,6 @@
       }finally{
         send.disabled=false;
         scheduleInactivity();
-        endSession();
       }
     };
     form.addEventListener('submit', formHandler);
@@ -238,9 +236,7 @@
     function endSession(){
       clearInactivity();
       log.innerHTML='';
-      guard.checked=false;
       send.disabled=true;
-      minimizeChat();
       if(typeof window.hideActiveFabModal === 'function'){
         window.hideActiveFabModal();
       }
@@ -298,7 +294,7 @@
     document.removeEventListener('click', outsideClickHandler);
     if(container) container.remove();
     if(openBtn) openBtn.remove();
-    langCtrl=themeCtrl=log=form=input=send=exitBtn=guard=null;
+    langCtrl=themeCtrl=log=form=input=send=exitBtn=null;
     minimizeBtn=openBtn=container=header=null;
     escHandler=outsideClickHandler=null;
     inactivityTimer=recaptchaId=null;
