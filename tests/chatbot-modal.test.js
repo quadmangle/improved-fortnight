@@ -19,10 +19,8 @@ test('Chattia chatbot basic interactions', async () => {
   styleEl.textContent = style;
   document.head.appendChild(styleEl);
 
-  let fetchCalls = 0;
   window.fetch = async (url, opts) => {
-    fetchCalls++;
-    if (fetchCalls === 1) {
+    if (url && url.includes('chatbot.html')) {
       return { text: async () => html };
     }
     if (url && url.includes('honeypot')) {
@@ -69,6 +67,9 @@ test('Chattia chatbot basic interactions', async () => {
   assert.ok(send.disabled);
 
   // start fresh session
+  document.querySelectorAll('#chatbot-container').forEach(el => el.remove());
+  document.querySelectorAll('#chat-open-btn').forEach(el => el.remove());
+  window.sessionStorage.clear();
   await window.reloadChat();
 
   const minimizeBtn = document.getElementById('minimizeBtn');
@@ -79,7 +80,26 @@ test('Chattia chatbot basic interactions', async () => {
   openBtn.click();
   assert.strictEqual(container.style.display, '');
 
+  // message persists across reloads
+  window.grecaptcha = { ready: cb => cb(), execute: async () => 'token' };
+  const recaptchaScript = document.getElementById('recaptcha-script');
+  if (recaptchaScript && recaptchaScript.onload) recaptchaScript.onload();
+  const form = document.getElementById('chatbot-input-grid');
+  const input2 = document.getElementById('chatbot-input');
+  input2.value = 'Hello';
+  input2.dispatchEvent(new window.Event('input', { bubbles: true }));
+  form.dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
+  await new Promise(r => setTimeout(r,0));
+  const hist = JSON.parse(window.sessionStorage.getItem('chatHistory'));
+  assert.strictEqual(hist[0].text, 'Hello');
+  document.querySelectorAll('#chatbot-container').forEach(el => el.remove());
+  document.querySelectorAll('#chat-open-btn').forEach(el => el.remove());
+  await window.reloadChat();
+  const logText = document.getElementById('chat-log').textContent;
+  assert.ok(logText.includes('Hello'));
+
   const closeBtn = document.getElementById('chatbot-close');
   closeBtn.click();
+  assert.strictEqual(window.sessionStorage.getItem('chatHistory'), null);
   assert.strictEqual(document.getElementById('chatbot-container'), null);
 });
