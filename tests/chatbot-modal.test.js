@@ -65,6 +65,8 @@ test('Chattia chatbot core interactions', async () => {
   assert.ok(!send.disabled);
   const guardLabel = guard.closest('label');
   assert.strictEqual(guardLabel.style.display, 'none');
+  assert.strictEqual(guardLabel.getAttribute('aria-hidden'), 'true');
+  assert.strictEqual(guard.tabIndex, -1);
 
   // drag enable on wide screens
   window.innerWidth = 1000;
@@ -159,12 +161,13 @@ test('Chattia chatbot exits on multiple triggers', async () => {
   outside.dispatchEvent(new window1.MouseEvent('click', { bubbles: true }));
   assert.strictEqual(window1.document.getElementById('chatbot-container'), null);
   
-  // hidden human-check box remains inert if somehow clicked
+  // hidden human-check box triggers alert if clicked
   window1 = setup();
   let alerted = false;
   window1.alert = () => { alerted = true; };
   const guard = window1.document.getElementById('human-check');
-  guard.dispatchEvent(new window1.MouseEvent('click', { bubbles: true }));
-  assert.strictEqual(alerted, false);
-  assert.notStrictEqual(window1.document.getElementById('chatbot-container'), null);
+  guard.checked = true;
+  guard.dispatchEvent(new window1.Event('change', { bubbles: true }));
+  assert.strictEqual(alerted, true);
+  assert.strictEqual(window1.document.getElementById('chatbot-container'), null);
 });

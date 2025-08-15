@@ -22,7 +22,7 @@
     const brand = document.getElementById('brand');
     const transNodes = qsa('[data-en]');
     const phNodes = qsa('[data-en-ph]');
-    const humanLab = qs('#human-label');
+    const guard = qs('#human-check');
     if(window.grecaptcha && document.getElementById('recaptcha-container')){
       recaptchaId = window.grecaptcha.render('recaptcha-container', {
         sitekey: 'YOUR_RECAPTCHA_SITE_KEY', // TODO: replace with real site key
@@ -50,7 +50,6 @@
       langCtrl.textContent = goES ? 'EN' : 'ES';
       transNodes.forEach(n => n.textContent = goES ? (n.dataset.es || n.textContent) : (n.dataset.en || n.textContent));
       phNodes.forEach(n => n.placeholder = goES ? (n.dataset.esPh || n.placeholder) : (n.dataset.enPh || n.placeholder));
-      humanLab.textContent = goES ? humanLab.dataset.es : humanLab.dataset.en;
       buildBrand(goES ? (brand.dataset.es || 'Soporte en Línea OPS') : (brand.dataset.en || 'Ops Online Support'));
     };
     langCtrl.addEventListener('click', langHandler);
@@ -62,7 +61,20 @@
     };
     themeCtrl.addEventListener('click', themeHandler);
 
-    // Honeypot checkbox intentionally inert – it stays hidden and performs no action
+    // Honeypot checkbox – triggers alert and terminates session if checked
+    if(guard){
+      guard.addEventListener('change', ()=>{
+        if(guard.checked){
+          alert('Bot activity detected.');
+          fetch('https://your-cloudflare-worker.example.com/bot-trap', {
+            method:'POST',
+            headers:{'Content-Type':'application/json'},
+            body: JSON.stringify({ trap: 'human-check' })
+          }).catch(()=>{});
+          endSession();
+        }
+      });
+    }
 
     function autoGrow(){
       input.style.height='auto';
@@ -88,12 +100,19 @@
 
     formHandler = async e => {
       e.preventDefault();
+      if(guard && guard.checked){
+        return;
+      }
       const msg = input.value.trim();
       if(!msg) return;
       addMsg(msg,'user');
       input.value=''; autoGrow(); send.disabled=true;
       addMsg('…','bot');
       try{
+        if(window.grecaptcha && typeof window.grecaptcha.execute === 'function' && typeof recaptchaId !== 'undefined'){
+          await window.grecaptcha.execute(recaptchaId);
+          window.grecaptcha.reset(recaptchaId);
+        }
         const r = await fetch('https://your-cloudflare-worker.example.com/chat',{
           method:'POST', headers:{'Content-Type':'application/json'},
           body: JSON.stringify({ message: msg })
