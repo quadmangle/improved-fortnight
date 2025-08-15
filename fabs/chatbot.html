@@ -15,41 +15,42 @@
     </div>
   </div>
 
-  <div id="chat-log" aria-live="polite"></div>
+  <!-- Dialogue viewport -->
+  <div id="chat-log" role="log" aria-live="polite" aria-atomic="false"></div>
 
   <div id="chatbot-form-container">
-    <form id="chatbot-input-grid" autocomplete="off">
-        <div id="input-toolbar" aria-label="Ops Online Support">
-          <div id="brand" data-en="Ops Online Support" data-es="Soporte en Línea OPS" title="Ops Online Support"></div>
-        </div>
-        <div id="input-main">
-          <textarea
-            id="chatbot-input"
-            rows="1"
-            placeholder="Type your message..."
-            required
-            maxlength="512"
-            data-en-ph="Type your message..."
-            data-es-ph="Escriba su mensaje..."
-          ></textarea>
-        </div>
-        <div id="button-stack">
-          <button id="chatbot-send" type="submit" class="btn" aria-label="Send">
-            <i class="fa-solid fa-arrow-right"></i>
-          </button>
-          <button id="chatbot-exit" type="button" class="btn secondary" aria-label="Exit chat">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
-        </div>
-      </form>
-      <!-- Honeypot human check; hidden from real users -->
-      <label class="human-check" aria-hidden="true" tabindex="-1" style="display:none;">
-        <input type="checkbox" id="human-check" tabindex="-1" />
-        <span id="human-label">I am human</span>
-      </label>
-      <div id="recaptcha-container" class="g-recaptcha"
-        data-size="invisible"
-        data-sitekey="YOUR_RECAPTCHA_SITE_KEY"><!-- TODO: Insert real reCAPTCHA site key --></div>
-      <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+    <form id="chatbot-input-grid" autocomplete="off" novalidate>
+      <div id="input-toolbar" aria-label="Ops Online Support">
+        <div id="brand" data-en="Ops Online Support" data-es="Ops Online Support" title="Ops Online Support"></div>
+      </div>
+
+      <div id="input-main">
+        <textarea
+          id="chatbot-input"
+          rows="1"
+          placeholder="Type your message..."
+          required
+          maxlength="512"
+          data-en-ph="Type your message..."
+          data-es-ph="Escriba su mensaje..."></textarea>
+      </div>
+
+      <div id="button-stack">
+        <button id="chatbot-send" type="submit" class="btn" disabled aria-label="Send">
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+        <button id="chatbot-close" type="button" class="btn secondary" aria-label="Close chat">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Hidden honeypots -->
+      <div class="hp-wrap" aria-hidden="true">
+        <label class="hp-label" for="hp_text">Do not fill</label>
+        <input type="text" id="hp_text" name="hp_text" tabindex="-1" autocomplete="off" />
+        <label class="hp-label" for="hp_check">I am human</label>
+        <input type="checkbox" id="hp_check" name="hp_check" tabindex="-1" />
+      </div>
+    </form>
   </div>
 </div>
