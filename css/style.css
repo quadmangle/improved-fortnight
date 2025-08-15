@@ -143,6 +143,11 @@ li {
   margin-bottom: var(--space-sm);
 }
 
+.responsive-image {
+  max-width: 100%;
+  height: auto;
+}
+
 .subtle-text {
   opacity: 0.85;
 }
