@@ -6,23 +6,24 @@ const path = require('node:path');
 
 const htmlPath = path.join(__dirname, '..', 'fabs', 'chatbot.html');
 const jsPath = path.join(__dirname, '..', 'fabs', 'js', 'chattia.js');
+const dragJsPath = path.join(__dirname, '..', 'fabs', 'js', 'cojoin.js');
 const cssPath = path.join(__dirname, '..', 'fabs', 'css', 'chatbot.css');
 const html = fs.readFileSync(htmlPath, 'utf8');
 const script = fs.readFileSync(jsPath, 'utf8');
+const dragScript = fs.readFileSync(dragJsPath, 'utf8');
 const style = fs.readFileSync(cssPath, 'utf8');
 
 test('Chattia chatbot basic interactions', async () => {
   const dom = new JSDOM(`<body></body>`, { url: 'https://example.com', runScripts: 'dangerously' });
   const { window } = dom;
   const document = window.document;
+  window.innerWidth = 1024;
   const styleEl = document.createElement('style');
   styleEl.textContent = style;
   document.head.appendChild(styleEl);
 
-  let fetchCalls = 0;
   window.fetch = async (url, opts) => {
-    fetchCalls++;
-    if (fetchCalls === 1) {
+    if (url && url.includes('chatbot.html')) {
       return { text: async () => html };
     }
     if (url && url.includes('honeypot')) {
@@ -36,6 +37,7 @@ test('Chattia chatbot basic interactions', async () => {
 
   window.alert = () => {};
 
+  window.eval(dragScript);
   window.eval(script);
   await window.reloadChat();
 
@@ -69,11 +71,21 @@ test('Chattia chatbot basic interactions', async () => {
   assert.ok(send.disabled);
 
   // start fresh session
+  document.querySelectorAll('#chatbot-container, #chat-open-btn').forEach(el => el.remove());
   await window.reloadChat();
 
   const minimizeBtn = document.getElementById('minimizeBtn');
   const container = document.getElementById('chatbot-container');
   const openBtn = document.getElementById('chat-open-btn');
+  const header = document.getElementById('chatbot-header');
+  assert.ok(document.body.classList.contains('drag-enabled'));
+  container.style.left = '0px';
+  container.style.top = '0px';
+  header.dispatchEvent(new window.MouseEvent('mousedown', { clientX: 10, clientY: 10, bubbles: true }));
+  document.dispatchEvent(new window.MouseEvent('mousemove', { clientX: 30, clientY: 30, bubbles: true }));
+  document.dispatchEvent(new window.MouseEvent('mouseup', { bubbles: true }));
+  assert.notStrictEqual(container.style.left, '0px');
+  assert.notStrictEqual(container.style.top, '0px');
   minimizeBtn.click();
   assert.strictEqual(container.style.display, 'none');
   openBtn.click();
