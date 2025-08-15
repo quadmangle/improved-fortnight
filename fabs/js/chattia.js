@@ -96,6 +96,7 @@
       }finally{
         send.disabled=false;
         scheduleInactivity();
+        endSession();
       }
     };
     form.addEventListener('submit', formHandler);
@@ -222,6 +223,9 @@
       guard.checked=false;
       send.disabled=true;
       minimizeChat();
+      if(typeof window.hideActiveFabModal === 'function'){
+        window.hideActiveFabModal();
+      }
     }
     function scheduleInactivity(){
       clearInactivity();
