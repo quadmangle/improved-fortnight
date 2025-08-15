@@ -1,7 +1,7 @@
 (function(){
   let langCtrl, themeCtrl, log, form, input, send, exitBtn, guard;
-  let minimizeBtn, openBtn, container, header, inactivityTimer;
-  let langHandler, themeHandler, formHandler, guardHandler, minimizeHandler, openHandler;
+  let minimizeBtn, openBtn, container, header, inactivityTimer, recaptchaId;
+  let langHandler, themeHandler, formHandler, guardHandler, minimizeHandler, openHandler, escHandler, outsideClickHandler;
 
   function initChatbot(){
     const qs = s => document.querySelector(s),
@@ -24,6 +24,12 @@
     const transNodes = qsa('[data-en]');
     const phNodes = qsa('[data-en-ph]');
     const humanLab = qs('#human-label');
+    if(window.grecaptcha && document.getElementById('recaptcha-container')){
+      recaptchaId = window.grecaptcha.render('recaptcha-container', {
+        sitekey: 'YOUR_RECAPTCHA_SITE_KEY', // TODO: replace with real site key
+        size: 'invisible'
+      });
+    }
 
     function buildBrand(text){
       brand.innerHTML='';
@@ -57,8 +63,14 @@
     };
     themeCtrl.addEventListener('click', themeHandler);
 
-    guardHandler = () => { send.disabled = !guard.checked; };
-    guard.addEventListener('change', guardHandler);
+    guardHandler = () => {
+      if(window.grecaptcha && typeof window.grecaptcha.execute === 'function' && typeof recaptchaId !== 'undefined'){
+        window.grecaptcha.execute(recaptchaId);
+      }
+      window.alert('Session blocked');
+      endSession();
+    };
+    guard.addEventListener('click', guardHandler);
 
     function autoGrow(){
       input.style.height='auto';
@@ -67,6 +79,12 @@
     }
     input.addEventListener('input', autoGrow);
     window.addEventListener('load', autoGrow);
+    input.addEventListener('keydown', e => {
+      if(e.key === 'Enter' && !e.shiftKey){
+        e.preventDefault();
+        form.dispatchEvent(new Event('submit', { cancelable: true }));
+      }
+    });
 
     function addMsg(txt, cls){
       const div=document.createElement('div');
@@ -78,7 +96,6 @@
 
     formHandler = async e => {
       e.preventDefault();
-      if(!guard.checked) return;
       const msg = input.value.trim();
       if(!msg) return;
       addMsg(msg,'user');
@@ -101,6 +118,14 @@
     };
     form.addEventListener('submit', formHandler);
     if(exitBtn) exitBtn.addEventListener('click', endSession);
+    escHandler = e => { if(e.key === 'Escape') endSession(); };
+    document.addEventListener('keydown', escHandler);
+    outsideClickHandler = e => {
+      if(container && container.style.display !== 'none' && !container.contains(e.target) && e.target !== openBtn) {
+        endSession();
+      }
+    };
+    document.addEventListener('click', outsideClickHandler);
 
     function setVHUnit(h){ const vh = h ? (h/100) : (window.innerHeight/100); root.style.setProperty('--vh', vh + 'px'); }
     setVHUnit();
@@ -273,15 +298,18 @@
     if(langCtrl && langHandler) langCtrl.removeEventListener('click', langHandler);
     if(themeCtrl && themeHandler) themeCtrl.removeEventListener('click', themeHandler);
     if(form && formHandler) form.removeEventListener('submit', formHandler);
-    if(guard && guardHandler) guard.removeEventListener('change', guardHandler);
+    if(guard && guardHandler) guard.removeEventListener('click', guardHandler);
     if(exitBtn) exitBtn.removeEventListener('click', endSession);
     if(minimizeBtn && minimizeHandler) minimizeBtn.removeEventListener('click', minimizeHandler);
     if(openBtn && openHandler) openBtn.removeEventListener('click', openHandler);
+    document.removeEventListener('keydown', escHandler);
+    document.removeEventListener('click', outsideClickHandler);
     if(container) container.remove();
     if(openBtn) openBtn.remove();
     langCtrl=themeCtrl=log=form=input=send=exitBtn=guard=null;
     minimizeBtn=openBtn=container=header=null;
-    inactivityTimer=null;
+    escHandler=outsideClickHandler=null;
+    inactivityTimer=recaptchaId=null;
   }
 
   window.initChatbot = initChatbot;
