@@ -3,6 +3,20 @@
   let minimizeBtn, openBtn, container, header, inactivityTimer, recaptchaId;
   let langHandler, themeHandler, formHandler, minimizeHandler, openHandler, escHandler, outsideClickHandler;
 
+  async function reloadChat(){
+    try{
+      const res = await fetch('fabs/chatbot.html', { credentials:'same-origin' });
+      const html = await res.text();
+      const template = document.createElement('template');
+      template.innerHTML = html;
+      const newContainer = template.content.querySelector('#chatbot-container');
+      if(newContainer){ document.body.appendChild(newContainer); }
+      window.initChatbot();
+    }catch(err){
+      console.error('Failed to reload chatbot:', err);
+    }
+  }
+
   function initChatbot(){
     const qs = s => document.querySelector(s),
           qsa = s => [...document.querySelectorAll(s)];
@@ -18,6 +32,7 @@
     themeCtrl = qs('#themeCtrl');
     minimizeBtn = qs('#minimizeBtn');
     openBtn = qs('#chat-open-btn');
+    if(openBtn){ openBtn.removeEventListener('click', reloadChat); }
     const brand = document.getElementById('brand');
     const transNodes = qsa('[data-en]');
     const phNodes = qsa('[data-en-ph]');
@@ -41,7 +56,6 @@
       }
     }
     buildBrand(brand.dataset.en || 'Ops Online Support');
-
     langCtrl.textContent='ES';
     langHandler = () => {
       const goES = langCtrl.textContent === 'ES';
@@ -52,7 +66,6 @@
       buildBrand(goES ? (brand.dataset.es || 'Soporte en Línea OPS') : (brand.dataset.en || 'Ops Online Support'));
     };
     langCtrl.addEventListener('click', langHandler);
-
     themeHandler = () => {
       const toDark = themeCtrl.textContent === 'Dark';
       document.body.classList.toggle('dark', toDark);
@@ -135,13 +148,13 @@
       }
     };
     document.addEventListener('click', outsideClickHandler);
-
     let inputFocused=false;
     function applyKeyboardMode(isOpen){
       document.body.classList.toggle('kb-open', !!isOpen);
       if(isOpen){ setTimeout(()=> input.scrollIntoView({ block:'nearest', behavior:'smooth' }), 50); }
     }
     function handleViewportChange(){
+      setVHUnit();
       const vv = window.visualViewport;
       if(vv){
         const keyboardLikelyOpen = inputFocused && (vv.height < window.innerHeight * 0.85);
@@ -160,7 +173,6 @@
     window.addEventListener('orientationchange', ()=>{ setTimeout(()=>{ handleViewportChange(); }, 100); });
     input.addEventListener('focus', ()=>{ inputFocused=true; handleViewportChange(); });
     input.addEventListener('blur', ()=>{ inputFocused=false; applyKeyboardMode(false); });
-
     const DRAG_MIN_WIDTH=900;
     let dragActive=false, dragStart={x:0,y:0}, boxStart={x:0,y:0};
     function allowDrag(){ return window.innerWidth >= DRAG_MIN_WIDTH; }
@@ -224,7 +236,6 @@
     }
     bindDrag();
     window.addEventListener('resize', bindDrag);
-
     let brandHoverCooldown=0;
     const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     function playShine(){
@@ -301,7 +312,6 @@
     minimizeBtn.addEventListener('click', minimizeHandler);
     if(openBtn) openBtn.addEventListener('click', openHandler);
     window.addEventListener('resize', applyChatVisibility);
-
     scheduleInactivity();
   }
 
@@ -312,12 +322,16 @@
     if(exitBtn) exitBtn.removeEventListener('click', endSession);
     if(minimizeBtn && minimizeHandler) minimizeBtn.removeEventListener('click', minimizeHandler);
     if(openBtn && openHandler) openBtn.removeEventListener('click', openHandler);
+    if(openBtn){
+      openBtn.addEventListener('click', reloadChat);
+      openBtn.style.display='inline-flex';
+      openBtn.setAttribute('aria-expanded','false');
+    }
     document.removeEventListener('keydown', escHandler);
     document.removeEventListener('click', outsideClickHandler);
     if(container) container.remove();
-    if(openBtn) openBtn.remove();
     langCtrl=themeCtrl=log=form=input=send=exitBtn=null;
-    minimizeBtn=openBtn=container=header=null;
+    minimizeBtn=container=header=null;
     escHandler=outsideClickHandler=null;
     inactivityTimer=recaptchaId=null;
   }
@@ -325,4 +339,3 @@
   window.initChatbot = initChatbot;
   window.cleanupChatbot = cleanupChatbot;
 })();
-

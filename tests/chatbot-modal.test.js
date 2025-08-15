@@ -15,6 +15,10 @@ test('Chattia chatbot core interactions', async () => {
   });
 
   const { window } = dom;
+  const cssPath = path.join(__dirname, '..', 'fabs', 'css', 'chatbot.css');
+  const styleEl = window.document.createElement('style');
+  styleEl.textContent = fs.readFileSync(cssPath, 'utf8');
+  window.document.head.appendChild(styleEl);
   window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
   window.requestAnimationFrame = (cb) => cb();
   window.cancelAnimationFrame = () => {};
@@ -38,8 +42,16 @@ test('Chattia chatbot core interactions', async () => {
   window.initChatbot();
 
   const document = window.document;
+  const headerEl = document.getElementById('chatbot-header');
   const brand = document.getElementById('brand');
   assert.ok(brand.querySelectorAll('.char').length > 0, 'brand built per letter');
+  const headerStyle = () => window.getComputedStyle(headerEl);
+  assert.strictEqual(headerStyle().getPropertyValue('width'), '100%');
+  assert.strictEqual(headerStyle().getPropertyValue('box-sizing'), 'border-box');
+  document.body.classList.add('kb-open');
+  assert.strictEqual(headerStyle().getPropertyValue('width'), '100%');
+  assert.strictEqual(headerStyle().getPropertyValue('box-sizing'), 'border-box');
+  document.body.classList.remove('kb-open');
 
   // language toggle updates placeholders and brand
   const langCtrl = document.getElementById('langCtrl');
@@ -170,4 +182,43 @@ test('Chattia chatbot exits on multiple triggers', async () => {
   guard.dispatchEvent(new window1.Event('change', { bubbles: true }));
   assert.strictEqual(alerted, true);
   assert.strictEqual(window1.document.getElementById('chatbot-container'), null);
+});
+
+test('Chatbot open button relaunches fresh session after exit', async () => {
+  const htmlPath = path.join(__dirname, '..', 'fabs', 'chatbot.html');
+  const jsPath = path.join(__dirname, '..', 'fabs', 'js', 'chattia.js');
+  const html = fs.readFileSync(htmlPath, 'utf8');
+
+  const dom = new JSDOM(`<body>${html}</body>`, {
+    url: 'https://example.com/',
+    runScripts: 'dangerously'
+  });
+  const { window } = dom;
+  window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
+  window.requestAnimationFrame = (cb) => cb();
+  window.cancelAnimationFrame = () => {};
+  window.visualViewport = { height: 800, width: 1200, addEventListener() {}, removeEventListener() {} };
+  window.fetch = async () => ({ text: async () => html, json: async () => ({ reply: 'ok' }) });
+  window.setTimeout = () => 0;
+  window.clearTimeout = () => {};
+  window.hideActiveFabModal = () => {
+    if (window.cleanupChatbot) window.cleanupChatbot();
+  };
+  const script = fs.readFileSync(jsPath, 'utf8');
+  window.eval(script);
+  window.initChatbot();
+
+  const doc = window.document;
+  doc.getElementById('chatbot-input').value = 'Hi';
+  doc.getElementById('chatbot-send').click();
+  await new Promise((r) => setImmediate(r));
+  doc.getElementById('chatbot-exit').click();
+  const openBtn = doc.getElementById('chat-open-btn');
+  assert.ok(openBtn, 'open button remains after exit');
+  openBtn.click();
+  await new Promise((r) => setImmediate(r));
+  const log = doc.getElementById('chat-log');
+  assert.ok(log, 'chatbot container recreated');
+  assert.strictEqual(log.children.length, 0, 'new session has empty log');
+  window.close();
 });
