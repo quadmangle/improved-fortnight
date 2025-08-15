@@ -3,6 +3,20 @@
   let minimizeBtn, openBtn, container, header, inactivityTimer, recaptchaId;
   let langHandler, themeHandler, formHandler, minimizeHandler, openHandler, escHandler, outsideClickHandler;
 
+  async function reloadChat(){
+    try{
+      const res = await fetch('fabs/chatbot.html', { credentials:'same-origin' });
+      const html = await res.text();
+      const template = document.createElement('template');
+      template.innerHTML = html;
+      const newContainer = template.content.querySelector('#chatbot-container');
+      if(newContainer){ document.body.appendChild(newContainer); }
+      window.initChatbot();
+    }catch(err){
+      console.error('Failed to reload chatbot:', err);
+    }
+  }
+
   function initChatbot(){
     const qs = s => document.querySelector(s),
           qsa = s => [...document.querySelectorAll(s)];
@@ -19,6 +33,7 @@
     themeCtrl = qs('#themeCtrl');
     minimizeBtn = qs('#minimizeBtn');
     openBtn = qs('#chat-open-btn');
+    if(openBtn){ openBtn.removeEventListener('click', reloadChat); }
     const brand = document.getElementById('brand');
     const transNodes = qsa('[data-en]');
     const phNodes = qsa('[data-en-ph]');
@@ -317,12 +332,16 @@
     if(exitBtn) exitBtn.removeEventListener('click', endSession);
     if(minimizeBtn && minimizeHandler) minimizeBtn.removeEventListener('click', minimizeHandler);
     if(openBtn && openHandler) openBtn.removeEventListener('click', openHandler);
+    if(openBtn){
+      openBtn.addEventListener('click', reloadChat);
+      openBtn.style.display='inline-flex';
+      openBtn.setAttribute('aria-expanded','false');
+    }
     document.removeEventListener('keydown', escHandler);
     document.removeEventListener('click', outsideClickHandler);
     if(container) container.remove();
-    if(openBtn) openBtn.remove();
     langCtrl=themeCtrl=log=form=input=send=exitBtn=null;
-    minimizeBtn=openBtn=container=header=null;
+    minimizeBtn=container=header=null;
     escHandler=outsideClickHandler=null;
     inactivityTimer=recaptchaId=null;
   }
