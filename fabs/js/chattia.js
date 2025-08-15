@@ -1,7 +1,201 @@
 (function(){
-  let langCtrl, themeCtrl, log, form, input, send, exitBtn;
-  let minimizeBtn, openBtn, container, header, inactivityTimer, recaptchaId;
-  let langHandler, themeHandler, formHandler, minimizeHandler, openHandler, escHandler, outsideClickHandler;
+  const WORKER_CHAT_URL = 'https://your-cloudflare-worker.example.com/chat';
+  const WORKER_END_SESSION_URL = 'https://your-cloudflare-worker.example.com/end-session';
+  const WORKER_HONEYPOT_URL = 'https://your-cloudflare-worker.example.com/honeypot-trip';
+  const RECAPTCHA_SITE_KEY = 'YOUR_RECAPTCHA_SITE_KEY';
+
+  let container, log, form, input, send, closeBtn, minimizeBtn, openBtn;
+  let langCtrl, themeCtrl, brand, hpText, hpCheck;
+  let recaptchaReady = false;
+
+  function loadRecaptcha(){
+    if(document.getElementById('recaptcha-script')) return;
+    const s=document.createElement('script');
+    s.id='recaptcha-script';
+    s.src=`https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`;
+    s.async=true; s.defer=true;
+    s.onload=()=>{
+      if(window.grecaptcha && window.grecaptcha.ready){
+        window.grecaptcha.ready(()=>{ recaptchaReady = true; updateSendEnabled(); });
+      }
+    };
+    document.head.appendChild(s);
+  }
+
+  async function getRecaptchaToken(action){
+    if(!(window.grecaptcha && recaptchaReady)) throw new Error('reCAPTCHA not ready');
+    return grecaptcha.execute(RECAPTCHA_SITE_KEY, { action });
+  }
+
+  function buildBrand(text){
+    brand.innerHTML='';
+    let i=0;
+    for(const ch of text){
+      const span=document.createElement('span');
+      span.className='char';
+      span.textContent=ch;
+      span.style.setProperty('--i', String(i++));
+      brand.appendChild(span);
+    }
+  }
+
+  function addMsg(txt, cls){
+    const div=document.createElement('div');
+    div.className='chat-msg '+cls;
+    div.textContent=txt;
+    log.appendChild(div);
+    log.scrollTop=log.scrollHeight;
+  }
+
+  async function reportHoneypot(reason){
+    try{
+      await fetch(WORKER_HONEYPOT_URL, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ reason, ts: Date.now(), ua: navigator.userAgent })
+      });
+    }catch(e){}
+  }
+  function lockUIForHoneypot(){
+    send.disabled=true;
+    input.disabled=true;
+    addMsg('Security: blocked due to suspicious activity.', 'bot');
+    alert('Security check failed. This session has been blocked.');
+  }
+
+  function updateSendEnabled(){
+    if(!send || !input) return;
+    const hasText = input.value.trim().length > 0;
+    send.disabled = !hasText || input.disabled;
+  }
+
+  function autoGrow(){
+    input.style.height='auto';
+    const maxPx=48;
+    input.style.height=Math.min(input.scrollHeight, maxPx)+'px';
+  }
+
+  async function handleSubmit(e){
+    e.preventDefault();
+    if(hpText.value.trim() !== '' || hpCheck.checked){
+      await reportHoneypot('honeypot_on_submit');
+      lockUIForHoneypot();
+      return;
+    }
+    const msg = input.value.trim();
+    if(!msg){ updateSendEnabled(); return; }
+    addMsg(msg,'user');
+    input.value=''; autoGrow(); updateSendEnabled();
+    addMsg('…','bot');
+    let token='';
+    try{
+      token = await getRecaptchaToken('chat_send');
+    }catch(err){
+      log.lastChild.textContent = 'Security: reCAPTCHA unavailable. Try again later.';
+      return;
+    }
+    try{
+      const r = await fetch(WORKER_CHAT_URL, {
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({ message: msg, recaptchaToken: token })
+      });
+      const d = await r.json();
+      log.lastChild.textContent = d.reply || 'No reply.';
+    }catch{
+      log.lastChild.textContent = 'Error: Can’t reach AI.';
+    }
+  }
+
+  async function terminateSession(){
+    try{ await fetch(WORKER_END_SESSION_URL, { method:'POST' }); }catch(e){}
+  }
+
+  function clearUIState(){
+    log.innerHTML='';
+    input.value='';
+    autoGrow();
+    updateSendEnabled();
+  }
+
+  function openChat(){
+    container.style.display='';
+    container.removeAttribute('aria-hidden');
+    openBtn.style.display='none';
+    openBtn.setAttribute('aria-expanded','true');
+    openBtn.removeEventListener('click', reloadChat);
+    openBtn.removeEventListener('click', openChat);
+  }
+
+  function minimizeChat(){
+    container.style.display='none';
+    container.setAttribute('aria-hidden','true');
+    openBtn.style.display='inline-flex';
+    openBtn.setAttribute('aria-expanded','false');
+    openBtn.removeEventListener('click', reloadChat);
+    openBtn.addEventListener('click', openChat, { once:true });
+  }
+
+  function closeChat(){
+    clearUIState();
+    terminateSession();
+    container.remove();
+    openBtn.style.display='inline-flex';
+    openBtn.setAttribute('aria-expanded','false');
+    openBtn.removeEventListener('click', openChat);
+    openBtn.addEventListener('click', ()=>{ reloadChat(); }, { once:true });
+  }
+
+  function initChatbot(){
+    const qs = s=>document.querySelector(s), qsa=s=>[...document.querySelectorAll(s)];
+    container = qs('#chatbot-container');
+    if(!container) return;
+    log = qs('#chat-log');
+    form = qs('#chatbot-input-grid');
+    input = qs('#chatbot-input');
+    send = qs('#chatbot-send');
+    closeBtn = qs('#chatbot-close');
+    minimizeBtn = qs('#minimizeBtn');
+    openBtn = qs('#chat-open-btn');
+    langCtrl = qs('#langCtrl');
+    themeCtrl = qs('#themeCtrl');
+    brand = qs('#brand');
+    hpText = qs('#hp_text');
+    hpCheck = qs('#hp_check');
+    const transNodes = qsa('[data-en]');
+    const phNodes = qsa('[data-en-ph]');
+
+    buildBrand(brand.dataset.en || 'Ops Online Support');
+    langCtrl.textContent='ES';
+    langCtrl.addEventListener('click', ()=>{
+      const goES = langCtrl.textContent === 'ES';
+      document.documentElement.lang = goES ? 'es' : 'en';
+      langCtrl.textContent = goES ? 'EN' : 'ES';
+      transNodes.forEach(n => n.textContent = goES ? (n.dataset.es || n.textContent) : (n.dataset.en || n.textContent));
+      phNodes.forEach(n => n.placeholder = goES ? (n.dataset.esPh || n.placeholder) : (n.dataset.enPh || n.placeholder));
+      buildBrand(goES ? (brand.dataset.es || 'Soporte en Línea OPS') : (brand.dataset.en || 'Ops Online Support'));
+    });
+    themeCtrl.addEventListener('click', ()=>{
+      const toDark = themeCtrl.textContent === 'Dark';
+      document.body.classList.toggle('dark', toDark);
+      themeCtrl.textContent = toDark ? 'Light' : 'Dark';
+    });
+
+    input.addEventListener('input', ()=>{ autoGrow(); updateSendEnabled(); });
+    input.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); if(!send.disabled) form.requestSubmit(); }});
+    window.addEventListener('load', ()=>{ autoGrow(); updateSendEnabled(); });
+
+    form.addEventListener('submit', handleSubmit);
+    minimizeBtn.addEventListener('click', minimizeChat);
+    closeBtn.addEventListener('click', closeChat);
+
+    ['change','input','click'].forEach(ev=>{
+      hpText.addEventListener(ev, ()=>{ reportHoneypot('hp_text_touched'); lockUIForHoneypot(); }, { passive:true });
+      hpCheck.addEventListener(ev, ()=>{ reportHoneypot('hp_check_ticked'); lockUIForHoneypot(); }, { passive:true });
+    });
+
+    loadRecaptcha();
+  }
 
   async function reloadChat(){
     try{
@@ -9,333 +203,15 @@
       const html = await res.text();
       const template = document.createElement('template');
       template.innerHTML = html;
-      const newContainer = template.content.querySelector('#chatbot-container');
-      if(newContainer){ document.body.appendChild(newContainer); }
-      window.initChatbot();
+      const frag = template.content;
+      document.body.appendChild(frag);
+      initChatbot();
     }catch(err){
       console.error('Failed to reload chatbot:', err);
     }
   }
 
-  function initChatbot(){
-    const qs = s => document.querySelector(s),
-          qsa = s => [...document.querySelectorAll(s)];
-    container = qs('#chatbot-container');
-    if (!container) return;
-    header = qs('#chatbot-header');
-    log = qs('#chat-log');
-    form = qs('#chatbot-input-grid');
-    input = qs('#chatbot-input');
-    send = qs('#chatbot-send');
-    exitBtn = qs('#chatbot-exit');
-    langCtrl = qs('#langCtrl');
-    themeCtrl = qs('#themeCtrl');
-    minimizeBtn = qs('#minimizeBtn');
-    openBtn = qs('#chat-open-btn');
-    if(openBtn){ openBtn.removeEventListener('click', reloadChat); }
-    const brand = document.getElementById('brand');
-    const transNodes = qsa('[data-en]');
-    const phNodes = qsa('[data-en-ph]');
-    const guard = qs('#human-check');
-    if(window.grecaptcha && document.getElementById('recaptcha-container')){
-      recaptchaId = window.grecaptcha.render('recaptcha-container', {
-        sitekey: 'YOUR_RECAPTCHA_SITE_KEY', // TODO: replace with real site key
-        size: 'invisible'
-      });
-    }
-
-    function buildBrand(text){
-      brand.innerHTML='';
-      let idx=0;
-      for(const ch of text){
-        const span=document.createElement('span');
-        span.className='char';
-        span.textContent=ch;
-        span.style.setProperty('--i', String(idx++));
-        brand.appendChild(span);
-      }
-    }
-    buildBrand(brand.dataset.en || 'Ops Online Support');
-    langCtrl.textContent='ES';
-    langHandler = () => {
-      const goES = langCtrl.textContent === 'ES';
-      document.documentElement.lang = goES ? 'es' : 'en';
-      langCtrl.textContent = goES ? 'EN' : 'ES';
-      transNodes.forEach(n => n.textContent = goES ? (n.dataset.es || n.textContent) : (n.dataset.en || n.textContent));
-      phNodes.forEach(n => n.placeholder = goES ? (n.dataset.esPh || n.placeholder) : (n.dataset.enPh || n.placeholder));
-      buildBrand(goES ? (brand.dataset.es || 'Soporte en Línea OPS') : (brand.dataset.en || 'Ops Online Support'));
-    };
-    langCtrl.addEventListener('click', langHandler);
-    themeHandler = () => {
-      const toDark = themeCtrl.textContent === 'Dark';
-      document.body.classList.toggle('dark', toDark);
-      themeCtrl.textContent = toDark ? 'Light' : 'Dark';
-    };
-    themeCtrl.addEventListener('click', themeHandler);
-
-    // Honeypot checkbox – triggers alert and terminates session if checked
-    if(guard){
-      guard.addEventListener('change', ()=>{
-        if(guard.checked){
-          alert('Bot activity detected.');
-          fetch('https://your-cloudflare-worker.example.com/bot-trap', {
-            method:'POST',
-            headers:{'Content-Type':'application/json'},
-            body: JSON.stringify({ trap: 'human-check' })
-          }).catch(()=>{});
-          endSession();
-        }
-      });
-    }
-
-    function autoGrow(){
-      input.style.height='auto';
-      const maxPx=48;
-      input.style.height=Math.min(input.scrollHeight, maxPx)+'px';
-    }
-    input.addEventListener('input', autoGrow);
-    window.addEventListener('load', autoGrow);
-    input.addEventListener('keydown', e => {
-      if(e.key === 'Enter' && !e.shiftKey){
-        e.preventDefault();
-        form.dispatchEvent(new Event('submit', { cancelable: true }));
-      }
-    });
-
-    function addMsg(txt, cls){
-      const div=document.createElement('div');
-      div.className='chat-msg '+cls;
-      div.textContent=txt;
-      log.appendChild(div);
-      log.scrollTop = log.scrollHeight;
-    }
-
-    formHandler = async e => {
-      e.preventDefault();
-      if(guard && guard.checked){
-        return;
-      }
-      const msg = input.value.trim();
-      if(!msg) return;
-      addMsg(msg,'user');
-      input.value=''; autoGrow(); send.disabled=true;
-      addMsg('…','bot');
-      try{
-        if(window.grecaptcha && typeof window.grecaptcha.execute === 'function' && typeof recaptchaId !== 'undefined'){
-          await window.grecaptcha.execute(recaptchaId);
-          window.grecaptcha.reset(recaptchaId);
-        }
-        const r = await fetch('https://your-cloudflare-worker.example.com/chat',{
-          method:'POST', headers:{'Content-Type':'application/json'},
-          body: JSON.stringify({ message: msg })
-        });
-        const d = await r.json();
-        log.lastChild.textContent = d.reply || 'No reply.';
-      }catch{
-        log.lastChild.textContent = 'Error: Can’t reach AI.';
-      }finally{
-        send.disabled=false;
-        scheduleInactivity();
-      }
-    };
-    form.addEventListener('submit', formHandler);
-    if(exitBtn) exitBtn.addEventListener('click', endSession);
-    escHandler = e => { if(e.key === 'Escape') endSession(); };
-    document.addEventListener('keydown', escHandler);
-    outsideClickHandler = e => {
-      if(container && container.style.display !== 'none' && !container.contains(e.target) && e.target !== openBtn) {
-        endSession();
-      }
-    };
-    document.addEventListener('click', outsideClickHandler);
-    let inputFocused=false;
-    function applyKeyboardMode(isOpen){
-      document.body.classList.toggle('kb-open', !!isOpen);
-      if(isOpen){ setTimeout(()=> input.scrollIntoView({ block:'nearest', behavior:'smooth' }), 50); }
-    }
-    function handleViewportChange(){
-      setVHUnit();
-      const vv = window.visualViewport;
-      if(vv){
-        const keyboardLikelyOpen = inputFocused && (vv.height < window.innerHeight * 0.85);
-        applyKeyboardMode(keyboardLikelyOpen);
-      }else{
-        const keyboardLikelyOpen = inputFocused && (window.innerHeight < screen.height * 0.85);
-        applyKeyboardMode(keyboardLikelyOpen);
-      }
-    }
-    let rAF; function onResize(){ cancelAnimationFrame(rAF); rAF = requestAnimationFrame(handleViewportChange); }
-    if(window.visualViewport){
-      visualViewport.addEventListener('resize', onResize);
-      visualViewport.addEventListener('scroll', onResize);
-    }
-    window.addEventListener('resize', onResize);
-    window.addEventListener('orientationchange', ()=>{ setTimeout(()=>{ handleViewportChange(); }, 100); });
-    input.addEventListener('focus', ()=>{ inputFocused=true; handleViewportChange(); });
-    input.addEventListener('blur', ()=>{ inputFocused=false; applyKeyboardMode(false); });
-    const DRAG_MIN_WIDTH=900;
-    let dragActive=false, dragStart={x:0,y:0}, boxStart={x:0,y:0};
-    function allowDrag(){ return window.innerWidth >= DRAG_MIN_WIDTH; }
-    function enableDragUI(enabled){ document.body.classList.toggle('drag-enabled', enabled); }
-    function ensureLeftTop(){
-      const rect = container.getBoundingClientRect();
-      container.style.left = rect.left + 'px';
-      container.style.top  = rect.top  + 'px';
-      container.style.right = 'auto';
-      container.style.bottom = 'auto';
-    }
-    function clampToViewport(x,y){
-      const vv = window.visualViewport;
-      const vw = vv ? vv.width : window.innerWidth;
-      const vh = vv ? vv.height : window.innerHeight;
-      const rect = container.getBoundingClientRect();
-      const maxX = vw - rect.width;
-      const maxY = vh - rect.height;
-      return { x: Math.max(0, Math.min(x, maxX)), y: Math.max(0, Math.min(y, maxY)) };
-    }
-    function onPointerDown(e){
-      if(!allowDrag()) return;
-      if(e.target.closest('button, .ctrl')) return;
-      dragActive=true;
-      header.setPointerCapture?.(e.pointerId);
-      ensureLeftTop();
-      const rect = container.getBoundingClientRect();
-      dragStart.x = e.clientX; dragStart.y = e.clientY;
-      boxStart.x = rect.left;  boxStart.y = rect.top;
-    }
-    function onPointerMove(e){
-      if(!dragActive) return;
-      const dx = e.clientX - dragStart.x;
-      const dy = e.clientY - dragStart.y;
-      const t = clampToViewport(boxStart.x + dx, boxStart.y + dy);
-      container.style.left = t.x + 'px';
-      container.style.top  = t.y + 'px';
-    }
-    function onPointerUp(e){
-      if(!dragActive) return;
-      dragActive=false;
-      header.releasePointerCapture?.(e.pointerId);
-    }
-    function bindDrag(){
-      enableDragUI(allowDrag());
-      header.onpointerdown  = allowDrag() ? onPointerDown : null;
-      header.onpointermove  = allowDrag() ? onPointerMove : null;
-      header.onpointerup    = allowDrag() ? onPointerUp   : null;
-      header.onpointercancel= allowDrag() ? onPointerUp   : null;
-      if(!allowDrag()){
-        container.style.left='';
-        container.style.top='';
-        container.style.right='';
-        container.style.bottom='calc(env(safe-area-inset-bottom) + 8px)';
-      }else{
-        container.style.left='';
-        container.style.top='';
-        container.style.right='24px';
-        container.style.bottom='24px';
-      }
-    }
-    bindDrag();
-    window.addEventListener('resize', bindDrag);
-    let brandHoverCooldown=0;
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    function playShine(){
-      if(reducedMotion) return;
-      brand.classList.remove('shine'); void brand.offsetWidth; brand.classList.add('shine');
-      const durationMs=600, stepMs=60, totalMs=(brand.textContent.length-1)*stepMs + durationMs + 50;
-      setTimeout(()=> brand.classList.remove('shine'), totalMs);
-    }
-    if (window.matchMedia('(hover: hover)').matches) {
-      brand.addEventListener('mouseenter', ()=>{
-        const now=performance.now();
-        if (now - brandHoverCooldown > 1200) {
-          brandHoverCooldown = now;
-          playShine();
-        }
-      });
-    }
-    if (window.matchMedia('(hover: none)').matches && !reducedMotion) {
-      window.addEventListener('load', ()=> setTimeout(()=>{ if(document.visibilityState==='visible') playShine(); }, 350), { once:true });
-    }
-
-    function clearInactivity(){ if(inactivityTimer){ clearTimeout(inactivityTimer); inactivityTimer=null; } }
-    function endSession(){
-      clearInactivity();
-      log.innerHTML='';
-      send.disabled=true;
-      if(typeof window.hideActiveFabModal === 'function'){
-        window.hideActiveFabModal();
-      }
-    }
-    function scheduleInactivity(){
-      clearInactivity();
-      inactivityTimer = setTimeout(endSession, 60000);
-    }
-
-    ['click','keydown','touchstart'].forEach(ev=>{
-      container.addEventListener(ev, scheduleInactivity, { passive:true });
-    });
-    document.addEventListener('visibilitychange', ()=>{
-      if(document.visibilityState !== 'visible') clearInactivity();
-      else scheduleInactivity();
-    });
-
-    let isChatVisible=true;
-    function applyChatVisibility(){
-      if(isChatVisible){
-        container.style.display='';
-        container.removeAttribute('aria-hidden');
-        if(openBtn){
-          openBtn.style.display='none';
-          openBtn.setAttribute('aria-expanded','true');
-        }
-      }else{
-        container.style.display='none';
-        container.setAttribute('aria-hidden','true');
-        if(openBtn){
-          openBtn.style.display='inline-flex';
-          openBtn.setAttribute('aria-expanded','false');
-        }
-      }
-    }
-    function minimizeChat(){
-      isChatVisible=false;
-      clearInactivity();
-      applyChatVisibility();
-    }
-    function openChat(){
-      isChatVisible=true;
-      scheduleInactivity();
-      applyChatVisibility();
-    }
-    minimizeHandler = minimizeChat;
-    openHandler = openChat;
-    minimizeBtn.addEventListener('click', minimizeHandler);
-    if(openBtn) openBtn.addEventListener('click', openHandler);
-    window.addEventListener('resize', applyChatVisibility);
-    scheduleInactivity();
-  }
-
-  function cleanupChatbot(){
-    if(langCtrl && langHandler) langCtrl.removeEventListener('click', langHandler);
-    if(themeCtrl && themeHandler) themeCtrl.removeEventListener('click', themeHandler);
-    if(form && formHandler) form.removeEventListener('submit', formHandler);
-    if(exitBtn) exitBtn.removeEventListener('click', endSession);
-    if(minimizeBtn && minimizeHandler) minimizeBtn.removeEventListener('click', minimizeHandler);
-    if(openBtn && openHandler) openBtn.removeEventListener('click', openHandler);
-    if(openBtn){
-      openBtn.addEventListener('click', reloadChat);
-      openBtn.style.display='inline-flex';
-      openBtn.setAttribute('aria-expanded','false');
-    }
-    document.removeEventListener('keydown', escHandler);
-    document.removeEventListener('click', outsideClickHandler);
-    if(container) container.remove();
-    langCtrl=themeCtrl=log=form=input=send=exitBtn=null;
-    minimizeBtn=container=header=null;
-    escHandler=outsideClickHandler=null;
-    inactivityTimer=recaptchaId=null;
-  }
-
+  window.reloadChat = reloadChat;
   window.initChatbot = initChatbot;
-  window.cleanupChatbot = cleanupChatbot;
+  window.addEventListener('load', reloadChat);
 })();
