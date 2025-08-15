@@ -7,6 +7,7 @@
   let container, log, form, input, send, closeBtn, minimizeBtn, openBtn;
   let langCtrl, themeCtrl, brand, hpText, hpCheck;
   let recaptchaReady = false;
+  let outsideClickHandler, escKeyHandler;
 
   function loadRecaptcha(){
     if(document.getElementById('recaptcha-script')) return;
@@ -139,6 +140,8 @@
   function closeChat(){
     clearUIState();
     terminateSession();
+    document.removeEventListener('click', outsideClickHandler);
+    document.removeEventListener('keydown', escKeyHandler);
     container.remove();
     openBtn.style.display='inline-flex';
     openBtn.setAttribute('aria-expanded','false');
@@ -194,6 +197,19 @@
     form.addEventListener('submit', handleSubmit);
     minimizeBtn.addEventListener('click', minimizeChat);
     closeBtn.addEventListener('click', closeChat);
+
+    escKeyHandler = (e)=>{ if(e.key === 'Escape'){ closeChat(); } };
+    outsideClickHandler = (e)=>{
+      if(
+        container.style.display !== 'none' &&
+        !container.contains(e.target) &&
+        e.target !== openBtn
+      ){
+        closeChat();
+      }
+    };
+    document.addEventListener('keydown', escKeyHandler);
+    document.addEventListener('click', outsideClickHandler);
 
     ['change','input','click'].forEach(ev=>{
       hpText.addEventListener(ev, ()=>{ reportHoneypot('hp_text_touched'); lockUIForHoneypot(); }, { passive:true });
