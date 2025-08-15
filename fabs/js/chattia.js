@@ -20,7 +20,6 @@
   function initChatbot(){
     const qs = s => document.querySelector(s),
           qsa = s => [...document.querySelectorAll(s)];
-    const root = document.documentElement;
     container = qs('#chatbot-container');
     if (!container) return;
     header = qs('#chatbot-header');
@@ -157,11 +156,13 @@
     function handleViewportChange(){
       setVHUnit();
       const vv = window.visualViewport;
-      const keyboardLikelyOpen = inputFocused && (
-        vv ? (vv.height < window.innerHeight * 0.85)
-           : (window.innerHeight < screen.height * 0.85)
-      );
-      applyKeyboardMode(keyboardLikelyOpen);
+      if(vv){
+        const keyboardLikelyOpen = inputFocused && (vv.height < window.innerHeight * 0.85);
+        applyKeyboardMode(keyboardLikelyOpen);
+      }else{
+        const keyboardLikelyOpen = inputFocused && (window.innerHeight < screen.height * 0.85);
+        applyKeyboardMode(keyboardLikelyOpen);
+      }
     }
     let rAF; function onResize(){ cancelAnimationFrame(rAF); rAF = requestAnimationFrame(handleViewportChange); }
     if(window.visualViewport){
@@ -169,7 +170,7 @@
       visualViewport.addEventListener('scroll', onResize);
     }
     window.addEventListener('resize', onResize);
-    window.addEventListener('orientationchange', ()=>{ setTimeout(handleViewportChange, 100); });
+    window.addEventListener('orientationchange', ()=>{ setTimeout(()=>{ handleViewportChange(); }, 100); });
     input.addEventListener('focus', ()=>{ inputFocused=true; handleViewportChange(); });
     input.addEventListener('blur', ()=>{ inputFocused=false; applyKeyboardMode(false); });
     const DRAG_MIN_WIDTH=900;
@@ -338,4 +339,3 @@
   window.initChatbot = initChatbot;
   window.cleanupChatbot = cleanupChatbot;
 })();
-
