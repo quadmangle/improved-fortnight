@@ -70,19 +70,32 @@ test('mobile menu closes on backdrop or outside click', async () => {
   const toggle = window.document.querySelector('.nav-menu-toggle');
   const navLinks = window.document.querySelector('.nav-links');
   const backdrop = window.document.querySelector('.nav-backdrop');
+  const icon = toggle.querySelector('i');
 
-  // Trigger menu via non-bubbling click so the document-level
-  // outside-click handler doesn't fire during the same event cycle.
-  toggle.dispatchEvent(new window.MouseEvent('click'));
+  // Open menu with a normal bubbling click
+  toggle.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setImmediate(r));
   assert.ok(navLinks.classList.contains('open'), 'menu should open');
   assert.ok(backdrop.classList.contains('open'), 'backdrop should be visible when menu opens');
+  assert.ok(icon.classList.contains('fa-xmark'), 'icon should change to xmark when menu opens');
 
+  // Close via backdrop click
   backdrop.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   assert.ok(!navLinks.classList.contains('open'), 'menu should close on backdrop click');
+  assert.ok(icon.classList.contains('fa-bars'), 'icon should revert to bars when menu closes');
 
-  toggle.dispatchEvent(new window.MouseEvent('click'));
+  // Reopen and close via Escape key
+  toggle.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setImmediate(r));
   assert.ok(navLinks.classList.contains('open'), 'menu should reopen');
+  window.document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape' }));
+  assert.ok(!navLinks.classList.contains('open'), 'menu should close on ESC key');
 
+  // Reopen and close via outside click
+  toggle.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  await new Promise(r => setImmediate(r));
+  assert.ok(navLinks.classList.contains('open'), 'menu should open again');
   window.document.body.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   assert.ok(!navLinks.classList.contains('open'), 'menu should close on outside click');
+  assert.ok(icon.classList.contains('fa-bars'), 'icon should revert to bars after outside click close');
 });
