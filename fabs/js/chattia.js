@@ -150,6 +150,12 @@
     const qs = s=>document.querySelector(s), qsa=s=>[...document.querySelectorAll(s)];
     container = qs('#chatbot-container');
     if(!container) return;
+    if (window.initDraggableModal && window.innerWidth >= 768) {
+      window.initDraggableModal(container);
+      document.body.classList.add('drag-enabled');
+    } else {
+      document.body.classList.remove('drag-enabled');
+    }
     log = qs('#chat-log');
     form = qs('#chatbot-input-grid');
     input = qs('#chatbot-input');
