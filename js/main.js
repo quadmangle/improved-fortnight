@@ -245,10 +245,13 @@ document.addEventListener('DOMContentLoaded', async () => {
   const navLinks = document.querySelector('.nav-links');
   // Backdrop element shown behind the mobile menu; clicking it closes the menu
   const navBackdrop = document.querySelector('.nav-backdrop');
+  let navLabel = 'Menu';
+  let closeLabel = 'Close navigation menu';
   if (navToggle) {
     const ariaKey = navToggle.getAttribute('data-aria-label-key');
     const langData = (typeof translations !== 'undefined' && translations[currentLanguage]) || {};
-    const navLabel = langData[ariaKey] || 'Menu';
+    navLabel = langData[ariaKey] || 'Menu';
+    closeLabel = langData['aria-close-menu'] || 'Close navigation menu';
     navToggle.setAttribute('aria-label', navLabel);
 
     const updateToggleVisibility = () => {
@@ -281,8 +284,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     function handleClickOutside(e) {
-      // Close the menu when clicking outside the nav links or on the backdrop
-      if (!navLinks.contains(e.target) && e.target !== navToggle) {
+      // Close the menu when clicking outside the nav links or toggle
+      if (!navLinks.contains(e.target) && !navToggle.contains(e.target)) {
         closeMenu();
       }
     }
@@ -290,6 +293,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     function openMenu() {
       navLinks.classList.add('open');
       navToggle.setAttribute('aria-expanded', 'true');
+      navToggle.setAttribute('aria-label', closeLabel);
+      const icon = navToggle.querySelector('i');
+      if (icon) {
+        icon.classList.remove('fa-bars');
+        icon.classList.add('fa-xmark');
+      }
       if (navBackdrop) {
         navBackdrop.classList.add('open');
         navBackdrop.removeAttribute('hidden');
@@ -303,12 +312,19 @@ document.addEventListener('DOMContentLoaded', async () => {
         firstFocusable.focus();
       }
       document.addEventListener('keydown', trapFocus);
-      document.addEventListener('click', handleClickOutside);
+      // Delay adding outside click handler so the opening click doesn't trigger it
+      setTimeout(() => document.addEventListener('click', handleClickOutside));
     }
 
     function closeMenu() {
       navLinks.classList.remove('open');
       navToggle.setAttribute('aria-expanded', 'false');
+      navToggle.setAttribute('aria-label', navLabel);
+      const icon = navToggle.querySelector('i');
+      if (icon) {
+        icon.classList.add('fa-bars');
+        icon.classList.remove('fa-xmark');
+      }
       if (navBackdrop) {
         navBackdrop.classList.remove('open');
         navBackdrop.setAttribute('hidden', '');
