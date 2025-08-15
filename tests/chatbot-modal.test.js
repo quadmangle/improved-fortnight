@@ -15,6 +15,10 @@ test('Chattia chatbot core interactions', async () => {
   });
 
   const { window } = dom;
+  const cssPath = path.join(__dirname, '..', 'fabs', 'css', 'chatbot.css');
+  const styleEl = window.document.createElement('style');
+  styleEl.textContent = fs.readFileSync(cssPath, 'utf8');
+  window.document.head.appendChild(styleEl);
   window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
   window.requestAnimationFrame = (cb) => cb();
   window.cancelAnimationFrame = () => {};
@@ -38,8 +42,16 @@ test('Chattia chatbot core interactions', async () => {
   window.initChatbot();
 
   const document = window.document;
+  const headerEl = document.getElementById('chatbot-header');
   const brand = document.getElementById('brand');
   assert.ok(brand.querySelectorAll('.char').length > 0, 'brand built per letter');
+  const headerStyle = () => window.getComputedStyle(headerEl);
+  assert.strictEqual(headerStyle().getPropertyValue('width'), '100%');
+  assert.strictEqual(headerStyle().getPropertyValue('box-sizing'), 'border-box');
+  document.body.classList.add('kb-open');
+  assert.strictEqual(headerStyle().getPropertyValue('width'), '100%');
+  assert.strictEqual(headerStyle().getPropertyValue('box-sizing'), 'border-box');
+  document.body.classList.remove('kb-open');
 
   // language toggle updates placeholders and brand
   const langCtrl = document.getElementById('langCtrl');

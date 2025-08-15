@@ -137,8 +137,6 @@
     };
     document.addEventListener('click', outsideClickHandler);
 
-    function setVHUnit(h){ const vh = h ? (h/100) : (window.innerHeight/100); root.style.setProperty('--vh', vh + 'px'); }
-    setVHUnit();
     let inputFocused=false;
     function applyKeyboardMode(isOpen){
       document.body.classList.toggle('kb-open', !!isOpen);
@@ -147,11 +145,9 @@
     function handleViewportChange(){
       const vv = window.visualViewport;
       if(vv){
-        setVHUnit(vv.height);
         const keyboardLikelyOpen = inputFocused && (vv.height < window.innerHeight * 0.85);
         applyKeyboardMode(keyboardLikelyOpen);
       }else{
-        setVHUnit();
         const keyboardLikelyOpen = inputFocused && (window.innerHeight < screen.height * 0.85);
         applyKeyboardMode(keyboardLikelyOpen);
       }
@@ -162,9 +158,9 @@
       visualViewport.addEventListener('scroll', onResize);
     }
     window.addEventListener('resize', onResize);
-    window.addEventListener('orientationchange', ()=>{ setTimeout(()=>{ setVHUnit(); handleViewportChange(); }, 100); });
+    window.addEventListener('orientationchange', ()=>{ setTimeout(handleViewportChange, 100); });
     input.addEventListener('focus', ()=>{ inputFocused=true; handleViewportChange(); });
-    input.addEventListener('blur', ()=>{ inputFocused=false; applyKeyboardMode(false); setVHUnit(); });
+    input.addEventListener('blur', ()=>{ inputFocused=false; applyKeyboardMode(false); });
 
     const DRAG_MIN_WIDTH=900;
     let dragActive=false, dragStart={x:0,y:0}, boxStart={x:0,y:0};
