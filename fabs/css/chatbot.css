@@ -34,8 +34,10 @@ body {
   position:fixed;
   left:4vw; right:4vw; bottom:calc(env(safe-area-inset-bottom) + 8px);
   width:auto;
-  height:calc(var(--vh) * 80);
-  max-height:calc(var(--vh) * 85);
+  height:45vh;
+  max-height:45vh;
+  height:45dvh;
+  max-height:45dvh;
   background: var(--panel);
   border:2px solid var(--clr-accent);
   border-radius:18px;
@@ -48,8 +50,10 @@ body {
   #chatbot-container{ width:380px; left:auto; right:24px; bottom:24px; }
 }
 body.kb-open #chatbot-container{
-  height:calc(var(--vh) * 62);
-  max-height:calc(var(--vh) * 65);
+  height:45vh;
+  max-height:45vh;
+  height:45dvh;
+  max-height:45dvh;
 }
 #chat-open-btn{
   position:fixed; right:20px; bottom:20px;

@@ -145,16 +145,13 @@
       if(isOpen){ setTimeout(()=> input.scrollIntoView({ block:'nearest', behavior:'smooth' }), 50); }
     }
     function handleViewportChange(){
+      setVHUnit();
       const vv = window.visualViewport;
-      if(vv){
-        setVHUnit(vv.height);
-        const keyboardLikelyOpen = inputFocused && (vv.height < window.innerHeight * 0.85);
-        applyKeyboardMode(keyboardLikelyOpen);
-      }else{
-        setVHUnit();
-        const keyboardLikelyOpen = inputFocused && (window.innerHeight < screen.height * 0.85);
-        applyKeyboardMode(keyboardLikelyOpen);
-      }
+      const keyboardLikelyOpen = inputFocused && (
+        vv ? (vv.height < window.innerHeight * 0.85)
+           : (window.innerHeight < screen.height * 0.85)
+      );
+      applyKeyboardMode(keyboardLikelyOpen);
     }
     let rAF; function onResize(){ cancelAnimationFrame(rAF); rAF = requestAnimationFrame(handleViewportChange); }
     if(window.visualViewport){
