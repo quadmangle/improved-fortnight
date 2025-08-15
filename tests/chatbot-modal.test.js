@@ -88,5 +88,52 @@ test('Chattia chatbot core interactions', async () => {
   inactivityFn();
   assert.strictEqual(log.children.length, 0);
   assert.strictEqual(document.getElementById('chatbot-container').style.display, 'none');
-  assert.ok(send.disabled);
+    assert.ok(send.disabled);
+  });
+
+test('Chattia chatbot exits on send and exit button', async () => {
+  const htmlPath = path.join(__dirname, '..', 'fabs', 'chatbot.html');
+  const jsPath = path.join(__dirname, '..', 'fabs', 'js', 'chattia.js');
+  const html = fs.readFileSync(htmlPath, 'utf8');
+
+  const setup = () => {
+    const dom = new JSDOM(`<body>${html}</body>`, {
+      url: 'https://example.com/',
+      runScripts: 'dangerously'
+    });
+    const { window } = dom;
+    window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
+    window.requestAnimationFrame = (cb) => cb();
+    window.cancelAnimationFrame = () => {};
+    window.visualViewport = { height: 800, width: 1200, addEventListener() {}, removeEventListener() {} };
+    window.fetch = async () => ({ json: async () => ({ reply: 'ok' }) });
+    window.setTimeout = () => 0;
+    window.clearTimeout = () => {};
+    window.hideActiveFabModal = () => {
+      const el = window.document.getElementById('chatbot-container');
+      if (el) el.remove();
+    };
+    const script = fs.readFileSync(jsPath, 'utf8');
+    window.eval(script);
+    window.initChatbot();
+    return window;
+  };
+
+  // exit button closes chatbot
+  let window1 = setup();
+  const exitBtn = window1.document.getElementById('chatbot-exit');
+  exitBtn.click();
+  assert.strictEqual(window1.document.getElementById('chatbot-container'), null);
+
+  // send button closes chatbot
+  window1 = setup();
+  const doc = window1.document;
+  const guard = doc.getElementById('human-check');
+  const send = doc.getElementById('chatbot-send');
+  guard.checked = true;
+  guard.dispatchEvent(new window1.Event('change'));
+  doc.getElementById('chatbot-input').value = 'Hi';
+  doc.getElementById('chatbot-input-grid').dispatchEvent(new window1.Event('submit', { cancelable: true }));
+  await new Promise((r) => setImmediate(r));
+  assert.strictEqual(doc.getElementById('chatbot-container'), null);
 });
