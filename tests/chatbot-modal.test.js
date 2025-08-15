@@ -28,6 +28,10 @@ test('Chattia chatbot core interactions', async () => {
   let inactivityFn;
   window.setTimeout = (fn, ms) => { if (ms === 60000) inactivityFn = fn; return 0; };
   window.clearTimeout = () => {};
+  window.hideActiveFabModal = () => {
+    const el = window.document.getElementById('chatbot-container');
+    if (el) el.style.display = 'none';
+  };
 
   const script = fs.readFileSync(jsPath, 'utf8');
   window.eval(script);
