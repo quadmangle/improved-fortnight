@@ -77,6 +77,9 @@ test('Chattia chatbot core interactions', async () => {
   const openBtn = document.getElementById('chat-open-btn');
   minimizeBtn.click();
   assert.strictEqual(containerEl.style.display, 'none');
+  window.innerWidth = 400;
+  window.dispatchEvent(new window.Event('resize'));
+  assert.strictEqual(containerEl.style.display, 'none', 'remains minimized after resize');
   openBtn.click();
   assert.strictEqual(containerEl.style.display, '');
 
