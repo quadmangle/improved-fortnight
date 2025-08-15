@@ -43,9 +43,9 @@
         </div>
       </form>
       <!-- Honeypot human check; hidden from real users -->
-      <label class="human-check" style="display:none;">
-        <input type="checkbox" id="human-check" />
-        <span id="human-label" data-en="I am human" data-es="Soy humano">I am human</span>
+      <label class="human-check" aria-hidden="true" tabindex="-1" style="display:none;">
+        <input type="checkbox" id="human-check" tabindex="-1" />
+        <span id="human-label">I am human</span>
       </label>
       <div id="recaptcha-container" class="g-recaptcha"
         data-size="invisible"
