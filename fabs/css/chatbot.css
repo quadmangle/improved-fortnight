@@ -10,7 +10,6 @@
   --input-bg:   #f5f2fa;
   --input-bd:   #cbb3f6;
   --text-inv:   #ffffff;
-  --vh: 1vh;
 }
 body.dark {
   --bg:       #121212;
@@ -38,7 +37,7 @@ body {
   max-height:45vh;
   height:45dvh;
   max-height:45dvh;
-  background: var(--panel);
+var(--panel);
   border:2px solid var(--clr-accent);
   border-radius:18px;
   box-shadow:0 8px 32px #0006;
@@ -64,6 +63,8 @@ body.kb-open #chatbot-container{
   z-index:10000;
 }
 #chatbot-header{
+  width:100%;
+  box-sizing:border-box;
   display:flex; justify-content:space-between; align-items:center; gap:.5rem;
   background: linear-gradient(135deg,var(--clr-primary) 0%, var(--clr-accent) 100%);
   color:var(--text-inv); font-weight:600; font-size:1.1rem; padding:.75rem 1rem; user-select:none;
@@ -145,6 +146,3 @@ body.dark #chatbot-input{ color:#efeaf8; }
 @media(max-width:480px){
   #chatbot-container{ left:3vw; right:3vw; }
 }
-@supports (height: 100dvh){ :root{ --vh: 1dvh; } }
-@supports (height: 100svh){ :root{ --vh: 1svh; } }
-
