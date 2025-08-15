@@ -151,13 +151,13 @@ test('Chattia chatbot exits on multiple triggers', async () => {
   window1.document.body.appendChild(outside);
   outside.dispatchEvent(new window1.MouseEvent('click', { bubbles: true }));
   assert.strictEqual(window1.document.getElementById('chatbot-container'), null);
-
-  // human trap triggers alert and closes
+  
+  // hidden human-check box remains inert if somehow clicked
   window1 = setup();
   let alerted = false;
   window1.alert = () => { alerted = true; };
   const guard = window1.document.getElementById('human-check');
   guard.dispatchEvent(new window1.MouseEvent('click', { bubbles: true }));
-  assert.ok(alerted);
-  assert.strictEqual(window1.document.getElementById('chatbot-container'), null);
+  assert.strictEqual(alerted, false);
+  assert.notStrictEqual(window1.document.getElementById('chatbot-container'), null);
 });
