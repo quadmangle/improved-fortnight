@@ -7,7 +7,12 @@
   let container, log, form, input, send, closeBtn, minimizeBtn, openBtn;
   let langCtrl, themeCtrl, brand, hpText, hpCheck;
   let recaptchaReady = false;
-  let outsideClickHandler, escKeyHandler;
+  let outsideClickHandler, escKeyHandler, inactivityTimer;
+
+  function resetInactivityTimer(){
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(()=>{ closeChat(); }, 120000);
+  }
 
   function loadRecaptcha(){
     if(document.getElementById('recaptcha-script')) return;
@@ -143,6 +148,7 @@
   }
 
   function openChat(){
+    clearTimeout(inactivityTimer);
     container.style.display='';
     container.removeAttribute('aria-hidden');
     openBtn.style.display='none';
@@ -158,9 +164,11 @@
     openBtn.setAttribute('aria-expanded','false');
     openBtn.removeEventListener('click', reloadChat);
     openBtn.addEventListener('click', openChat, { once:true });
+    resetInactivityTimer();
   }
 
   function closeChat(){
+    clearTimeout(inactivityTimer);
     clearUIState();
     terminateSession();
     document.removeEventListener('click', outsideClickHandler);
@@ -252,6 +260,7 @@
 
   async function reloadChat(){
     try{
+      document.querySelectorAll('#chatbot-container, #chat-open-btn').forEach(el=>el.remove());
       const res = await fetch('fabs/chatbot.html', { credentials:'same-origin' });
       const html = await res.text();
       const template = document.createElement('template');
@@ -259,6 +268,7 @@
       const frag = template.content;
       document.body.appendChild(frag);
       initChatbot();
+      minimizeChat();
     }catch(err){
       console.error('Failed to reload chatbot:', err);
     }

@@ -3,7 +3,6 @@ const assert = require('node:assert');
 const { JSDOM } = require('jsdom');
 const fs = require('node:fs');
 const path = require('node:path');
-
 const htmlPath = path.join(__dirname, '..', 'fabs', 'chatbot.html');
 const jsPath = path.join(__dirname, '..', 'fabs', 'js', 'chattia.js');
 const dragJsPath = path.join(__dirname, '..', 'fabs', 'js', 'cojoin.js');
@@ -12,7 +11,6 @@ const html = fs.readFileSync(htmlPath, 'utf8');
 const script = fs.readFileSync(jsPath, 'utf8');
 const dragScript = fs.readFileSync(dragJsPath, 'utf8');
 const style = fs.readFileSync(cssPath, 'utf8');
-
 test('Chattia closes on outside click and ESC key', async () => {
   const dom = new JSDOM(`<body></body>`, { url: 'https://example.com', runScripts: 'dangerously' });
   const { window } = dom;
@@ -21,7 +19,6 @@ test('Chattia closes on outside click and ESC key', async () => {
   const styleEl = document.createElement('style');
   styleEl.textContent = style;
   document.head.appendChild(styleEl);
-
   window.fetch = async (url, opts) => {
     if (url && url.includes('chatbot.html')) {
       return { text: async () => html };
@@ -36,11 +33,10 @@ test('Chattia closes on outside click and ESC key', async () => {
   };
 
   window.alert = () => {};
-
   window.eval(dragScript);
   window.eval(script);
   await window.reloadChat();
-  window.openChatbot();
+  document.getElementById('chat-open-btn').click();
 
   // outside click closes
   document.body.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
@@ -48,7 +44,7 @@ test('Chattia closes on outside click and ESC key', async () => {
 
   // reload and test ESC key
   await window.reloadChat();
-  window.openChatbot();
+  document.getElementById('chat-open-btn').click();
   assert.ok(document.getElementById('chatbot-container'));
   document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
   assert.strictEqual(document.getElementById('chatbot-container'), null);
