@@ -221,7 +221,11 @@
     minimizeBtn.addEventListener('click', minimizeChat);
     closeBtn.addEventListener('click', closeChat);
 
-    escKeyHandler = (e)=>{ if(e.key === 'Escape'){ closeChat(); } };
+    escKeyHandler = (e)=>{
+      if(container.style.display !== 'none' && e.key === 'Escape'){
+        closeChat();
+      }
+    };
     outsideClickHandler = (e)=>{
       if(
         container.style.display !== 'none' &&
