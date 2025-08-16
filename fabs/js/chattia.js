@@ -258,6 +258,10 @@
         openBtn.remove();
         openBtn = null;
       }
+      const existing = document.getElementById('chatbot-container');
+      if(existing && typeof existing.remove === 'function'){
+        existing.remove();
+      }
 
       const res = await fetch('fabs/chatbot.html', { credentials:'same-origin' });
       const html = await res.text();
