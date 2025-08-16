@@ -38,9 +38,11 @@ test('Chattia closes on outside click and ESC key', async () => {
   await window.reloadChat();
   document.getElementById('chat-open-btn').click();
 
-  // outside click closes
+  // outside click minimizes
   document.body.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  assert.strictEqual(document.getElementById('chatbot-container'), null);
+  const minimized = document.getElementById('chatbot-container');
+  assert.ok(minimized);
+  assert.strictEqual(minimized.style.display, 'none');
 
   // reload and test ESC key
   await window.reloadChat();
@@ -48,5 +50,6 @@ test('Chattia closes on outside click and ESC key', async () => {
   assert.ok(document.getElementById('chatbot-container'));
   document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
   assert.strictEqual(document.getElementById('chatbot-container'), null);
+  assert.strictEqual(document.getElementById('chat-open-btn'), null);
 });
 
