@@ -2,35 +2,15 @@
   const WORKER_CHAT_URL = 'https://your-cloudflare-worker.example.com/chat';
   const WORKER_END_SESSION_URL = 'https://your-cloudflare-worker.example.com/end-session';
   const WORKER_HONEYPOT_URL = 'https://your-cloudflare-worker.example.com/honeypot-trip';
-  const RECAPTCHA_SITE_KEY = 'YOUR_RECAPTCHA_SITE_KEY';
 
   let container, log, form, input, send, closeBtn, minimizeBtn, openBtn;
   let langCtrl, themeCtrl, brand, hpText, hpCheck;
-  let recaptchaReady = false;
+  let hCaptchaWidgetID; // To store the ID of the invisible hCaptcha widget
   let outsideClickHandler, escKeyHandler, inactivityTimer;
 
   function resetInactivityTimer(){
     clearTimeout(inactivityTimer);
     inactivityTimer = setTimeout(()=>{ closeChat(); }, 120000);
-  }
-
-  function loadRecaptcha(){
-    if(document.getElementById('recaptcha-script')) return;
-    const s=document.createElement('script');
-    s.id='recaptcha-script';
-    s.src=`https://www.google.com/recaptcha/api.js?render=${RECAPTCHA_SITE_KEY}`;
-    s.async=true; s.defer=true;
-    s.onload=()=>{
-      if(window.grecaptcha && window.grecaptcha.ready){
-        window.grecaptcha.ready(()=>{ recaptchaReady = true; updateSendEnabled(); });
-      }
-    };
-    document.head.appendChild(s);
-  }
-
-  async function getRecaptchaToken(action){
-    if(!(window.grecaptcha && recaptchaReady)) throw new Error('reCAPTCHA not ready');
-    return grecaptcha.execute(RECAPTCHA_SITE_KEY, { action });
   }
 
   function buildBrand(text){
@@ -101,36 +81,62 @@
     input.style.height=Math.min(input.scrollHeight, maxPx)+'px';
   }
 
-  async function handleSubmit(e){
+  function handleSubmit(e) {
     e.preventDefault();
-    if(hpText.value.trim() !== '' || hpCheck.checked){
-      await reportHoneypot('honeypot_on_submit');
-      lockUIForHoneypot();
+    if (hpText.value.trim() !== '' || hpCheck.checked) {
+      reportHoneypot('honeypot_on_submit').then(lockUIForHoneypot);
       return;
     }
     const msg = input.value.trim();
-    if(!msg){ updateSendEnabled(); return; }
-    addMsg(msg,'user');
-    input.value=''; autoGrow(); updateSendEnabled();
-    addMsg('…','bot');
-    let token='';
-    try{
-      token = await getRecaptchaToken('chat_send');
-    }catch(err){
-      log.lastChild.textContent = 'Security: reCAPTCHA unavailable. Try again later.';
+    if (!msg) {
+      updateSendEnabled();
       return;
     }
-    try{
-      const r = await fetch(WORKER_CHAT_URL, {
-        method:'POST',
-        headers:{'Content-Type':'application/json'},
-        body: JSON.stringify({ message: msg, recaptchaToken: token })
-      });
-      const d = await r.json();
-      log.lastChild.textContent = d.reply || 'No reply.';
+
+    addMsg(msg, 'user');
+    input.value = '';
+    autoGrow();
+    updateSendEnabled();
+    addMsg('…', 'bot');
+
+    const botMsgElement = log.lastChild;
+
+    const onHcaptchaSuccess = (token) => {
+      fetch(WORKER_CHAT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: msg, 'h-captcha-response': token }),
+      })
+        .then((r) => r.json())
+        .then((d) => {
+          botMsgElement.textContent = d.reply || 'No reply.';
+          saveHistory();
+        })
+        .catch(() => {
+          botMsgElement.textContent = 'Error: Can’t reach AI.';
+          saveHistory();
+        });
+    };
+
+    const onHcaptchaClose = () => {
+      botMsgElement.textContent = 'Security check cancelled.';
       saveHistory();
-    }catch{
-      log.lastChild.textContent = 'Error: Can’t reach AI.';
+    };
+
+    // Execute hCaptcha
+    if (window.hcaptcha && hCaptchaWidgetID) {
+      try {
+        window.hcaptcha.execute(hCaptchaWidgetID, {
+          callback: onHcaptchaSuccess,
+          'error-callback': onHcaptchaClose,
+          'close-callback': onHcaptchaClose,
+        });
+      } catch (error) {
+        console.error("hCaptcha execution error:", error);
+        onHcaptchaClose();
+      }
+    } else {
+      botMsgElement.textContent = 'Error: Could not initialize security check.';
       saveHistory();
     }
   }
@@ -184,8 +190,8 @@
     const qs = s=>document.querySelector(s), qsa=s=>[...document.querySelectorAll(s)];
     container = qs('#chatbot-container');
     if(!container) return;
-    if (window.initDraggableModal && window.innerWidth >= 768) {
-      window.initDraggableModal(container);
+    if (window.appUtils && window.appUtils.makeDraggable && window.innerWidth >= 768) {
+      window.appUtils.makeDraggable(container);
       document.body.classList.add('drag-enabled');
     } else {
       document.body.classList.remove('drag-enabled');
@@ -255,7 +261,20 @@
     openBtn.addEventListener('click', openChat, { once: true });
 
     loadHistory();
-    loadRecaptcha();
+    renderHcaptcha();
+  }
+
+  function renderHcaptcha() {
+    const captchaDiv = document.getElementById('chatbot-hcaptcha');
+    if (captchaDiv && window.hcaptcha && typeof window.hcaptcha.render === 'function') {
+      hCaptchaWidgetID = window.hcaptcha.render(captchaDiv, {
+        sitekey: '10000000-ffff-ffff-ffff-000000000001', // Test key
+        size: 'invisible',
+      });
+    } else {
+      // If hcaptcha API isn't ready, try again shortly.
+      setTimeout(renderHcaptcha, 500);
+    }
   }
 
   async function reloadChat(){

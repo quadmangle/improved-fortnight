@@ -1,3 +1,45 @@
+/**
+ * Verifies the hCaptcha token by sending it to the hCaptcha API.
+ * @param {string} token The hCaptcha token from the client.
+ * @param {string} secret The hCaptcha secret key from environment variables.
+ * @returns {Promise<boolean>} True if the token is valid, false otherwise.
+ */
+async function verifyCaptcha(token, secret) {
+  if (!token) {
+    console.warn('CAPTCHA verification failed: No token provided.');
+    return false;
+  }
+  if (!secret) {
+    console.error('FATAL: HCAPTCHA_SECRET_KEY is not set in worker environment.');
+    // In a real scenario, this should trigger an alert for the admin.
+    return false;
+  }
+
+  const formData = new URLSearchParams();
+  formData.append('secret', secret);
+  formData.append('response', token);
+  // formData.append('remoteip', remoteIp); // Optional: pass user's IP
+
+  try {
+    const response = await fetch('https://api.hcaptcha.com/siteverify', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded',
+      },
+      body: formData,
+    });
+
+    const result = await response.json();
+    if (!result.success) {
+      console.warn('CAPTCHA verification failed:', result['error-codes']);
+    }
+    return result.success;
+  } catch (error) {
+    console.error('Error during hCaptcha verification request:', error);
+    return false;
+  }
+}
+
 export default {
   async fetch(request, env) {
     const auth = request.headers.get('Authorization') || '';
@@ -31,7 +73,20 @@ export default {
       const decryptedBuf = await crypto.subtle.decrypt({ name: 'AES-GCM', iv: payloadIv }, key, payloadCipher);
       const payload = JSON.parse(decoder.decode(decryptedBuf));
 
-      return new Response(JSON.stringify({ received: payload }), {
+      // --- CAPTCHA Verification Step ---
+      const captchaToken = payload['h-captcha-response'];
+      const isCaptchaValid = await verifyCaptcha(captchaToken, env.HCAPTCHA_SECRET_KEY);
+
+      if (!isCaptchaValid) {
+        console.warn('Unauthorized request: invalid CAPTCHA');
+        return new Response('Unauthorized: Invalid CAPTCHA', { status: 401 });
+      }
+
+      // If captcha is valid, proceed with processing the payload.
+      // (Actual data processing logic would go here)
+      console.log('CAPTCHA verified. Payload received:', payload);
+
+      return new Response(JSON.stringify({ status: 'success', received: payload }), {
         status: 200,
         headers: { 'Content-Type': 'application/json' },
       });

@@ -1,0 +1,101 @@
+(function() {
+  'use strict';
+
+  /**
+   * Sanitizes input to prevent malicious code injection.
+   * This is a simple client-side check and not a replacement for server-side validation.
+   * It uses DOMPurify if available, otherwise falls back to a regex and DOM-based approach.
+   * @param {string} input The string to sanitize.
+   * @returns {string} The sanitized string.
+   */
+  function sanitizeInput(input) {
+    // 1. Ensure input is a string
+    if (typeof input !== 'string' || !input) {
+      return '';
+    }
+
+    // 2. Use DOMPurify if it's loaded and available. This is the preferred method.
+    if (window.DOMPurify && typeof window.DOMPurify.sanitize === 'function') {
+      return window.DOMPurify.sanitize(input, { USE_PROFILES: { html: false } }); // Disallow all HTML
+    }
+
+    // 3. If DOMPurify is not available, use a fallback sanitization method.
+    console.warn('DOMPurify not found. Falling back to basic sanitization.');
+
+    // Regex to find and remove common malicious patterns.
+    // This looks for script tags, javascript:/data:/vbscript: protocols, and on* event handlers.
+    const maliciousPatterns = /<script.*?>.*?<\/script>|javascript:|data:|vbscript:|on\w+=|onerror=|onload=|<\w+[^>]*\s+[^>]*on\w+=/ig;
+    const cleaned = input.replace(maliciousPatterns, '');
+
+    // Use the browser's own parser to strip any remaining HTML tags.
+    // This is safer than using regex for HTML parsing.
+    if (typeof document !== 'undefined') {
+      try {
+        const div = document.createElement('div');
+        div.textContent = cleaned;
+        // By reading textContent back, we ensure no HTML is interpreted.
+        return div.innerHTML;
+      } catch (e) {
+        // Fallback for environments without a DOM or with other issues.
+        return cleaned.replace(/<[^>]*>/g, '');
+      }
+    }
+
+    // Final fallback for non-browser environments.
+    return cleaned.replace(/<[^>]*>/g, '');
+  }
+
+  /**
+   * Enables draggable functionality for modals on large screens.
+   * @param {HTMLElement} modal The modal element to make draggable.
+   */
+  function makeDraggable(modal) {
+    // Only make draggable on larger screens where there is enough space.
+    if (window.innerWidth < 768) {
+      return;
+    }
+
+    let isDragging = false;
+    let offsetX, offsetY;
+
+    const modalHeader = modal.querySelector('.modal-header') || modal.querySelector('#chatbot-header');
+    if (!modalHeader) return;
+
+    modalHeader.addEventListener('mousedown', (e) => {
+      // Avoid initiating drag when interacting with header controls
+      if (e.target.closest && e.target.closest('button, a, input, select, textarea, .ctrl')) {
+        return;
+      }
+      isDragging = true;
+      offsetX = e.clientX - modal.getBoundingClientRect().left;
+      offsetY = e.clientY - modal.getBoundingClientRect().top;
+      modal.style.cursor = 'grabbing';
+      modal.style.transition = 'none'; // Disable transition while dragging
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isDragging) return;
+      e.preventDefault();
+
+      const newX = e.clientX - offsetX;
+      const newY = e.clientY - offsetY;
+
+      modal.style.left = `${newX}px`;
+      modal.style.top = `${newY}px`;
+      modal.style.transform = 'none';
+    });
+
+    document.addEventListener('mouseup', () => {
+      isDragging = false;
+      modal.style.cursor = 'move';
+      modal.style.transition = 'transform 0.3s ease'; // Re-enable transition
+    });
+  }
+
+  // Expose the functions to the global scope
+  window.appUtils = {
+    sanitizeInput: sanitizeInput,
+    makeDraggable: makeDraggable
+  };
+
+})();
