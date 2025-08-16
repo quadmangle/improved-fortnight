@@ -124,7 +124,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     let modal = document.getElementById(targetId);
     if (modal) {
-      modal.style.display = 'flex';
+      if (modalId === 'chatbot') {
+        if (window.openChatbot) { window.openChatbot(); }
+      } else {
+        modal.style.display = 'flex';
+      }
       activeModal = modal;
     } else {
       // Dynamic loading logic: fetch HTML from 'fabs/' directory
@@ -177,18 +181,18 @@ document.addEventListener('DOMContentLoaded', () => {
               console.error('initCojoinForms failed:', err);
             }
           }
-          modal.style.display = 'flex';
+          if (modalId === 'chatbot') {
+            if (window.initChatbot) { window.initChatbot(); }
+            if (window.openChatbot) { window.openChatbot(); }
+          } else {
+            modal.style.display = 'flex';
+          }
           activeModal = modal;
 
           // Add close button functionality
           const closeBtn = modal.querySelector('.modal-close');
-          // For chatbot, the close button is part of the header, but we can still target it if needed
           if (closeBtn) {
             closeBtn.addEventListener('click', () => hideModal(modal));
-          }
-
-          if (modalId === 'chatbot' && window.initChatbot) {
-            window.initChatbot();
           }
         }
       } catch (error) {
@@ -198,10 +202,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (modal) {
       removeOverlay();
-      overlay = document.createElement('div');
-      overlay.className = 'modal-overlay';
-      overlay.addEventListener('click', () => hideModal(modal));
-      document.body.appendChild(overlay);
+      if (modalId !== 'chatbot') {
+        overlay = document.createElement('div');
+        overlay.className = 'modal-overlay';
+        overlay.addEventListener('click', () => hideModal(modal));
+        document.body.appendChild(overlay);
+      }
 
       // Initialize draggable on window load, then update on resize
       // This function is expected to be defined in fabs/js/cojoin.js
