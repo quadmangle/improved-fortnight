@@ -177,7 +177,7 @@
     openBtn.style.display='inline-flex';
     openBtn.setAttribute('aria-expanded','false');
     openBtn.removeEventListener('click', openChat);
-    openBtn.addEventListener('click', ()=>{ reloadChat(); }, { once:true });
+    openBtn.addEventListener('click', reloadChat, { once:true });
   }
 
   function initChatbot(){
@@ -247,6 +247,13 @@
       hpCheck.addEventListener(ev, ()=>{ reportHoneypot('hp_check_ticked'); lockUIForHoneypot(); }, { passive:true });
     });
 
+    // Start with chat hidden until the user explicitly opens it.
+    container.style.display = 'none';
+    container.setAttribute('aria-hidden', 'true');
+    openBtn.style.display = 'inline-flex';
+    openBtn.setAttribute('aria-expanded', 'false');
+    openBtn.addEventListener('click', openChat, { once: true });
+
     loadHistory();
     loadRecaptcha();
   }
@@ -270,5 +277,6 @@
   window.reloadChat = reloadChat;
   window.initChatbot = initChatbot;
   window.cleanupChatbot = closeChat;
+  window.openChatbot = openChat;
   window.addEventListener('load', reloadChat);
 })();
