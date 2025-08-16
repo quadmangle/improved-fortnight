@@ -38,7 +38,7 @@ function createModal(serviceKey, lang) {
   modalRoot.appendChild(modalContent);
 
   // Make the modal draggable
-  makeDraggable(modalContent);
+  window.appUtils.makeDraggable(modalContent);
 
   // Update button text with translations
   updateModalContent(modalContent, lang);
@@ -68,47 +68,6 @@ function createModal(serviceKey, lang) {
   }
 }
 
-function makeDraggable(modal) {
-  const header = modal.querySelector('.modal-header');
-  if (!header) return;
-  let isDragging = false;
-  let offsetX, offsetY;
-  header.addEventListener('mousedown', (e) => {
-    isDragging = true;
-
-    // We calculate the offset from the top-left of the modal.
-    // This prevents the modal from "jumping" to the cursor position.
-    offsetX = e.clientX - modal.offsetLeft;
-    offsetY = e.clientY - modal.offsetTop;
-
-    // The transform is removed to allow for smooth dragging based on top/left.
-    modal.style.transform = 'none';
-
-    // We add the listeners to the document so that dragging continues
-    // even if the cursor moves outside the modal header.
-    document.addEventListener('mousemove', onMouseMove);
-    document.addEventListener('mouseup', onMouseUp);
-  });
-  function onMouseMove(e) {
-    if (!isDragging) return;
-
-    // Prevent text selection during drag
-    e.preventDefault();
-    const newX = e.clientX - offsetX;
-    const newY = e.clientY - offsetY;
-    modal.style.left = `${newX}px`;
-    modal.style.top = `${newY}px`;
-  }
-
-  function onMouseUp() {
-    isDragging = false;
-    document.removeEventListener('mousemove', onMouseMove);
-    document.removeEventListener('mouseup', onMouseUp);
-  }
-}
-
-// Export the draggable helper for other modules
-window.makeDraggable = makeDraggable;
 
 // Helper function to update content inside the modal after creation
 function updateModalContent(modalElement, lang) {
@@ -122,21 +81,6 @@ function updateModalContent(modalElement, lang) {
   });
 }
 
-// Basic sanitization helper
-  function sanitizeInput(str) {
-    // In a real application, we would use a library like DOMPurify here.
-    // For now, remove any HTML tags with a simple regex fallback.
-    if (typeof document !== 'undefined') {
-      const div = document.createElement('div');
-      if (typeof div.innerHTML === 'string') {
-        div.innerHTML = str;
-        return div.textContent || '';
-      }
-      div.textContent = str;
-      return div.textContent.replace(/<[^>]*>/g, '');
-    }
-    return str.replace(/<[^>]*>/g, '');
-  }
 
 // Function to generate a random string for the CSRF token
 function generateCsrfToken() {
@@ -168,74 +112,6 @@ function getCookie(name) {
   return null;
 }
 
-// Function to handle form submission from the bot trap
-async function handleFormSubmit(event) {
-  event.preventDefault();
-  const form = event.target;
-  const formData = new FormData(form);
-
-  // --- Bot Trap Logic ---
-  // This form is a honeypot. A real user should never be able to submit it.
-  // We will check the honeypot fields first.
-
-  const hp_main = formData.get('hp');
-  const hp_comments = formData.get('comments');
-  const hp_website = formData.get('website');
-
-  if (hp_main || hp_comments || hp_website) {
-    console.warn('BOT DETECTED: Honeypot field filled. Submission blocked.');
-    // We don't reset the form, to avoid tipping off the bot.
-    // We can optionally send a silent beacon to a logging service here.
-    return;
-  }
-
-  // If honeypots are empty, it might be a smarter bot or a user with a screen reader
-  // who found the form. Now we check the CAPTCHA.
-  console.log('Honeypot check passed. Proceeding with bot trap submission for analysis.');
-
-  const sanitized = {};
-  const honeypotKeys = ['hp', 'comments', 'website'];
-  formData.forEach((value, key) => {
-    // We don't include the honeypot fields themselves in the final payload.
-    if (!honeypotKeys.includes(key)) {
-      sanitized[key] = sanitizeInput(value);
-    }
-  });
-
-  // Add CSRF token to the sanitized data.
-  sanitized.csrf_token = getCookie('csrf_token');
-
-  // Add CAPTCHA responses to the payload for server-side analysis
-  sanitized['h-captcha-response'] = formData.get('h-captcha-response');
-  sanitized['g-recaptcha-response'] = formData.get('g-recaptcha-response');
-
-
-  try {
-    // This fetch request is part of the trap. The endpoint at `/api/contact`
-    // should be configured to log these submissions as malicious attempts.
-    const response = await fetch('https://example.com/api/contact', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json'
-      },
-      mode: 'cors',
-      body: JSON.stringify(sanitized)
-    });
-
-    // To the bot, it looks like a successful submission.
-    console.log('Bot trap submission sent for analysis. Status:', response.status);
-    alert('Thank you for your submission!');
-    form.reset(); // Reset to be ready for the next bot.
-
-  } catch (err) {
-    // Even if the fetch fails, we don't want to give any indication of an error.
-    console.error('Bot trap submission failed to send, but this is hidden from the client:', err);
-    // We still present a success message to the bot/client.
-    alert('Thank you for your submission!');
-    form.reset();
-  }
-}
 
 document.addEventListener('DOMContentLoaded', async () => {
   // Generate and set the CSRF token when the page loads
@@ -380,25 +256,25 @@ document.addEventListener('DOMContentLoaded', async () => {
   });
 
   // --- CSRF Token Fetch ---
+  // Note: This logic for fetching and attaching a CSRF token is currently
+  // unused since the form it was for has been removed. It is left here
+  // in case a new primary form is added to the main page in the future.
   const forms = document.querySelectorAll('form');
-  try {
-    const res = await fetch('/api/csrf-token', { credentials: 'include' });
-    const data = await res.json();
-    csrfToken = data.token;
-    forms.forEach(form => {
-      const hidden = document.createElement('input');
-      hidden.type = 'hidden';
-      hidden.name = 'csrfToken';
-      hidden.value = csrfToken;
-      form.appendChild(hidden);
-    });
-  } catch (err) {
-    console.error('Failed to retrieve CSRF token', err);
+  if (forms.length > 0) {
+    try {
+      const res = await fetch('/api/csrf-token', { credentials: 'include' });
+      const data = await res.json();
+      csrfToken = data.token;
+      forms.forEach(form => {
+        const hidden = document.createElement('input');
+        hidden.type = 'hidden';
+        hidden.name = 'csrfToken';
+        hidden.value = csrfToken;
+        form.appendChild(hidden);
+      });
+    } catch (err) {
+      console.error('Failed to retrieve CSRF token', err);
+    }
   }
-
-  // --- Form Submission Logic ---
-  forms.forEach(form => {
-    form.addEventListener('submit', handleFormSubmit);
-  });
 
 });
