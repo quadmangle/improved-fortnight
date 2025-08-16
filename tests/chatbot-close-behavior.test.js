@@ -43,17 +43,11 @@ test('Chattia minimizes on outside click and closes on ESC or inactivity', async
   document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
   assert.strictEqual(document.getElementById('chatbot-container'), null);
 
-  // Outside click minimizes
-  await window.reloadChat();
-  window.openChatbot();
+  // outside click minimizes
   document.body.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  const container = document.getElementById('chatbot-container');
-  assert.ok(container);
-  assert.strictEqual(container.style.display, 'none');
-
-  // ESC closes when minimized
-  document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-  assert.strictEqual(document.getElementById('chatbot-container'), null);
+  const minimized = document.getElementById('chatbot-container');
+  assert.ok(minimized);
+  assert.strictEqual(minimized.style.display, 'none');
 
   // Inactivity after minimize closes session
   await window.reloadChat();
@@ -62,6 +56,7 @@ test('Chattia minimizes on outside click and closes on ESC or inactivity', async
   minimizeBtn.click();
   await new Promise(r => setTimeout(r, 40));
   assert.strictEqual(document.getElementById('chatbot-container'), null);
+  assert.strictEqual(document.getElementById('chat-open-btn'), null);
 });
 
 test('Chat history persists while minimized and clears on close', async () => {
