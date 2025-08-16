@@ -3,13 +3,11 @@
   const WORKER_END_SESSION_URL = 'https://your-cloudflare-worker.example.com/end-session';
   const WORKER_HONEYPOT_URL = 'https://your-cloudflare-worker.example.com/honeypot-trip';
   const RECAPTCHA_SITE_KEY = 'YOUR_RECAPTCHA_SITE_KEY';
-
   let container, log, form, input, send, closeBtn, minimizeBtn, openBtn;
   let langCtrl, themeCtrl, brand, hpText, hpCheck;
   let recaptchaReady = false;
   let outsideClickHandler, escKeyHandler, inactivityTimer;
   const INACTIVITY_LIMIT_MS = window.CHATBOT_INACTIVITY_MS || 120000;
-
   function loadRecaptcha(){
     if(document.getElementById('recaptcha-script')) return;
     const s=document.createElement('script');
@@ -219,7 +217,6 @@
     };
     document.addEventListener('keydown', escKeyHandler);
     document.addEventListener('click', outsideClickHandler);
-
     ['change','input','click'].forEach(ev=>{
       hpText.addEventListener(ev, ()=>{ reportHoneypot('hp_text_touched'); lockUIForHoneypot(); }, { passive:true });
       hpCheck.addEventListener(ev, ()=>{ reportHoneypot('hp_check_ticked'); lockUIForHoneypot(); }, { passive:true });
@@ -254,6 +251,7 @@
       const frag = template.content;
       document.body.appendChild(frag);
       initChatbot();
+      minimizeChat();
     }catch(err){
       console.error('Failed to reload chatbot:', err);
     }

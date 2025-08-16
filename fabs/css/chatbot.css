@@ -31,8 +31,11 @@ body {
 }
 #chatbot-container{
   position:fixed;
-   left:2vw; right:2vw; bottom:calc(env(safe-area-inset-bottom) + 8px);
-  width:100%;
+  top:50%;
+  left:50%;
+  transform:translate(-50%, -50%);
+  width:90vw;
+  max-width:380px;
   height:80vh;
   height:80dvh;
   max-height:85vh;
@@ -46,7 +49,7 @@ body {
   z-index:9999;
 }
 @media (min-width: 900px){
-  #chatbot-container{ width:380px; left:auto; right:24px; bottom:24px; }
+  #chatbot-container{ width:380px; }
 }
 body.kb-open #chatbot-container{
   height:62vh;
