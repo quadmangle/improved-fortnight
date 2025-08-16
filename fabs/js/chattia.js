@@ -123,6 +123,7 @@
     container.style.display='';
     container.removeAttribute('aria-hidden');
     openBtn.style.display='none';
+    openBtn.style.bottom = '';
     openBtn.setAttribute('aria-expanded','true');
     openBtn.removeEventListener('click', openChat);
   }
@@ -131,6 +132,13 @@
     container.style.display='none';
     container.setAttribute('aria-hidden','true');
     openBtn.style.display='inline-flex';
+    const fabContainer = document.querySelector('.fab-container');
+    if(fabContainer){
+      const fabMain = fabContainer.querySelector('.fab-main');
+      const bottom = parseInt(getComputedStyle(fabContainer).bottom || '0', 10);
+      const height = fabMain ? parseInt(getComputedStyle(fabMain).height || '0', 10) : 0;
+      openBtn.style.bottom = `${bottom + height + 10}px`;
+    }
     openBtn.setAttribute('aria-expanded','false');
     openBtn.addEventListener('click', openChat, { once:true });
     clearTimeout(inactivityTimer);
@@ -201,7 +209,7 @@
 
     escKeyHandler = (e)=>{
       if(e.key === 'Escape'){
-        closeChat();
+        minimizeChat();
       }
     };
     outsideClickHandler = (e)=>{
