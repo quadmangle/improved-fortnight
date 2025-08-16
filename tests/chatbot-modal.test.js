@@ -36,6 +36,7 @@ test('Chattia chatbot basic interactions', async () => {
   window.eval(dragScript);
   window.eval(script);
   await window.reloadChat();
+  document.getElementById('chat-open-btn').click();
   const brand = document.getElementById('brand');
   assert.ok(brand.querySelectorAll('.char').length > 0);
   const langCtrl = document.getElementById('langCtrl');
@@ -67,6 +68,7 @@ test('Chattia chatbot basic interactions', async () => {
   document.querySelectorAll('#chat-open-btn').forEach(el => el.remove());
   window.sessionStorage.clear();
   await window.reloadChat();
+  document.getElementById('chat-open-btn').click();
   const minimizeBtn = document.getElementById('minimizeBtn');
   const container = document.getElementById('chatbot-container');
   const openBtn = document.getElementById('chat-open-btn');
@@ -99,6 +101,7 @@ test('Chattia chatbot basic interactions', async () => {
   document.querySelectorAll('#chatbot-container').forEach(el => el.remove());
   document.querySelectorAll('#chat-open-btn').forEach(el => el.remove());
   await window.reloadChat();
+  document.getElementById('chat-open-btn').click();
   const logText = document.getElementById('chat-log').textContent;
   assert.ok(logText.includes('Hello'));
   const closeBtn = document.getElementById('chatbot-close');
