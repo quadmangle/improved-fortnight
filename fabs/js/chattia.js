@@ -3,17 +3,11 @@
   const WORKER_END_SESSION_URL = 'https://your-cloudflare-worker.example.com/end-session';
   const WORKER_HONEYPOT_URL = 'https://your-cloudflare-worker.example.com/honeypot-trip';
   const RECAPTCHA_SITE_KEY = 'YOUR_RECAPTCHA_SITE_KEY';
-
   let container, log, form, input, send, closeBtn, minimizeBtn, openBtn;
   let langCtrl, themeCtrl, brand, hpText, hpCheck;
   let recaptchaReady = false;
   let outsideClickHandler, escKeyHandler, inactivityTimer;
-
-  function resetInactivityTimer(){
-    clearTimeout(inactivityTimer);
-    inactivityTimer = setTimeout(()=>{ closeChat(); }, 120000);
-  }
-
+  const INACTIVITY_LIMIT_MS = window.CHATBOT_INACTIVITY_MS || 120000;
   function loadRecaptcha(){
     if(document.getElementById('recaptcha-script')) return;
     const s=document.createElement('script');
@@ -45,32 +39,12 @@
     }
   }
 
-  function saveHistory(){
-    if(!log) return;
-    const msgs=[...log.querySelectorAll('.chat-msg')].map(m=>({
-      cls:m.className.replace('chat-msg ','').trim(),
-      text:m.textContent
-    }));
-    try{ sessionStorage.setItem('chatHistory', JSON.stringify(msgs)); }catch(e){}
-  }
-
-  function loadHistory(){
-    let msgs=[];
-    try{ msgs = JSON.parse(sessionStorage.getItem('chatHistory')||'[]'); }catch(e){ msgs=[]; }
-    msgs.forEach(m=>addMsg(m.text, m.cls));
-  }
-
-  function clearHistory(){
-    try{ sessionStorage.removeItem('chatHistory'); }catch(e){}
-  }
-
   function addMsg(txt, cls){
     const div=document.createElement('div');
     div.className='chat-msg '+cls;
     div.textContent=txt;
     log.appendChild(div);
     log.scrollTop=log.scrollHeight;
-    saveHistory();
   }
 
   async function reportHoneypot(reason){
@@ -128,10 +102,8 @@
       });
       const d = await r.json();
       log.lastChild.textContent = d.reply || 'No reply.';
-      saveHistory();
     }catch{
       log.lastChild.textContent = 'Error: Can’t reach AI.';
-      saveHistory();
     }
   }
 
@@ -144,7 +116,6 @@
     input.value='';
     autoGrow();
     updateSendEnabled();
-    clearHistory();
   }
 
   function openChat(){
@@ -162,7 +133,8 @@
     openBtn.style.display='inline-flex';
     openBtn.setAttribute('aria-expanded','false');
     openBtn.addEventListener('click', openChat, { once:true });
-    resetInactivityTimer();
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(closeChat, INACTIVITY_LIMIT_MS);
   }
 
   function closeChat(){
@@ -227,7 +199,11 @@
     minimizeBtn.addEventListener('click', minimizeChat);
     closeBtn.addEventListener('click', closeChat);
 
-    escKeyHandler = (e)=>{ if(e.key === 'Escape'){ closeChat(); } };
+    escKeyHandler = (e)=>{
+      if(e.key === 'Escape'){
+        closeChat();
+      }
+    };
     outsideClickHandler = (e)=>{
       if(
         container.style.display !== 'none' &&
@@ -239,7 +215,6 @@
     };
     document.addEventListener('keydown', escKeyHandler);
     document.addEventListener('click', outsideClickHandler);
-
     ['change','input','click'].forEach(ev=>{
       hpText.addEventListener(ev, ()=>{ reportHoneypot('hp_text_touched'); lockUIForHoneypot(); }, { passive:true });
       hpCheck.addEventListener(ev, ()=>{ reportHoneypot('hp_check_ticked'); lockUIForHoneypot(); }, { passive:true });
@@ -251,14 +226,22 @@
     openBtn.style.display = 'inline-flex';
     openBtn.setAttribute('aria-expanded', 'false');
     openBtn.addEventListener('click', openChat, { once: true });
-
-    loadHistory();
     loadRecaptcha();
   }
 
   async function reloadChat(){
     try{
-      document.querySelectorAll('#chatbot-container, #chat-open-btn').forEach(el=>el.remove());
+      // Remove any existing FAB or chatbot fragment before reloading to avoid
+      // background overlays or duplicate floating buttons.
+      if(openBtn && typeof openBtn.remove === 'function'){
+        openBtn.remove();
+        openBtn = null;
+      }
+      const existing = document.getElementById('chatbot-container');
+      if(existing && typeof existing.remove === 'function'){
+        existing.remove();
+      }
+
       const res = await fetch('fabs/chatbot.html', { credentials:'same-origin' });
       const html = await res.text();
       const template = document.createElement('template');
