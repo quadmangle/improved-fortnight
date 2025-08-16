@@ -153,7 +153,6 @@
     container.removeAttribute('aria-hidden');
     openBtn.style.display='none';
     openBtn.setAttribute('aria-expanded','true');
-    openBtn.removeEventListener('click', reloadChat);
     openBtn.removeEventListener('click', openChat);
   }
 
@@ -162,7 +161,6 @@
     container.setAttribute('aria-hidden','true');
     openBtn.style.display='inline-flex';
     openBtn.setAttribute('aria-expanded','false');
-    openBtn.removeEventListener('click', reloadChat);
     openBtn.addEventListener('click', openChat, { once:true });
     resetInactivityTimer();
   }
@@ -174,10 +172,10 @@
     document.removeEventListener('click', outsideClickHandler);
     document.removeEventListener('keydown', escKeyHandler);
     container.remove();
-    openBtn.style.display='inline-flex';
-    openBtn.setAttribute('aria-expanded','false');
-    openBtn.removeEventListener('click', openChat);
-    openBtn.addEventListener('click', reloadChat, { once:true });
+    if (openBtn && openBtn.remove) {
+      openBtn.remove();
+    }
+    openBtn = null;
   }
 
   function initChatbot(){
@@ -236,7 +234,7 @@
         !container.contains(e.target) &&
         e.target !== openBtn
       ){
-        closeChat();
+        minimizeChat();
       }
     };
     document.addEventListener('keydown', escKeyHandler);
@@ -278,5 +276,4 @@
   window.initChatbot = initChatbot;
   window.cleanupChatbot = closeChat;
   window.openChatbot = openChat;
-  window.addEventListener('load', reloadChat);
 })();
