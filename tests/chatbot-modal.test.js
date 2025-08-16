@@ -65,7 +65,6 @@ test('Chattia chatbot basic interactions', async () => {
   // start fresh session
   document.querySelectorAll('#chatbot-container').forEach(el => el.remove());
   document.querySelectorAll('#chat-open-btn').forEach(el => el.remove());
-  window.sessionStorage.clear();
   await window.reloadChat();
   const minimizeBtn = document.getElementById('minimizeBtn');
   const container = document.getElementById('chatbot-container');
@@ -84,7 +83,7 @@ test('Chattia chatbot basic interactions', async () => {
   openBtn.click();
   assert.strictEqual(container.style.display, '');
 
-  // message persists across reloads
+  // message does not persist across reloads
   window.grecaptcha = { ready: cb => cb(), execute: async () => 'token' };
   const recaptchaScript = document.getElementById('recaptcha-script');
   if (recaptchaScript && recaptchaScript.onload) recaptchaScript.onload();
@@ -94,15 +93,12 @@ test('Chattia chatbot basic interactions', async () => {
   input2.dispatchEvent(new window.Event('input', { bubbles: true }));
   form.dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }));
   await new Promise(r => setTimeout(r,0));
-  const hist = JSON.parse(window.sessionStorage.getItem('chatHistory'));
-  assert.strictEqual(hist[0].text, 'Hello');
   document.querySelectorAll('#chatbot-container').forEach(el => el.remove());
   document.querySelectorAll('#chat-open-btn').forEach(el => el.remove());
   await window.reloadChat();
   const logText = document.getElementById('chat-log').textContent;
-  assert.ok(logText.includes('Hello'));
+  assert.ok(!logText.includes('Hello'));
   const closeBtn = document.getElementById('chatbot-close');
   closeBtn.click();
-  assert.strictEqual(window.sessionStorage.getItem('chatHistory'), null);
   assert.strictEqual(document.getElementById('chatbot-container'), null);
 });

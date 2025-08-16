@@ -41,32 +41,12 @@
     }
   }
 
-  function saveHistory(){
-    if(!log) return;
-    const msgs=[...log.querySelectorAll('.chat-msg')].map(m=>({
-      cls:m.className.replace('chat-msg ','').trim(),
-      text:m.textContent
-    }));
-    try{ sessionStorage.setItem('chatHistory', JSON.stringify(msgs)); }catch(e){}
-  }
-
-  function loadHistory(){
-    let msgs=[];
-    try{ msgs = JSON.parse(sessionStorage.getItem('chatHistory')||'[]'); }catch(e){ msgs=[]; }
-    msgs.forEach(m=>addMsg(m.text, m.cls));
-  }
-
-  function clearHistory(){
-    try{ sessionStorage.removeItem('chatHistory'); }catch(e){}
-  }
-
   function addMsg(txt, cls){
     const div=document.createElement('div');
     div.className='chat-msg '+cls;
     div.textContent=txt;
     log.appendChild(div);
     log.scrollTop=log.scrollHeight;
-    saveHistory();
   }
 
   async function reportHoneypot(reason){
@@ -124,10 +104,8 @@
       });
       const d = await r.json();
       log.lastChild.textContent = d.reply || 'No reply.';
-      saveHistory();
     }catch{
       log.lastChild.textContent = 'Error: Can’t reach AI.';
-      saveHistory();
     }
   }
 
@@ -140,7 +118,6 @@
     input.value='';
     autoGrow();
     updateSendEnabled();
-    clearHistory();
   }
 
   function openChat(){
@@ -254,8 +231,6 @@
     openBtn.style.display = 'inline-flex';
     openBtn.setAttribute('aria-expanded', 'false');
     openBtn.addEventListener('click', openChat, { once: true });
-
-    loadHistory();
     loadRecaptcha();
   }
 

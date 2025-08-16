@@ -68,3 +68,51 @@ test('Chattia minimizes on outside click and closes on ESC or inactivity', async
   assert.strictEqual(document.getElementById('chatbot-container'), null);
 });
 
+test('Chat history persists while minimized and clears on close', async () => {
+  const dom = new JSDOM(`<body></body>`, { url: 'https://example.com', runScripts: 'dangerously' });
+  const { window } = dom;
+  const document = window.document;
+  window.innerWidth = 1024;
+  const styleEl = document.createElement('style');
+  styleEl.textContent = style;
+  document.head.appendChild(styleEl);
+
+  window.fetch = async (url, opts) => {
+    if (url && url.includes('chatbot.html')) {
+      return { text: async () => html };
+    }
+    if (url && url.includes('honeypot')) {
+      return {};
+    }
+    if (url && url.includes('end-session')) {
+      return {};
+    }
+    return { json: async () => ({ reply: 'ok' }) };
+  };
+
+  window.alert = () => {};
+
+  window.eval(dragScript);
+  window.eval(script);
+
+  await window.reloadChat();
+  window.openChatbot();
+  const log = document.getElementById('chat-log');
+  const msg = document.createElement('div');
+  msg.className = 'chat-msg user';
+  msg.textContent = 'hi';
+  log.appendChild(msg);
+
+  const minimizeBtn = document.getElementById('minimizeBtn');
+  minimizeBtn.click();
+  window.openChatbot();
+  assert.ok([...log.querySelectorAll('.chat-msg')].some(m => m.textContent === 'hi'));
+
+  const closeBtn = document.getElementById('chatbot-close');
+  closeBtn.click();
+  await window.reloadChat();
+  window.openChatbot();
+  const newLog = document.getElementById('chat-log');
+  assert.strictEqual([...newLog.querySelectorAll('.chat-msg')].some(m => m.textContent === 'hi'), false);
+});
+
