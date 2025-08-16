@@ -252,6 +252,13 @@
 
   async function reloadChat(){
     try{
+      // Remove any existing FAB or chatbot fragment before reloading to avoid
+      // background overlays or duplicate floating buttons.
+      if(openBtn && typeof openBtn.remove === 'function'){
+        openBtn.remove();
+        openBtn = null;
+      }
+
       const res = await fetch('fabs/chatbot.html', { credentials:'same-origin' });
       const html = await res.text();
       const template = document.createElement('template');
