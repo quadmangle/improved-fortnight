@@ -25,7 +25,7 @@
   --clr-form-border: #ccc;
   
   /* Background gradients */
-  --bg-gradient-light: linear-gradient(135deg, #ee7752, #e73c7e, #23a6d5, #23d5ab);
+  --bg-gradient-light: linear-gradient(135deg, #F7DDD0, #FC5C05, #0144FB, #EA202C, #1258DC, #ff0097, #9f00a7, #603cba, #00aba9, #eff4ff, #2b5797, #ee1111);
   --bg-gradient-dark: #121212;
 
   /* Spacing */
