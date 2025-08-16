@@ -7,7 +7,8 @@
   let container, log, form, input, send, closeBtn, minimizeBtn, openBtn;
   let langCtrl, themeCtrl, brand, hpText, hpCheck;
   let recaptchaReady = false;
-  let outsideClickHandler, escKeyHandler;
+  let outsideClickHandler, escKeyHandler, inactivityTimer;
+  const INACTIVITY_LIMIT_MS = window.CHATBOT_INACTIVITY_MS || 120000;
 
   function loadRecaptcha(){
     if(document.getElementById('recaptcha-script')) return;
@@ -143,6 +144,7 @@
   }
 
   function openChat(){
+    clearTimeout(inactivityTimer);
     container.style.display='';
     container.removeAttribute('aria-hidden');
     openBtn.style.display='none';
@@ -158,9 +160,12 @@
     openBtn.setAttribute('aria-expanded','false');
     openBtn.removeEventListener('click', reloadChat);
     openBtn.addEventListener('click', openChat, { once:true });
+    clearTimeout(inactivityTimer);
+    inactivityTimer = setTimeout(closeChat, INACTIVITY_LIMIT_MS);
   }
 
   function closeChat(){
+    clearTimeout(inactivityTimer);
     clearUIState();
     terminateSession();
     document.removeEventListener('click', outsideClickHandler);
@@ -222,7 +227,7 @@
     closeBtn.addEventListener('click', closeChat);
 
     escKeyHandler = (e)=>{
-      if(container.style.display !== 'none' && e.key === 'Escape'){
+      if(e.key === 'Escape'){
         closeChat();
       }
     };
@@ -232,7 +237,7 @@
         !container.contains(e.target) &&
         e.target !== openBtn
       ){
-        closeChat();
+        minimizeChat();
       }
     };
     document.addEventListener('keydown', escKeyHandler);

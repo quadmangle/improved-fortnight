@@ -13,11 +13,12 @@ const script = fs.readFileSync(jsPath, 'utf8');
 const dragScript = fs.readFileSync(dragJsPath, 'utf8');
 const style = fs.readFileSync(cssPath, 'utf8');
 
-test('Chattia closes on outside click and ESC key', async () => {
+test('Chattia minimizes on outside click and closes on ESC or inactivity', async () => {
   const dom = new JSDOM(`<body></body>`, { url: 'https://example.com', runScripts: 'dangerously' });
   const { window } = dom;
   const document = window.document;
   window.innerWidth = 1024;
+  window.CHATBOT_INACTIVITY_MS = 30;
   const styleEl = document.createElement('style');
   styleEl.textContent = style;
   document.head.appendChild(styleEl);
@@ -39,24 +40,31 @@ test('Chattia closes on outside click and ESC key', async () => {
 
   window.eval(dragScript);
   window.eval(script);
+
+  // ESC closes when chat is open
   await window.reloadChat();
   window.openChatbot();
-
-  // outside click closes
-  document.body.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
   assert.strictEqual(document.getElementById('chatbot-container'), null);
 
-  // reload and test ESC key behavior
+  // Outside click minimizes
   await window.reloadChat();
   window.openChatbot();
-  assert.ok(document.getElementById('chatbot-container'));
+  document.body.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  const container = document.getElementById('chatbot-container');
+  assert.ok(container);
+  assert.strictEqual(container.style.display, 'none');
+
+  // ESC closes when minimized
+  document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  assert.strictEqual(document.getElementById('chatbot-container'), null);
+
+  // Inactivity after minimize closes session
+  await window.reloadChat();
+  window.openChatbot();
   const minimizeBtn = document.getElementById('minimizeBtn');
   minimizeBtn.click();
-  document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-  assert.ok(document.getElementById('chatbot-container'));
-  const openBtn = document.getElementById('chat-open-btn');
-  openBtn.click();
-  document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+  await new Promise(r => setTimeout(r, 40));
   assert.strictEqual(document.getElementById('chatbot-container'), null);
 });
 
