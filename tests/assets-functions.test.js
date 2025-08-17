@@ -50,6 +50,8 @@ function createDocumentStub() {
         style: {},
         set textContent(v) { text = v.replace(/<[^>]*>/g, ''); },
         get textContent() { return text; },
+        set innerHTML(v) { text = v; },
+        get innerHTML() { return text; },
         appendChild() {},
         querySelector() { return null; }
       };
@@ -65,30 +67,33 @@ function createDocumentStub() {
   };
 }
 
-const code = fs.readFileSync(path.join(root, 'js/main.js'), 'utf-8');
+const utilsCode = fs.readFileSync(path.join(root, 'js/utils.js'), 'utf-8');
+const mainCode = fs.readFileSync(path.join(root, 'js/main.js'), 'utf-8');
 const documentStub = createDocumentStub();
 const sandbox = { window: { innerWidth: 1024 }, document: documentStub, console };
 vm.createContext(sandbox);
-vm.runInContext(code, sandbox);
-const { sanitizeInput, makeDraggable } = sandbox;
+vm.runInContext(utilsCode, sandbox);
+vm.runInContext(mainCode, sandbox);
+const { sanitizeInput, makeDraggable } = sandbox.window.appUtils;
 
 test('sanitizeInput strips markup', () => {
   assert.strictEqual(sanitizeInput('<b>hi</b>'), 'hi');
 });
 
 test('makeDraggable updates modal position on drag', () => {
-  const header = { events: {}, addEventListener(type, handler) { this.events[type] = handler; } };
+  const header = { events: {}, addEventListener(type, handler) { this.events[type] = handler; }, closest() { return null; } };
   const modal = {
     offsetLeft: 0,
     offsetTop: 0,
     style: {},
+    getBoundingClientRect() { return { left: this.offsetLeft, top: this.offsetTop }; },
     querySelector(sel) { return sel === '.modal-header' ? header : null; }
   };
 
   makeDraggable(modal);
   assert.strictEqual(typeof header.events.mousedown, 'function');
 
-  header.events.mousedown({ clientX: 10, clientY: 10 });
+  header.events.mousedown({ clientX: 10, clientY: 10, target: { closest: () => null } });
   documentStub._events.mousemove({ clientX: 30, clientY: 40, preventDefault() {} });
   assert.strictEqual(modal.style.transform, 'none');
   assert.strictEqual(modal.style.left, '20px');

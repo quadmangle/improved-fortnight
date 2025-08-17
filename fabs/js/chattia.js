@@ -2,13 +2,14 @@
   const WORKER_CHAT_URL = 'https://your-cloudflare-worker.example.com/chat';
   const WORKER_END_SESSION_URL = 'https://your-cloudflare-worker.example.com/end-session';
   const WORKER_HONEYPOT_URL = 'https://your-cloudflare-worker.example.com/honeypot-trip';
+  const INACTIVITY_LIMIT_MS = window.CHATBOT_INACTIVITY_MS || 120000;
   let container, log, form, input, send, closeBtn, minimizeBtn, openBtn;
   let langCtrl, themeCtrl, brand, hpText, hpCheck;
   let hCaptchaWidgetID; // To store the ID of the invisible hCaptcha widget
   let outsideClickHandler, escKeyHandler, inactivityTimer;
   function resetInactivityTimer(){
     clearTimeout(inactivityTimer);
-    inactivityTimer = setTimeout(()=>{ closeChat(); }, 120000);
+    inactivityTimer = setTimeout(()=>{ closeChat(); }, INACTIVITY_LIMIT_MS);
   }
 
   function buildBrand(text){
@@ -29,6 +30,24 @@
     div.textContent=txt;
     log.appendChild(div);
     log.scrollTop=log.scrollHeight;
+  }
+
+  function saveHistory(){
+    if(!log) return;
+    const msgs=[...log.querySelectorAll('.chat-msg')].map(m=>({
+      cls:m.className.replace('chat-msg','').trim(),
+      txt:m.textContent
+    }));
+    try{ sessionStorage.setItem('chatHistory', JSON.stringify(msgs)); }catch(e){}
+  }
+
+  function loadHistory(){
+    try{
+      const data=sessionStorage.getItem('chatHistory');
+      if(!data) return;
+      const msgs=JSON.parse(data);
+      msgs.forEach(m=>addMsg(m.txt, m.cls));
+    }catch(e){ sessionStorage.removeItem('chatHistory'); }
   }
 
   async function reportHoneypot(reason){
@@ -76,9 +95,7 @@
     autoGrow();
     updateSendEnabled();
     addMsg('…', 'bot');
-
     const botMsgElement = log.lastChild;
-
     const onHcaptchaSuccess = (token) => {
       fetch(WORKER_CHAT_URL, {
         method: 'POST',
@@ -128,6 +145,7 @@
     input.value='';
     autoGrow();
     updateSendEnabled();
+    sessionStorage.removeItem('chatHistory');
   }
 
   function openChat(){
@@ -135,16 +153,34 @@
     container.style.display='';
     container.removeAttribute('aria-hidden');
     openBtn.style.display='none';
+    openBtn.classList.remove('chatbot-reopen');
+    openBtn.style.bottom='';
+    openBtn.style.right='';
     openBtn.setAttribute('aria-expanded','true');
     openBtn.removeEventListener('click', openChat);
   }
 
   function minimizeChat(){
+    saveHistory();
     container.style.display='none';
     container.setAttribute('aria-hidden','true');
     openBtn.style.display='inline-flex';
+    openBtn.innerHTML = '<span class="material-symbols-outlined">chat_bubble</span>';
+    openBtn.classList.add('chatbot-reopen');
     openBtn.setAttribute('aria-expanded','false');
     openBtn.addEventListener('click', openChat, { once:true });
+    const fabMain = document.querySelector('.fab-main');
+    const fabContainer = fabMain ? fabMain.closest('.fab-container') : null;
+    if (fabMain && fabContainer) {
+      const fabStyles = window.getComputedStyle(fabContainer);
+      const fabBottom = parseInt(fabStyles.bottom, 10) || 0;
+      const fabRight = parseInt(fabStyles.right, 10) || 0;
+      const fabHeight = parseInt(window.getComputedStyle(fabMain).height, 10) || 0;
+      const fabWidth = parseInt(window.getComputedStyle(fabMain).width, 10) || 0;
+      const btnWidth = parseInt(window.getComputedStyle(openBtn).width, 10) || 0;
+      openBtn.style.bottom = `${fabBottom + fabHeight + 10}px`;
+      openBtn.style.right = `${fabRight + (fabWidth - btnWidth) / 2}px`;
+    }
     clearTimeout(inactivityTimer);
     inactivityTimer = setTimeout(closeChat, INACTIVITY_LIMIT_MS);
   }
@@ -235,9 +271,8 @@
     // Start with chat hidden until the user explicitly opens it.
     container.style.display = 'none';
     container.setAttribute('aria-hidden', 'true');
-    openBtn.style.display = 'inline-flex';
+    openBtn.style.display = 'none';
     openBtn.setAttribute('aria-expanded', 'false');
-    openBtn.addEventListener('click', openChat, { once: true });
     loadHistory();
     renderHcaptcha();
   }
@@ -275,7 +310,6 @@
       const frag = template.content;
       document.body.appendChild(frag);
       initChatbot();
-      minimizeChat();
     }catch(err){
       console.error('Failed to reload chatbot:', err);
     }

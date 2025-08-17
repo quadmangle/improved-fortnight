@@ -57,17 +57,13 @@
 
     let isDragging = false;
     let offsetX, offsetY;
-
     const modalHeader = modal.querySelector('.modal-header') || modal.querySelector('#chatbot-header');
     if (!modalHeader) return;
-
     function onMouseMove(e) {
       if (!isDragging) return;
       e.preventDefault();
-
       const newX = e.clientX - offsetX;
       const newY = e.clientY - offsetY;
-
       modal.style.left = `${newX}px`;
       modal.style.top = `${newY}px`;
       modal.style.transform = 'none';

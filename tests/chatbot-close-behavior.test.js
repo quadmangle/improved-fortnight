@@ -11,7 +11,7 @@ const html = fs.readFileSync(htmlPath, 'utf8');
 const script = fs.readFileSync(jsPath, 'utf8');
 const dragScript = fs.readFileSync(dragJsPath, 'utf8');
 const style = fs.readFileSync(cssPath, 'utf8');
-test('Chattia minimizes on outside click and closes on ESC or inactivity', async () => {
+test('Chattia closes on ESC and closes on inactivity after minimize', async () => {
   const dom = new JSDOM(`<body></body>`, { url: 'https://example.com', runScripts: 'dangerously' });
   const { window } = dom;
   const document = window.document;
@@ -42,18 +42,15 @@ test('Chattia minimizes on outside click and closes on ESC or inactivity', async
   window.openChatbot();
   document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
   assert.strictEqual(document.getElementById('chatbot-container'), null);
+  assert.strictEqual(document.getElementById('chat-open-btn'), null);
 
-  // outside click minimizes
+  // outside click minimizes, then inactivity closes
+  await window.reloadChat();
+  window.openChatbot();
   document.body.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   const minimized = document.getElementById('chatbot-container');
   assert.ok(minimized);
   assert.strictEqual(minimized.style.display, 'none');
-
-  // Inactivity after minimize closes session
-  await window.reloadChat();
-  window.openChatbot();
-  const minimizeBtn = document.getElementById('minimizeBtn');
-  minimizeBtn.click();
   await new Promise(r => setTimeout(r, 40));
   assert.strictEqual(document.getElementById('chatbot-container'), null);
   assert.strictEqual(document.getElementById('chat-open-btn'), null);
@@ -96,6 +93,8 @@ test('Chat history persists while minimized and clears on close', async () => {
   assert.ok([...log.querySelectorAll('.chat-msg')].some(m => m.textContent === 'hi'));
   const closeBtn = document.getElementById('chatbot-close');
   closeBtn.click();
+  assert.strictEqual(document.getElementById('chatbot-container'), null);
+  assert.strictEqual(document.getElementById('chat-open-btn'), null);
   await window.reloadChat();
   window.openChatbot();
   const newLog = document.getElementById('chat-log');
