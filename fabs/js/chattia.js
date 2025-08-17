@@ -161,6 +161,22 @@
     sessionStorage.setItem('chatState','open');
   }
 
+  function positionOpenBtn(){
+    if(!openBtn) return;
+    const fabMain=document.querySelector('.fab-main');
+    const fabContainer=fabMain?fabMain.closest('.fab-container'):null;
+    if(fabMain && fabContainer){
+      const fabStyles=window.getComputedStyle(fabContainer);
+      const fabBottom=parseInt(fabStyles.bottom,10)||0;
+      const fabRight=parseInt(fabStyles.right,10)||0;
+      const fabHeight=parseInt(window.getComputedStyle(fabMain).height,10)||0;
+      const fabWidth=parseInt(window.getComputedStyle(fabMain).width,10)||0;
+      const btnWidth=parseInt(window.getComputedStyle(openBtn).width,10)||0;
+      openBtn.style.bottom=`${fabBottom + fabHeight + 10}px`;
+      openBtn.style.right=`${fabRight + (fabWidth - btnWidth) / 2}px`;
+    }
+  }
+
   function minimizeChat(){
     saveHistory();
     container.style.display='none';
@@ -171,18 +187,7 @@
     openBtn.setAttribute('aria-expanded','false');
     openBtn.addEventListener('click', openChat, { once:true });
     sessionStorage.setItem('chatState','minimized');
-    const fabMain = document.querySelector('.fab-main');
-    const fabContainer = fabMain ? fabMain.closest('.fab-container') : null;
-    if (fabMain && fabContainer) {
-      const fabStyles = window.getComputedStyle(fabContainer);
-      const fabBottom = parseInt(fabStyles.bottom, 10) || 0;
-      const fabRight = parseInt(fabStyles.right, 10) || 0;
-      const fabHeight = parseInt(window.getComputedStyle(fabMain).height, 10) || 0;
-      const fabWidth = parseInt(window.getComputedStyle(fabMain).width, 10) || 0;
-      const btnWidth = parseInt(window.getComputedStyle(openBtn).width, 10) || 0;
-      openBtn.style.bottom = `${fabBottom + fabHeight + 10}px`;
-      openBtn.style.right = `${fabRight + (fabWidth - btnWidth) / 2}px`;
-    }
+    positionOpenBtn();
     clearTimeout(inactivityTimer);
     inactivityTimer = setTimeout(closeChat, INACTIVITY_LIMIT_MS);
   }
@@ -323,6 +328,7 @@
         openBtn.classList.add('chatbot-reopen');
         openBtn.setAttribute('aria-expanded','false');
         openBtn.addEventListener('click', openChat, { once:true });
+        positionOpenBtn();
       }
     }catch(err){
       console.error('Failed to reload chatbot:', err);
