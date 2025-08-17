@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Trap Doors</title>
+</head>
+<body>
+
+<!-- Source: professional-services.html -->
+    <section id="form" class="contact-form-section">
+      <h2 data-key="form-heading">Get Started Now</h2>
+      <form>
+        <input type="text" placeholder="" data-key="form-name" required />
+        <input type="email" placeholder="" data-key="form-email" required />
+        <input type="tel" placeholder="" data-key="form-phone" required />
+        <input type="text" placeholder="" data-key="form-company" required />
+        <div class="honeypot" aria-hidden="true">
+          <label for="hp-field">Leave this field blank</label>
+          <input type="text" id="hp-field" name="hp" tabindex="-1" autocomplete="off" />
+        </div>
+        <button type="submit" class="submit-button" data-key="form-submit">Book Session</button>
+      </form>
+    </section>
+
+<!-- Source: it-support.html -->
+    <section id="form" class="contact-form-section">
+      <h2 data-key="form-heading">Request Your Free IT Readiness Check</h2>
+      <form>
+        <input type="text" placeholder="" data-key="form-name" required />
+        <input type="email" placeholder="" data-key="form-email" required />
+        <input type="tel" placeholder="" data-key="form-phone" required />
+        <input type="text" placeholder="" data-key="form-company" required />
+        <div class="honeypot" aria-hidden="true">
+          <label for="hp-field">Leave this field blank</label>
+          <input type="text" id="hp-field" name="hp" tabindex="-1" autocomplete="off" />
+        </div>
+        <button type="submit" class="submit-button" data-key="form-submit">Request Now</button>
+      </form>
+    </section>
+
+<!-- Source: contact-center.html -->
+    <section id="form" class="contact-form-section bot-trap">
+      <h2 data-key="form-heading">Request Your Free Needs Assessment</h2>
+      <form>
+        <input type="text" placeholder="" data-key="form-name" required />
+        <input type="email" placeholder="" data-key="form-email" required />
+        <input type="tel" placeholder="" data-key="form-phone" required />
+        <input type="text" placeholder="" data-key="form-company" required />
+        <div class="honeypot" aria-hidden="true">
+          <label for="hp-field">Leave this field blank</label>
+          <input type="text" id="hp-field" name="hp" tabindex="-1" autocomplete="off" />
+          <label for="hp-comments">Comments</label>
+          <textarea id="hp-comments" name="comments" tabindex="-1" autocomplete="off"></textarea>
+          <label for="hp-website">Website</label>
+          <input type="url" id="hp-website" name="website" tabindex="-1" autocomplete="off" />
+        </div>
+
+        <!--
+          CAPTCHA for Bot Trap
+          - hCaptcha and reCAPTCHA widgets are included below.
+          - Replace the dummy `data-sitekey` with your actual site keys.
+          - These are intentionally placed in a hidden form to act as a bot trap.
+        -->
+        <!-- hCaptcha -->
+        <div class="h-captcha" data-sitekey="10000000-0000-0000-0000-000000000001"></div>
+
+        <!-- Google reCAPTCHA -->
+        <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
+
+        <button type="submit" class="submit-button" data-key="form-submit">Request Now</button>
+      </form>
+    </section>
+
+<!-- Source: fabs/contact.html -->
+<!-- This is a fragment, intended to be loaded dynamically -->
+<div class="modal-container" role="dialog" aria-modal="true">
+  <div class="modal-header">
+    <h1>Contact Us</h1>
+    <button class="modal-close"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="modal-content">
+    <form id="contactForm" autocomplete="off">
+      <div class="form-row">
+        <div class="form-cell">
+          <label for="name">Name</label>
+          <input id="name" name="name" required placeholder="Enter your name" />
+        </div>
+        <div class="form-cell">
+          <label for="email">Email</label>
+          <input id="email" name="email" type="email" required placeholder="Enter your email" />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-cell">
+          <label for="contactNumber">Contact Number</label>
+          <input id="contactNumber" name="contactNumber" type="tel" required placeholder="Enter your contact number" />
+        </div>
+        <div class="form-cell">
+          <label for="preferredDate">Preferred Date</label>
+          <input id="preferredDate" name="preferredDate" type="date" required />
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-cell">
+          <label for="preferredTime">Preferred Time</label>
+          <input id="preferredTime" name="preferredTime" type="time" required />
+        </div>
+        <div class="form-cell">
+          <label for="interest">What are you interested about?</label>
+          <select id="interest" name="interest" required>
+            <option value="" disabled selected>Select an option</option>
+            <option>Business Operations</option>
+            <option>Contact Center</option>
+            <option>IT Support</option>
+            <option>Professionals</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="mt-1">
+        <label for="comments">Comments</label>
+        <textarea id="comments" name="comments" rows="4" placeholder="What service are you interested in?"></textarea>
+      </div>
+
+      <!-- Honeypot Field for security -->
+      <div class="honeypot">
+        <label for="honeypot-contact">Leave this field blank</label>
+        <input type="text" id="honeypot-contact" name="honeypot-contact" />
+      </div>
+
+      <!-- hCaptcha challenge -->
+      <div class="h-captcha" data-sitekey="10000000-ffff-ffff-ffff-000000000001"></div>
+
+      <div class="modal-footer">
+        <button type="submit" class="submit-btn">Send</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Source: fabs/join.html -->
+<!-- This is a fragment, intended to be loaded dynamically -->
+<div class="modal-container" role="dialog" aria-modal="true">
+  <div class="modal-header">
+    <h1>Join Us</h1>
+    <button class="modal-close"><i class="fas fa-times"></i></button>
+  </div>
+  <div class="modal-content">
+    <form id="joinForm" autocomplete="off" novalidate>
+      <div class="form-pairs">
+        <div>
+          <label for="name">Name</label>
+          <input id="name" name="name" required placeholder="Enter your name" />
+        </div>
+        <div>
+          <label for="email">Email</label>
+          <input id="email" type="email" name="email" required placeholder="Enter your email" />
+        </div>
+        <div>
+          <label for="phone">Phone</label>
+          <input id="phone" type="tel" name="phone" required placeholder="Enter your phone" />
+        </div>
+        <div></div>
+      </div>
+
+      <!-- Dynamic Sections -->
+      <div class="form-section" data-section="Skills">
+        <div class="section-header">
+          <h2>Skills</h2>
+          <div>
+            <button type="button" class="circle-btn add" title="Add field">+</button>
+            <button type="button" class="circle-btn remove" title="Remove last field">−</button>
+          </div>
+        </div>
+        <div class="inputs"></div>
+        <button type="button" class="accept-btn">Accept</button>
+        <button type="button" class="edit-btn hidden">Edit</button>
+      </div>
+
+      <div class="form-section" data-section="Education">
+        <div class="section-header">
+          <h2>Education</h2>
+          <div>
+            <button type="button" class="circle-btn add" title="Add field">+</button>
+            <button type="button" class="circle-btn remove" title="Remove last field">−</button>
+          </div>
+        </div>
+        <div class="inputs"></div>
+        <button type="button" class="accept-btn">Accept</button>
+        <button type="button" class="edit-btn hidden">Edit</button>
+      </div>
+
+      <div class="form-section" data-section="Certification">
+        <div class="section-header">
+          <h2>Certification</h2>
+          <div>
+            <button type="button" class="circle-btn add" title="Add field">+</button>
+            <button type="button" class="circle-btn remove" title="Remove last field">−</button>
+          </div>
+        </div>
+        <div class="inputs"></div>
+        <button type="button" class="accept-btn">Accept</button>
+        <button type="button" class="edit-btn hidden">Edit</button>
+      </div>
+
+      <div class="form-section" data-section="Hobbies">
+        <div class="section-header">
+          <h2>Hobbies</h2>
+          <div>
+            <button type="button" class="circle-btn add" title="Add field">+</button>
+            <button type="button" class="circle-btn remove" title="Remove last field">−</button>
+          </div>
+        </div>
+        <div class="inputs"></div>
+        <button type="button" class="accept-btn">Accept</button>
+        <button type="button" class="edit-btn hidden">Edit</button>
+      </div>
+
+      <div class="form-section">
+        <h2>What are you interested in?</h2>
+        <select id="jn-interest" name="jn-interest" required>
+          <option value="" disabled selected>Select an option</option>
+          <option>Business Operations</option>
+          <option>Contact Center</option>
+          <option>IT Support</option>
+          <option>Professionals</option>
+        </select>
+      </div>
+
+      <div class="form-section" data-section="Continued Education">
+        <div class="section-header">
+          <h2>Continued Education</h2>
+          <div>
+            <button type="button" class="circle-btn add" title="Add field">+</button>
+            <button type="button" class="circle-btn remove" title="Remove last field">−</button>
+          </div>
+        </div>
+        <div class="inputs"></div>
+        <button type="button" class="accept-btn">Accept</button>
+        <button type="button" class="edit-btn hidden">Edit</button>
+      </div>
+
+      <div class="form-section" data-section="Experience">
+        <div class="section-header">
+          <h2>Experience</h2>
+          <div>
+            <button type="button" class="circle-btn add" title="Add field">+</button>
+            <button type="button" class="circle-btn remove" title="Remove last field">−</button>
+          </div>
+        </div>
+        <div class="inputs"></div>
+        <button type="button" class="accept-btn">Accept</button>
+        <button type="button" class="edit-btn hidden">Edit</button>
+      </div>
+
+      <div>
+        <label for="about">Tell us about yourself</label>
+        <textarea id="about" name="about" rows="4" placeholder="Tell us about yourself..."></textarea>
+      </div>
+
+      <!-- Honeypot Field for security -->
+      <div class="honeypot">
+        <label for="honeypot-join">Leave this field blank</label>
+        <input type="text" id="honeypot-join" name="honeypot-join" />
+      </div>
+
+      <!-- hCaptcha challenge -->
+      <div class="h-captcha" data-sitekey="10000000-ffff-ffff-ffff-000000000001"></div>
+
+      <div class="modal-footer">
+        <button type="submit" class="submit-btn">Submit</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Source: fabs/chatbot.html -->
+<!-- Chatbot fragment loaded dynamically -->
+<button id="chat-open-btn" aria-label="Open chat">
+  <i class="fa-solid fa-comments"></i>
+</button>
+<div id="chatbot-container" role="dialog" aria-modal="true" aria-label="Chattia" style="display:none" aria-hidden="true">
+  <div id="chatbot-header">
+    <span id="title" data-en="Chattia" data-es="Chattia">Chattia</span>
+    <div>
+      <span id="langCtrl" class="ctrl" role="button" aria-label="Toggle language">EN</span>
+      &nbsp;|&nbsp;
+      <span id="themeCtrl" class="ctrl" role="button" aria-label="Toggle theme">Dark</span>
+      <button id="minimizeBtn" type="button" title="Minimize">
+        <i class="fa-solid fa-minus"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Dialogue viewport -->
+  <div id="chat-log" role="log" aria-live="polite" aria-atomic="false"></div>
+
+  <div id="chatbot-form-container">
+    <form id="chatbot-input-grid" autocomplete="off" novalidate>
+      <div id="input-toolbar" aria-label="Ops Online Support">
+        <div id="brand" data-en="Ops Online Support" data-es="Ops Online Support" title="Ops Online Support"></div>
+      </div>
+
+      <div id="input-main">
+        <textarea
+          id="chatbot-input"
+          rows="1"
+          placeholder="Type your message..."
+          required
+          maxlength="512"
+          data-en-ph="Type your message..."
+          data-es-ph="Escriba su mensaje..."></textarea>
+      </div>
+
+      <div id="button-stack">
+        <button id="chatbot-send" type="submit" class="btn" disabled aria-label="Send">
+          <i class="fa-solid fa-arrow-right"></i>
+        </button>
+        <button id="chatbot-close" type="button" class="btn secondary" aria-label="Close chat">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Hidden honeypots -->
+      <div class="hp-wrap" aria-hidden="true">
+        <label class="hp-label" for="hp_text">Do not fill</label>
+        <input type="text" id="hp_text" name="hp_text" tabindex="-1" autocomplete="off" />
+        <label class="hp-label" for="hp_check">I am human</label>
+        <input type="checkbox" id="hp_check" name="hp_check" tabindex="-1" />
+      </div>
+
+      <!-- hCaptcha challenge (invisible) -->
+      <div id="chatbot-hcaptcha" class="h-captcha" data-sitekey="10000000-ffff-ffff-ffff-000000000001" data-size="invisible"></div>
+    </form>
+  </div>
+</div>
+
+<!-- Source: tests/join-form.test.js (test snippet) -->
+    <form id="joinForm">
+      <div class="form-section" data-section="Experience">
+        <div class="section-header">
+          <h2>Experience</h2>
+          <div>
+            <button type="button" class="circle-btn add" title="Add field">+</button>
+            <button type="button" class="circle-btn remove" title="Remove last field">−</button>
+          </div>
+        </div>
+        <div class="inputs"></div>
+        <button type="button" class="accept-btn">Accept</button>
+        <button type="button" class="edit-btn" style="display:none;">Edit</button>
+      </div>
+    </form>
+
+<script src="trap-doors.js"></script>
+</body>
+</html>

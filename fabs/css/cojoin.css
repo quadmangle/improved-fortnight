@@ -342,8 +342,3 @@ button.submit-btn {
 button.submit-btn:hover {
   background: var(--clr-accent-dark);
 }
-
-/* Honeypot fields to be hidden */
-.honeypot {
-  display: none !important;
-}
