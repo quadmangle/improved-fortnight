@@ -7,9 +7,10 @@
  */
 
 function initCojoinForms() {
-
   const contactForm = document.getElementById('contactForm');
   const joinForm = document.getElementById('joinForm');
+
+  window.securityUtils.loadRecaptcha();
 
   if (contactForm && !contactForm.dataset.cojoinInitialized) {
     contactForm.addEventListener('submit', handleContactSubmit);
@@ -140,24 +141,23 @@ function initCojoinForms() {
     const form = e.target;
     const formData = new FormData(form);
 
-    // 2. hCaptcha check
-    const hCaptchaResponse = formData.get('h-captcha-response');
-    if (!hCaptchaResponse) {
-      alert('Please complete the hCaptcha challenge.');
-      // NOTE: In a real-world scenario, we might want to trigger a reset
-      // of the captcha widget here, but for now, an alert is sufficient.
-      return;
-    }
-
     const data = Object.fromEntries(formData.entries());
 
-    // 3. Malicious code check and sanitization
+    // 2. Malicious code check and sanitization
     const sanitizedData = {};
     for (const key in data) {
       const sanitizedValue = window.appUtils.sanitizeInput(data[key]);
       sanitizedData[key] = sanitizedValue;
     }
-    
+
+    // Obtain reCAPTCHA token
+    try {
+      sanitizedData.recaptchaToken = await window.securityUtils.getRecaptchaToken('contact');
+    } catch (err) {
+      alert('Security check failed.');
+      return;
+    }
+
     // 3. Prepare and send sanitized data to worker
     alert('Contact form submitted successfully!');
     await sendToCloudflareWorker(sanitizedData);
@@ -185,13 +185,6 @@ function initCojoinForms() {
     const form = e.target;
     const formData = new FormData(form);
 
-    // 2. hCaptcha check
-    const hCaptchaResponse = formData.get('h-captcha-response');
-    if (!hCaptchaResponse) {
-      alert('Please complete the hCaptcha challenge.');
-      return;
-    }
-
     const data = Object.fromEntries(formData.entries());
 
     // Check that all dynamic sections are 'accepted' or empty
@@ -209,6 +202,14 @@ function initCojoinForms() {
     for (const key in data) {
       const sanitizedValue = window.appUtils.sanitizeInput(data[key]);
       sanitizedData[key] = sanitizedValue;
+    }
+
+    // Obtain reCAPTCHA token
+    try {
+      sanitizedData.recaptchaToken = await window.securityUtils.getRecaptchaToken('join');
+    } catch (err) {
+      alert('Security check failed.');
+      return;
     }
 
     // 3. Prepare and send sanitized data to worker
