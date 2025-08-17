@@ -6,7 +6,7 @@ const { JSDOM } = require('jsdom');
 
 const root = path.resolve(__dirname, '..');
 
-test('chatbot minimize positions open button above FAB by 10px', async () => {
+test('chatbot minimize positions open button above FAB by 10px and centers horizontally', async () => {
   const html = fs.readFileSync(path.join(root, 'fabs', 'chatbot.html'), 'utf8');
   const chatJs = fs.readFileSync(path.join(root, 'fabs', 'js', 'chattia.js'), 'utf8');
   const chatCss = fs.readFileSync(path.join(root, 'fabs', 'css', 'chatbot.css'), 'utf8');
@@ -55,10 +55,16 @@ test('chatbot minimize positions open button above FAB by 10px', async () => {
   minimizeBtn.click();
 
   const fabBottom = parseInt(window.getComputedStyle(fabContainer).bottom, 10);
+  const fabRight = parseInt(window.getComputedStyle(fabContainer).right, 10);
   const fabHeight = parseInt(window.getComputedStyle(fabMain).height, 10);
-  const expected = fabBottom + fabHeight + 10;
-  const actual = parseInt(window.getComputedStyle(openBtn).bottom, 10);
-  assert.strictEqual(actual, expected);
+  const fabWidth = parseInt(window.getComputedStyle(fabMain).width, 10);
+  const btnWidth = parseInt(window.getComputedStyle(openBtn).width, 10);
+  const expectedBottom = fabBottom + fabHeight + 10;
+  const expectedRight = fabRight + (fabWidth - btnWidth) / 2;
+  const actualBottom = parseInt(window.getComputedStyle(openBtn).bottom, 10);
+  const actualRight = parseInt(window.getComputedStyle(openBtn).right, 10);
+  assert.strictEqual(actualBottom, expectedBottom);
+  assert.strictEqual(actualRight, expectedRight);
   window.cleanupChatbot();
 });
 

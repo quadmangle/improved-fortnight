@@ -474,16 +474,34 @@ document.addEventListener('DOMContentLoaded', initCojoinForms);
     container.style.display='';
     container.removeAttribute('aria-hidden');
     openBtn.style.display='none';
+    openBtn.classList.remove('chatbot-reopen');
+    openBtn.style.bottom='';
+    openBtn.style.right='';
     openBtn.setAttribute('aria-expanded','true');
     openBtn.removeEventListener('click', openChat);
   }
 
   function minimizeChat(){
+    saveHistory();
     container.style.display='none';
     container.setAttribute('aria-hidden','true');
     openBtn.style.display='inline-flex';
+    openBtn.innerHTML = '<span class="material-symbols-outlined">chat_bubble</span>';
+    openBtn.classList.add('chatbot-reopen');
     openBtn.setAttribute('aria-expanded','false');
     openBtn.addEventListener('click', openChat, { once:true });
+    const fabMain = document.querySelector('.fab-main');
+    const fabContainer = fabMain ? fabMain.closest('.fab-container') : null;
+    if (fabMain && fabContainer) {
+      const fabStyles = window.getComputedStyle(fabContainer);
+      const fabBottom = parseInt(fabStyles.bottom, 10) || 0;
+      const fabRight = parseInt(fabStyles.right, 10) || 0;
+      const fabHeight = parseInt(window.getComputedStyle(fabMain).height, 10) || 0;
+      const fabWidth = parseInt(window.getComputedStyle(fabMain).width, 10) || 0;
+      const btnWidth = parseInt(window.getComputedStyle(openBtn).width, 10) || 0;
+      openBtn.style.bottom = `${fabBottom + fabHeight + 10}px`;
+      openBtn.style.right = `${fabRight + (fabWidth - btnWidth) / 2}px`;
+    }
     clearTimeout(inactivityTimer);
     inactivityTimer = setTimeout(closeChat, INACTIVITY_LIMIT_MS);
   }
