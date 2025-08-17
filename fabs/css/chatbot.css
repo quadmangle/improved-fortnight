@@ -67,6 +67,9 @@ body.kb-open #chatbot-container{
   box-shadow:0 8px 24px #0007; cursor:pointer;
   z-index:10000;
 }
+#chat-open-btn *{
+  pointer-events:none;
+}
 #chat-open-btn.chatbot-reopen{}
 #chatbot-header{
   width:100%;

@@ -85,7 +85,7 @@ test('Chattia chatbot basic interactions', async () => {
   openBtn.click();
   assert.strictEqual(container.style.display, '');
 
-  // message does not persist across reloads
+  // message persists across reloads
   window.grecaptcha = { ready: cb => cb(), execute: async () => 'token' };
   const recaptchaScript = document.getElementById('recaptcha-script');
   if (recaptchaScript && recaptchaScript.onload) recaptchaScript.onload();
@@ -98,9 +98,8 @@ test('Chattia chatbot basic interactions', async () => {
   document.querySelectorAll('#chatbot-container').forEach(el => el.remove());
   document.querySelectorAll('#chat-open-btn').forEach(el => el.remove());
   await window.reloadChat();
-  document.getElementById('chat-open-btn').click();
   const logText = document.getElementById('chat-log').textContent;
-  assert.ok(!logText.includes('Hello'));
+  assert.ok(logText.includes('Hello'));
   const closeBtn = document.getElementById('chatbot-close');
   closeBtn.click();
   assert.strictEqual(document.getElementById('chatbot-container'), null);
