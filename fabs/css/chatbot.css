@@ -80,6 +80,7 @@ body.kb-open #chatbot-container{
 }
 body.drag-enabled #chatbot-header{ cursor:move; }
 #chatbot-header .ctrl{ cursor:pointer; font-size:.75rem; font-weight:600; user-select:none; opacity:.95 }
+#themeCtrl{ display:inline-block; width:5ch; text-align:center; }
 #chatbot-header .ctrl:hover{ opacity:1 }
 #minimizeBtn{
   background:transparent; border:1px solid rgba(255,255,255,.7); color:#fff;
