@@ -95,9 +95,7 @@
     autoGrow();
     updateSendEnabled();
     addMsg('…', 'bot');
-
     const botMsgElement = log.lastChild;
-
     const onHcaptchaSuccess = (token) => {
       fetch(WORKER_CHAT_URL, {
         method: 'POST',

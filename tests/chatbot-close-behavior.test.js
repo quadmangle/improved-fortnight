@@ -52,7 +52,7 @@ test('Chattia minimizes on ESC or outside click and closes on inactivity', async
   assert.ok(minimized);
   assert.strictEqual(minimized.style.display, 'none');
 
-  // Inactivity after minimize closes session
+  // Inactivity after minimize closes session and removes open button
   await window.reloadChat();
   window.openChatbot();
   const minimizeBtn = document.getElementById('minimizeBtn');
@@ -99,6 +99,8 @@ test('Chat history persists while minimized and clears on close', async () => {
   assert.ok([...log.querySelectorAll('.chat-msg')].some(m => m.textContent === 'hi'));
   const closeBtn = document.getElementById('chatbot-close');
   closeBtn.click();
+  assert.strictEqual(document.getElementById('chatbot-container'), null);
+  assert.strictEqual(document.getElementById('chat-open-btn'), null);
   await window.reloadChat();
   window.openChatbot();
   const newLog = document.getElementById('chat-log');
