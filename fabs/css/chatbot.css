@@ -65,6 +65,9 @@ body.kb-open #chatbot-container{
   padding:.7rem .9rem; box-shadow:0 8px 24px #0007; cursor:pointer;
   z-index:10000;
 }
+#chat-open-btn.chatbot-reopen{
+  bottom:calc(20px + 70px);
+}
 #chatbot-header{
   width:100%;
   box-sizing:border-box;

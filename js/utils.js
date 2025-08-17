@@ -73,7 +73,7 @@
       modal.style.transition = 'none'; // Disable transition while dragging
     });
 
-    document.addEventListener('mousemove', (e) => {
+    const moveHandler = (e) => {
       if (!isDragging) return;
       e.preventDefault();
 
@@ -83,13 +83,17 @@
       modal.style.left = `${newX}px`;
       modal.style.top = `${newY}px`;
       modal.style.transform = 'none';
-    });
+    };
+    document.addEventListener('mousemove', moveHandler);
 
-    document.addEventListener('mouseup', () => {
+    const upHandler = () => {
       isDragging = false;
       modal.style.cursor = 'move';
       modal.style.transition = 'transform 0.3s ease'; // Re-enable transition
-    });
+      document.removeEventListener('mousemove', moveHandler);
+      document.removeEventListener('mouseup', upHandler);
+    };
+    document.addEventListener('mouseup', upHandler);
   }
 
   // Expose the functions to the global scope

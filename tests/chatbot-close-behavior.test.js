@@ -11,7 +11,7 @@ const html = fs.readFileSync(htmlPath, 'utf8');
 const script = fs.readFileSync(jsPath, 'utf8');
 const dragScript = fs.readFileSync(dragJsPath, 'utf8');
 const style = fs.readFileSync(cssPath, 'utf8');
-test('Chattia minimizes on outside click and closes on ESC or inactivity', async () => {
+test('Chattia minimizes on ESC or outside click and closes on inactivity', async () => {
   const dom = new JSDOM(`<body></body>`, { url: 'https://example.com', runScripts: 'dangerously' });
   const { window } = dom;
   const document = window.document;
@@ -37,15 +37,18 @@ test('Chattia minimizes on outside click and closes on ESC or inactivity', async
   window.eval(dragScript);
   window.eval(script);
 
-  // ESC closes when chat is open
+  // ESC minimizes when chat is open
   await window.reloadChat();
   window.openChatbot();
   document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-  assert.strictEqual(document.getElementById('chatbot-container'), null);
+  let minimized = document.getElementById('chatbot-container');
+  assert.ok(minimized);
+  assert.strictEqual(minimized.style.display, 'none');
 
-  // outside click minimizes
+  // outside click also minimizes
+  window.openChatbot();
   document.body.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  const minimized = document.getElementById('chatbot-container');
+  minimized = document.getElementById('chatbot-container');
   assert.ok(minimized);
   assert.strictEqual(minimized.style.display, 'none');
 
