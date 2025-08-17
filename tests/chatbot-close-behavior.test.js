@@ -11,7 +11,7 @@ const html = fs.readFileSync(htmlPath, 'utf8');
 const script = fs.readFileSync(jsPath, 'utf8');
 const dragScript = fs.readFileSync(dragJsPath, 'utf8');
 const style = fs.readFileSync(cssPath, 'utf8');
-test('Chattia minimizes on ESC or outside click and closes on inactivity', async () => {
+test('Chattia closes on ESC and closes on inactivity after minimize', async () => {
   const dom = new JSDOM(`<body></body>`, { url: 'https://example.com', runScripts: 'dangerously' });
   const { window } = dom;
   const document = window.document;
@@ -37,26 +37,20 @@ test('Chattia minimizes on ESC or outside click and closes on inactivity', async
   window.eval(dragScript);
   window.eval(script);
 
-  // ESC minimizes when chat is open
+  // ESC closes when chat is open
   await window.reloadChat();
   window.openChatbot();
   document.dispatchEvent(new window.KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
-  let minimized = document.getElementById('chatbot-container');
-  assert.ok(minimized);
-  assert.strictEqual(minimized.style.display, 'none');
+  assert.strictEqual(document.getElementById('chatbot-container'), null);
+  assert.strictEqual(document.getElementById('chat-open-btn'), null);
 
-  // outside click also minimizes
-  window.openChatbot();
-  document.body.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
-  minimized = document.getElementById('chatbot-container');
-  assert.ok(minimized);
-  assert.strictEqual(minimized.style.display, 'none');
-
-  // Inactivity after minimize closes session and removes open button
+  // outside click minimizes, then inactivity closes
   await window.reloadChat();
   window.openChatbot();
-  const minimizeBtn = document.getElementById('minimizeBtn');
-  minimizeBtn.click();
+  document.body.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
+  const minimized = document.getElementById('chatbot-container');
+  assert.ok(minimized);
+  assert.strictEqual(minimized.style.display, 'none');
   await new Promise(r => setTimeout(r, 40));
   assert.strictEqual(document.getElementById('chatbot-container'), null);
   assert.strictEqual(document.getElementById('chat-open-btn'), null);
