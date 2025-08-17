@@ -313,57 +313,9 @@ li {
   background: linear-gradient(45deg, #8e24aa, #5e35b1);
 }
 
-/* Forms */
-.contact-form-section {
-  max-width: 480px;
-  margin: 0 auto var(--space-3xl);
-  background: var(--clr-form-bg);
-  padding: 30px 30px 40px;
-  border-radius: 14px;
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.2);
-  transition: background 0.3s, color 0.3s;
-}
-
-.contact-form-section h2 {
-  margin-bottom: var(--space-lg);
-}
-
-.contact-form-section form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-md);
-}
-
-.honeypot {
-  display: none;
-}
-
-.contact-form-section input {
-  padding: 14px 16px;
-  font-size: 1rem;
-  border-radius: 8px;
-  border: var(--clr-form-border);
-  outline: none;
-  transition: background 0.3s, color 0.3s, border 0.3s;
-  background: var(--clr-form-input-bg);
-  color: var(--clr-text);
-}
-
-.contact-form-section .submit-button {
-  padding: 14px 0;
-  border: none;
-  border-radius: 8px;
-  font-weight: 700;
-  font-size: 1.15rem;
-  color: white;
-  background: var(--clr-cta-other-hover);
-  cursor: pointer;
-  transition: background 0.3s ease;
-  user-select: none;
-}
-
-.contact-form-section .submit-button:hover {
-  background: #4527a0;
+/* Contact CTA */
+.contact-cta {
+  text-align: center;
 }
 
 .business-ops-form {
@@ -671,10 +623,6 @@ body.dark .ops-modal {
     font-size: 1.1rem;
   }
 
-  .contact-form-section {
-    padding: 0 15px;
-    max-width: 100%;
-  }
 
   .nav-links {
     position: fixed;

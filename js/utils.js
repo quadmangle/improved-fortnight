@@ -57,9 +57,26 @@
 
     let isDragging = false;
     let offsetX, offsetY;
-
     const modalHeader = modal.querySelector('.modal-header') || modal.querySelector('#chatbot-header');
     if (!modalHeader) return;
+    function onMouseMove(e) {
+      if (!isDragging) return;
+      e.preventDefault();
+      const newX = e.clientX - offsetX;
+      const newY = e.clientY - offsetY;
+      modal.style.left = `${newX}px`;
+      modal.style.top = `${newY}px`;
+      modal.style.transform = 'none';
+    }
+
+    function onMouseUp() {
+      if (!isDragging) return;
+      isDragging = false;
+      modal.style.cursor = 'move';
+      modal.style.transition = 'transform 0.3s ease'; // Re-enable transition
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    }
 
     modalHeader.addEventListener('mousedown', (e) => {
       // Avoid initiating drag when interacting with header controls
@@ -71,29 +88,9 @@
       offsetY = e.clientY - modal.getBoundingClientRect().top;
       modal.style.cursor = 'grabbing';
       modal.style.transition = 'none'; // Disable transition while dragging
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
     });
-
-    const moveHandler = (e) => {
-      if (!isDragging) return;
-      e.preventDefault();
-
-      const newX = e.clientX - offsetX;
-      const newY = e.clientY - offsetY;
-
-      modal.style.left = `${newX}px`;
-      modal.style.top = `${newY}px`;
-      modal.style.transform = 'none';
-    };
-    document.addEventListener('mousemove', moveHandler);
-
-    const upHandler = () => {
-      isDragging = false;
-      modal.style.cursor = 'move';
-      modal.style.transition = 'transform 0.3s ease'; // Re-enable transition
-      document.removeEventListener('mousemove', moveHandler);
-      document.removeEventListener('mouseup', upHandler);
-    };
-    document.addEventListener('mouseup', upHandler);
   }
 
   // Expose the functions to the global scope
