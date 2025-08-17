@@ -158,6 +158,7 @@
     openBtn.style.right='';
     openBtn.setAttribute('aria-expanded','true');
     openBtn.removeEventListener('click', openChat);
+    sessionStorage.setItem('chatState','open');
   }
 
   function minimizeChat(){
@@ -165,10 +166,11 @@
     container.style.display='none';
     container.setAttribute('aria-hidden','true');
     openBtn.style.display='inline-flex';
-    openBtn.innerHTML = '<span class="material-symbols-outlined">chat_bubble</span>';
+    openBtn.innerHTML = 'CHAT';
     openBtn.classList.add('chatbot-reopen');
     openBtn.setAttribute('aria-expanded','false');
     openBtn.addEventListener('click', openChat, { once:true });
+    sessionStorage.setItem('chatState','minimized');
     const fabMain = document.querySelector('.fab-main');
     const fabContainer = fabMain ? fabMain.closest('.fab-container') : null;
     if (fabMain && fabContainer) {
@@ -188,6 +190,7 @@
   function closeChat(){
     clearTimeout(inactivityTimer);
     clearUIState();
+    sessionStorage.removeItem('chatState');
     terminateSession();
     document.removeEventListener('click', outsideClickHandler);
     document.removeEventListener('keydown', escKeyHandler);
@@ -275,6 +278,7 @@
     openBtn.setAttribute('aria-expanded', 'false');
     loadHistory();
     renderHcaptcha();
+    window.addEventListener('beforeunload', saveHistory);
   }
 
   function renderHcaptcha() {
@@ -310,6 +314,16 @@
       const frag = template.content;
       document.body.appendChild(frag);
       initChatbot();
+      const state = sessionStorage.getItem('chatState');
+      if(state === 'open'){
+        openChat();
+      }else if(state === 'minimized'){
+        openBtn.style.display='inline-flex';
+        openBtn.innerHTML = 'CHAT';
+        openBtn.classList.add('chatbot-reopen');
+        openBtn.setAttribute('aria-expanded','false');
+        openBtn.addEventListener('click', openChat, { once:true });
+      }
     }catch(err){
       console.error('Failed to reload chatbot:', err);
     }
@@ -319,4 +333,7 @@
   window.initChatbot = initChatbot;
   window.cleanupChatbot = closeChat;
   window.openChatbot = openChat;
+  if (sessionStorage.getItem('chatState')) {
+    window.addEventListener('DOMContentLoaded', () => { reloadChat(); });
+  }
 })();
