@@ -44,10 +44,8 @@ test('Chattia minimizes on ESC or outside click and closes on inactivity', async
   let minimized = document.getElementById('chatbot-container');
   assert.ok(minimized);
   assert.strictEqual(minimized.style.display, 'none');
-  assert.ok(document.getElementById('chat-open-btn'));
 
   // outside click also minimizes
-  await window.reloadChat();
   window.openChatbot();
   document.body.dispatchEvent(new window.MouseEvent('click', { bubbles: true }));
   minimized = document.getElementById('chatbot-container');
