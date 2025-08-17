@@ -39,10 +39,10 @@
     <header>
       <h1 data-key="header-heading">Connect with Your Customers.</h1>
       <p data-key="header-subheading">Enhance customer engagement with multilingual, multichannel support—24/7, data-driven, and empathetic.</p>
-      <a href="#form" class="cta-button it-and-contact learn-more" data-key="cta-learn-more">Learn More</a>
+      <a href="#services" class="cta-button it-and-contact learn-more" data-key="cta-learn-more">Learn More</a>
     </header>
 
-    <section>
+    <section id="services">
       <h2 data-key="services-heading">Our Contact Center Services</h2>
       <ul>
         <li data-key="service-1">24/7 inbound/outbound call management</li>
@@ -61,36 +61,8 @@
       </figure>
     </section>
 
-    <section id="form" class="contact-form-section bot-trap">
-      <h2 data-key="form-heading">Request Your Free Needs Assessment</h2>
-      <form>
-        <input type="text" placeholder="" data-key="form-name" required />
-        <input type="email" placeholder="" data-key="form-email" required />
-        <input type="tel" placeholder="" data-key="form-phone" required />
-        <input type="text" placeholder="" data-key="form-company" required />
-        <div class="honeypot" aria-hidden="true">
-          <label for="hp-field">Leave this field blank</label>
-          <input type="text" id="hp-field" name="hp" tabindex="-1" autocomplete="off" />
-          <label for="hp-comments">Comments</label>
-          <textarea id="hp-comments" name="comments" tabindex="-1" autocomplete="off"></textarea>
-          <label for="hp-website">Website</label>
-          <input type="url" id="hp-website" name="website" tabindex="-1" autocomplete="off" />
-        </div>
-
-        <!--
-          CAPTCHA for Bot Trap
-          - hCaptcha and reCAPTCHA widgets are included below.
-          - Replace the dummy `data-sitekey` with your actual site keys.
-          - These are intentionally placed in a hidden form to act as a bot trap.
-        -->
-        <!-- hCaptcha -->
-        <div class="h-captcha" data-sitekey="10000000-0000-0000-0000-000000000001"></div>
-
-        <!-- Google reCAPTCHA -->
-        <div class="g-recaptcha" data-sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"></div>
-
-        <button type="submit" class="submit-button" data-key="form-submit">Request Now</button>
-      </form>
+    <section class="contact-cta">
+      <button type="button" class="cta-button contact-button" data-key="cta-contact">Contact Us</button>
     </section>
   </main>
   <footer class="ops-footer" data-key="footer-copyright" role="contentinfo">© 2025 OPS Online Support.</footer>

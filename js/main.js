@@ -255,6 +255,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
   });
 
+  const contactButtons = document.querySelectorAll('.contact-button');
+  contactButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const fabContact = document.getElementById('fab-contact');
+      if (fabContact) {
+        fabContact.click();
+      }
+    });
+  });
+
   // --- CSRF Token Fetch ---
   // Note: This logic for fetching and attaching a CSRF token is currently
   // unused since the form it was for has been removed. It is left here
