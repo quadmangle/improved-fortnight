@@ -162,7 +162,7 @@
     container.style.display='none';
     container.setAttribute('aria-hidden','true');
     openBtn.style.display='inline-flex';
-    openBtn.innerHTML = '<i class="fa-solid fa-comments"></i>';
+    openBtn.innerHTML = '<span class="material-symbols-outlined">chat_bubble</span>';
     openBtn.classList.add('chatbot-reopen');
     openBtn.setAttribute('aria-expanded','false');
     openBtn.addEventListener('click', openChat, { once:true });
