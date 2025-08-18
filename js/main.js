@@ -4,8 +4,6 @@
 // The `translations` object contains all service card and modal data.
 // We assume `translations` and `currentLanguage` are globally available after langtheme.js loads.
 
-// CSRF token retrieved from the server. Updated after each request.
-let csrfToken = '';
 
 function createModal(serviceKey, lang) {
   const modalRoot = document.getElementById('modal-root');
@@ -82,41 +80,7 @@ function updateModalContent(modalElement, lang) {
 }
 
 
-// Function to generate a random string for the CSRF token
-function generateCsrfToken() {
-  const randomBytes = new Uint8Array(32);
-  window.crypto.getRandomValues(randomBytes);
-  return Array.from(randomBytes).map(byte => byte.toString(16).padStart(2, '0')).join('');
-}
-
-// Function to set a cookie
-function setCookie(name, value, days) {
-  let expires = '';
-  if (days) {
-    const date = new Date();
-    date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
-    expires = '; expires=' + date.toUTCString();
-  }
-  document.cookie = name + '=' + (value || '') + expires + '; path=/; SameSite=Strict; Secure';
-}
-
-// Function to get a cookie
-function getCookie(name) {
-  const nameEQ = name + '=';
-  const ca = document.cookie.split(';');
-  for (let i = 0; i < ca.length; i++) {
-    let c = ca[i];
-    while (c.charAt(0) === ' ') c = c.substring(1, c.length);
-    if (c.indexOf(nameEQ) === 0) return c.substring(nameEQ.length, c.length);
-  }
-  return null;
-}
-
-
-document.addEventListener('DOMContentLoaded', async () => {
-  // Generate and set the CSRF token when the page loads
-  let csrfToken = generateCsrfToken();
-  setCookie('csrf_token', csrfToken, 1);
+document.addEventListener('DOMContentLoaded', () => {
   const navToggle = document.querySelector('.nav-menu-toggle');
   const navLinks = document.querySelector('.nav-links');
   // Backdrop element shown behind the mobile menu; clicking it closes the menu
@@ -264,27 +228,5 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
   });
-
-  // --- CSRF Token Fetch ---
-  // Note: This logic for fetching and attaching a CSRF token is currently
-  // unused since the form it was for has been removed. It is left here
-  // in case a new primary form is added to the main page in the future.
-  const forms = document.querySelectorAll('form');
-  if (forms.length > 0) {
-    try {
-      const res = await fetch('/api/csrf-token', { credentials: 'include' });
-      const data = await res.json();
-      csrfToken = data.token;
-      forms.forEach(form => {
-        const hidden = document.createElement('input');
-        hidden.type = 'hidden';
-        hidden.name = 'csrfToken';
-        hidden.value = csrfToken;
-        form.appendChild(hidden);
-      });
-    } catch (err) {
-      console.error('Failed to retrieve CSRF token', err);
-    }
-  }
 
 });

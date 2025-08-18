@@ -3,6 +3,8 @@ const assert = require('node:assert');
 const { JSDOM } = require('jsdom');
 const fs = require('fs');
 const path = require('path');
+const securityJs = fs.readFileSync(path.resolve(__dirname, '../js/security-utils.js'), 'utf8');
+const utilsJs = fs.readFileSync(path.resolve(__dirname, '../js/utils.js'), 'utf8');
 
 // Helper function to set up the DOM and load the script
 function setupTestEnvironment(html) {
@@ -12,6 +14,9 @@ function setupTestEnvironment(html) {
   // Mock necessary browser APIs
   window.alert = () => {};
   window.fetch = () => Promise.resolve({ ok: true });
+  window.grecaptcha = { ready: cb => cb(), execute: async () => 'token' };
+  window.eval(utilsJs);
+  window.eval(securityJs);
 
   // Load the script into the JSDOM context
   const cojoinScript = fs.readFileSync(path.resolve(__dirname, '../fabs/js/cojoin.js'), 'utf8');

@@ -5,7 +5,6 @@
   const INACTIVITY_LIMIT_MS = window.CHATBOT_INACTIVITY_MS || 120000;
   let container, log, form, input, send, closeBtn, minimizeBtn, openBtn;
   let langCtrl, themeCtrl, brand, hpText, hpCheck;
-  let hCaptchaWidgetID; // To store the ID of the invisible hCaptcha widget
   let outsideClickHandler, escKeyHandler, inactivityTimer;
   function resetInactivityTimer(){
     clearTimeout(inactivityTimer);
@@ -78,7 +77,7 @@
     input.style.height=Math.min(input.scrollHeight, maxPx)+'px';
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     if (hpText.value.trim() !== '' || hpCheck.checked) {
       reportHoneypot('honeypot_on_submit').then(lockUIForHoneypot);
@@ -96,44 +95,19 @@
     updateSendEnabled();
     addMsg('…', 'bot');
     const botMsgElement = log.lastChild;
-    const onHcaptchaSuccess = (token) => {
-      fetch(WORKER_CHAT_URL, {
+    try {
+      const token = await window.securityUtils.getRecaptchaToken('chat');
+      const r = await fetch(WORKER_CHAT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: msg, 'h-captcha-response': token }),
-      })
-        .then((r) => r.json())
-        .then((d) => {
-          botMsgElement.textContent = d.reply || 'No reply.';
-          saveHistory();
-        })
-        .catch(() => {
-          botMsgElement.textContent = 'Error: Can’t reach AI.';
-          saveHistory();
-        });
-    };
-
-    const onHcaptchaClose = () => {
-      botMsgElement.textContent = 'Security check cancelled.';
-      saveHistory();
-    };
-
-    // Execute hCaptcha
-    if (window.hcaptcha && hCaptchaWidgetID) {
-      try {
-        window.hcaptcha.execute(hCaptchaWidgetID, {
-          callback: onHcaptchaSuccess,
-          'error-callback': onHcaptchaClose,
-          'close-callback': onHcaptchaClose,
-        });
-      } catch (error) {
-        console.error("hCaptcha execution error:", error);
-        onHcaptchaClose();
-      }
-    } else {
-      botMsgElement.textContent = 'Error: Could not initialize security check.';
-      saveHistory();
+        body: JSON.stringify({ message: msg, recaptchaToken: token })
+      });
+      const d = await r.json();
+      botMsgElement.textContent = d.reply || 'No reply.';
+    } catch (error) {
+      botMsgElement.textContent = 'Error: Can’t reach AI.';
     }
+    saveHistory();
   }
 
   async function terminateSession(){
@@ -149,6 +123,7 @@
   }
 
   function openChat(){
+    window.securityUtils.loadRecaptcha();
     clearTimeout(inactivityTimer);
     container.style.display='';
     container.removeAttribute('aria-hidden');
@@ -282,21 +257,7 @@
     openBtn.style.display = 'none';
     openBtn.setAttribute('aria-expanded', 'false');
     loadHistory();
-    renderHcaptcha();
     window.addEventListener('beforeunload', saveHistory);
-  }
-
-  function renderHcaptcha() {
-    const captchaDiv = document.getElementById('chatbot-hcaptcha');
-    if (captchaDiv && window.hcaptcha && typeof window.hcaptcha.render === 'function') {
-      hCaptchaWidgetID = window.hcaptcha.render(captchaDiv, {
-        sitekey: '10000000-ffff-ffff-ffff-000000000001', // Test key
-        size: 'invisible',
-      });
-    } else {
-      // If hcaptcha API isn't ready, try again shortly.
-      setTimeout(renderHcaptcha, 500);
-    }
   }
 
   async function reloadChat(){
