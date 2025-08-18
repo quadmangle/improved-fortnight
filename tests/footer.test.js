@@ -31,14 +31,15 @@ test('footer text updates on language toggle', () => {
 
   const langButton = { textContent: '', setAttribute() {}, addEventListener() {} };
 
-  const document = {
-    body: { classList: { remove() {}, add() {} } },
-    querySelectorAll(selector) {
-      if (selector === '[data-key]') return [footer];
-      if (selector === '.lang-toggle') return [langButton];
-      if (selector === '.theme-toggle') return [];
-      return [];
-    },
+    const document = {
+      body: { classList: { remove() {}, add() {} } },
+      documentElement: { classList: { remove() {}, add() {} }, style: {} },
+      querySelectorAll(selector) {
+        if (selector === '[data-key]') return [footer];
+        if (selector === '.lang-toggle') return [langButton];
+        if (selector === '.theme-toggle') return [];
+        return [];
+      },
     addEventListener(event, cb) { if (event === 'DOMContentLoaded') cb(); }
   };
 

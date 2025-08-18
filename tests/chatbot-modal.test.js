@@ -13,6 +13,7 @@ const dragScript = fs.readFileSync(dragJsPath, 'utf8');
 const style = fs.readFileSync(cssPath, 'utf8');
 const secJs = fs.readFileSync(path.join(__dirname, '..', 'js', 'security-utils.js'), 'utf8');
 const utilsJs = fs.readFileSync(path.join(__dirname, '..', 'js', 'utils.js'), 'utf8');
+const langThemeJs = fs.readFileSync(path.join(__dirname, '..', 'js', 'langtheme.js'), 'utf8');
 test('Chattia chatbot basic interactions', async () => {
   const dom = new JSDOM(`<body></body>`, { url: 'https://example.com', runScripts: 'dangerously' });
   const { window } = dom;
@@ -36,10 +37,11 @@ test('Chattia chatbot basic interactions', async () => {
 
   window.alert = () => {};
   window.grecaptcha = { ready: cb => cb(), execute: async () => 'token' };
-  window.eval(utilsJs);
-  window.eval(secJs);
-  window.eval(dragScript);
-  window.eval(script);
+    window.eval(utilsJs);
+    window.eval(secJs);
+    window.eval(langThemeJs);
+    window.eval(dragScript);
+    window.eval(script);
   await window.reloadChat();
   window.openChatbot();
   const brand = document.getElementById('brand');
@@ -51,10 +53,10 @@ test('Chattia chatbot basic interactions', async () => {
   langCtrl.click();
   assert.strictEqual(document.documentElement.lang, 'en');
   const themeCtrl = document.getElementById('themeCtrl');
-  themeCtrl.click();
-  assert.ok(document.body.classList.contains('dark'));
-  themeCtrl.click();
-  assert.ok(!document.body.classList.contains('dark'));
+    themeCtrl.click();
+    assert.ok(document.documentElement.classList.contains('dark'));
+    themeCtrl.click();
+    assert.ok(!document.documentElement.classList.contains('dark'));
   const send = document.getElementById('chatbot-send');
   assert.ok(send.disabled);
   input.value = 'Hi';

@@ -7,12 +7,14 @@ const { JSDOM } = require('jsdom');
 const root = path.resolve(__dirname, '..');
 const secJs = fs.readFileSync(path.join(root, 'js', 'security-utils.js'), 'utf8');
 const utilsJs = fs.readFileSync(path.join(root, 'js', 'utils.js'), 'utf8');
+const langThemeJs = fs.readFileSync(path.join(root, 'js', 'langtheme.js'), 'utf8');
 
 test('chatbot minimize positions open button above FAB by 10px and centers horizontally', async () => {
-  const html = fs.readFileSync(path.join(root, 'fabs', 'chatbot.html'), 'utf8');
-  const chatJs = fs.readFileSync(path.join(root, 'fabs', 'js', 'chattia.js'), 'utf8');
-  const chatCss = fs.readFileSync(path.join(root, 'fabs', 'css', 'chatbot.css'), 'utf8');
-  const fabCss = fs.readFileSync(path.join(root, 'fabs', 'css', 'cojoin.css'), 'utf8');
+    const html = fs.readFileSync(path.join(root, 'fabs', 'chatbot.html'), 'utf8');
+    const chatJs = fs.readFileSync(path.join(root, 'fabs', 'js', 'chattia.js'), 'utf8');
+    const dragJs = fs.readFileSync(path.join(root, 'fabs', 'js', 'cojoin.js'), 'utf8');
+    const chatCss = fs.readFileSync(path.join(root, 'fabs', 'css', 'chatbot.css'), 'utf8');
+    const fabCss = fs.readFileSync(path.join(root, 'fabs', 'css', 'cojoin.css'), 'utf8');
 
   const dom = new JSDOM('<!DOCTYPE html><body></body>', {
     url: 'https://example.com',
@@ -37,8 +39,10 @@ test('chatbot minimize positions open button above FAB by 10px and centers horiz
   };
   window.alert = () => {};
   window.grecaptcha = { ready: cb => cb(), execute: async () => 'token' };
-  window.eval(utilsJs);
-  window.eval(secJs);
+    window.eval(utilsJs);
+    window.eval(secJs);
+    window.eval(langThemeJs);
+    window.eval(dragJs);
 
   // Create FAB structure
   const fabContainer = document.createElement('div');
@@ -50,7 +54,7 @@ test('chatbot minimize positions open button above FAB by 10px and centers horiz
   fabContainer.appendChild(fabMain);
   document.body.appendChild(fabContainer);
 
-  window.eval(chatJs);
+    window.eval(chatJs);
   await window.reloadChat();
 
   const openBtn = document.getElementById('chat-open-btn');
@@ -74,10 +78,11 @@ test('chatbot minimize positions open button above FAB by 10px and centers horiz
 });
 
 test('open button repositions correctly on reload when state is minimized', async () => {
-  const html = fs.readFileSync(path.join(root, 'fabs', 'chatbot.html'), 'utf8');
-  const chatJs = fs.readFileSync(path.join(root, 'fabs', 'js', 'chattia.js'), 'utf8');
-  const chatCss = fs.readFileSync(path.join(root, 'fabs', 'css', 'chatbot.css'), 'utf8');
-  const fabCss = fs.readFileSync(path.join(root, 'fabs', 'css', 'cojoin.css'), 'utf8');
+    const html = fs.readFileSync(path.join(root, 'fabs', 'chatbot.html'), 'utf8');
+    const chatJs = fs.readFileSync(path.join(root, 'fabs', 'js', 'chattia.js'), 'utf8');
+    const dragJs = fs.readFileSync(path.join(root, 'fabs', 'js', 'cojoin.js'), 'utf8');
+    const chatCss = fs.readFileSync(path.join(root, 'fabs', 'css', 'chatbot.css'), 'utf8');
+    const fabCss = fs.readFileSync(path.join(root, 'fabs', 'css', 'cojoin.css'), 'utf8');
 
   const dom = new JSDOM('<!DOCTYPE html><body></body>', {
     url: 'https://example.com',
@@ -112,9 +117,11 @@ test('open button repositions correctly on reload when state is minimized', asyn
 
   window.sessionStorage.setItem('chatState', 'minimized');
   window.grecaptcha = { ready: cb => cb(), execute: async () => 'token' };
-  window.eval(utilsJs);
-  window.eval(secJs);
-  window.eval(chatJs);
+    window.eval(utilsJs);
+    window.eval(secJs);
+    window.eval(langThemeJs);
+    window.eval(dragJs);
+    window.eval(chatJs);
   await window.reloadChat();
 
   const openBtn = document.getElementById('chat-open-btn');

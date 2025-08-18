@@ -11,7 +11,7 @@
   --input-bd:   #cbb3f6;
   --text-inv:   #ffffff;
 }
-body.dark {
+.dark {
   --bg:       #121212;
   --text:     #f0f0f0;
   --panel:    #140f24;
@@ -142,7 +142,7 @@ body.drag-enabled #chatbot-header{ cursor:move; }
   font-size:.95rem; line-height:1.4; padding:.6rem .7rem;
   outline:none; resize:none; overflow-y:auto; max-height:3.1em;
 }
-body.dark #chatbot-input{ color:#efeaf8; }
+.dark #chatbot-input{ color:#efeaf8; }
 .btn{
   display:flex; align-items:center; justify-content:center; gap:6px;
   background:var(--clr-accent); border:none; color:#fff; font-weight:700;

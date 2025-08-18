@@ -251,7 +251,9 @@ const translations = {
 };
 
 let currentLanguage = localStorage.getItem('lang') || 'en';
-let currentTheme = localStorage.getItem('theme') || 'light';
+let currentTheme = window.currentTheme || localStorage.getItem('theme') || 'light';
+window.currentTheme = currentTheme;
+window.currentLanguage = currentLanguage;
 
 function updateContent() {
   const elements = document.querySelectorAll('[data-key]');
@@ -306,8 +308,11 @@ function toggleLanguage() {
 }
 
 function updateTheme() {
-  document.body.classList.remove('light', 'dark');
-  document.body.classList.add(currentTheme);
+  currentTheme = window.currentTheme || currentTheme;
+  document.documentElement.classList.remove('light', 'dark');
+  document.documentElement.classList.add(currentTheme);
+  document.documentElement.style.backgroundColor = currentTheme === 'dark' ? '#121212' : '#ffffff';
+  window.currentTheme = currentTheme;
   const themeButtons = document.querySelectorAll('.theme-toggle');
   themeButtons.forEach(btn => {
     btn.textContent = (currentTheme === 'light') ? 'Dark' : 'Light';

@@ -13,6 +13,7 @@ const dragScript = fs.readFileSync(dragJsPath, 'utf8');
 const style = fs.readFileSync(cssPath, 'utf8');
 const secJs = fs.readFileSync(path.join(__dirname, '..', 'js', 'security-utils.js'), 'utf8');
 const utilsJs = fs.readFileSync(path.join(__dirname, '..', 'js', 'utils.js'), 'utf8');
+const langThemeJs = fs.readFileSync(path.join(__dirname, '..', 'js', 'langtheme.js'), 'utf8');
 test('Chattia closes on ESC and closes on inactivity after minimize', async () => {
   const dom = new JSDOM(`<body></body>`, { url: 'https://example.com', runScripts: 'dangerously' });
   const { window } = dom;
@@ -37,10 +38,11 @@ test('Chattia closes on ESC and closes on inactivity after minimize', async () =
 
   window.alert = () => {};
   window.grecaptcha = { ready: cb => cb(), execute: async () => 'token' };
-  window.eval(utilsJs);
-  window.eval(secJs);
-  window.eval(dragScript);
-  window.eval(script);
+    window.eval(utilsJs);
+    window.eval(secJs);
+    window.eval(langThemeJs);
+    window.eval(dragScript);
+    window.eval(script);
 
   // ESC closes when chat is open
   await window.reloadChat();
@@ -84,10 +86,11 @@ test('Chat history persists while minimized and clears on close', async () => {
 
   window.alert = () => {};
   window.grecaptcha = { ready: cb => cb(), execute: async () => 'token' };
-  window.eval(utilsJs);
-  window.eval(secJs);
-  window.eval(dragScript);
-  window.eval(script);
+    window.eval(utilsJs);
+    window.eval(secJs);
+    window.eval(langThemeJs);
+    window.eval(dragScript);
+    window.eval(script);
   await window.reloadChat();
   window.openChatbot();
   const log = document.getElementById('chat-log');
