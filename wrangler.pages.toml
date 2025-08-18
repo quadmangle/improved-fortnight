@@ -1,7 +1,0 @@
-name = "ops online support"
-
-pages_build_output_dir = "dist"
-
-main_branch = "main"
-
-compatibility_date = "2025-08-08"
