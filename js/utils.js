@@ -34,7 +34,7 @@
         const div = document.createElement('div');
         div.textContent = cleaned;
         // By reading textContent back, we ensure no HTML is interpreted.
-        return div.innerHTML;
+        return div.textContent;
       } catch (e) {
         // Fallback for environments without a DOM or with other issues.
         return cleaned.replace(/<[^>]*>/g, '');

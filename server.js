@@ -4,6 +4,7 @@ const crypto = require('crypto');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
+const cookie = require('cookie');
 
 const app = express();
 
@@ -44,20 +45,8 @@ function generateNonce() {
   return Buffer.from(array).toString('hex');
 }
 
-function parseCookies(header) {
-  const list = {};
-  if (!header) return list;
-  header.split(';').forEach((cookie) => {
-    const parts = cookie.split('=');
-    const key = parts.shift().trim();
-    const value = decodeURIComponent(parts.join('='));
-    list[key] = value;
-  });
-  return list;
-}
-
 function requireNonce(req, res, next) {
-  const cookies = parseCookies(req.headers.cookie);
+  const cookies = cookie.parse(req.headers.cookie || '');
   const clientNonce = cookies.nonce;
   const sessionNonce = req.session.nonce;
 
