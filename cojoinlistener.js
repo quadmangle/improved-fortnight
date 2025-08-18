@@ -95,16 +95,24 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Basic HTML sanitization. Uses DOMPurify when available.
+   * Basic HTML sanitization. Uses DOMPurify when available and falls back to a
+   * minimal DOM-based sanitizer when it is not. The fallback strips potentially
+   * dangerous elements (e.g., <script>, <iframe>, <object>) to avoid injecting
+   * executable code while still allowing the FAB modals to render.
    * @param {string} dirty The HTML string to sanitize.
    * @returns {string} A sanitized HTML string.
-   * @throws {Error} If DOMPurify is not available.
    */
   function sanitizeHTML(dirty) {
     if (window.DOMPurify && typeof window.DOMPurify.sanitize === 'function') {
       return window.DOMPurify.sanitize(dirty);
     }
-    throw new Error('DOMPurify is not available to sanitize HTML.');
+
+    // Fallback: parse the HTML and strip scriptable elements.
+    console.warn('DOMPurify is not available; using basic sanitization.');
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(dirty, 'text/html');
+    doc.querySelectorAll('script, iframe, object').forEach(el => el.remove());
+    return doc.body.innerHTML;
   }
 
   /**
