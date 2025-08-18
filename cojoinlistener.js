@@ -95,16 +95,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   /**
-   * Basic HTML sanitization. Uses DOMPurify when available and falls back to
-   * stripping script tags otherwise.
+   * Basic HTML sanitization. Uses DOMPurify when available.
    * @param {string} dirty The HTML string to sanitize.
    * @returns {string} A sanitized HTML string.
+   * @throws {Error} If DOMPurify is not available.
    */
   function sanitizeHTML(dirty) {
     if (window.DOMPurify && typeof window.DOMPurify.sanitize === 'function') {
       return window.DOMPurify.sanitize(dirty);
     }
-    return dirty.replace(/<script[^>]*>.*?<\/script>/gi, '');
+    throw new Error('DOMPurify is not available to sanitize HTML.');
   }
 
   /**
@@ -257,11 +257,8 @@ document.addEventListener('DOMContentLoaded', () => {
     if (overlay) {
       if (overlay.remove) {
         overlay.remove();
-      } else if (overlay.parentNode && overlay.parentNode.children) {
-        const idx = overlay.parentNode.children.indexOf(overlay);
-        if (idx > -1) {
-          overlay.parentNode.children.splice(idx, 1);
-        }
+      } else if (overlay.parentNode) {
+        overlay.parentNode.removeChild(overlay);
       }
       overlay = null;
     }
