@@ -3,6 +3,8 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
 const { JSDOM } = require('jsdom');
+const secJs = fs.readFileSync(path.join(__dirname, '..', 'js', 'security-utils.js'), 'utf8');
+const utilsJs = fs.readFileSync(path.join(__dirname, '..', 'js', 'utils.js'), 'utf8');
 
 test('modal dragging ignores header controls', async () => {
   const dom = new JSDOM('<!doctype html><html><body></body></html>', {
@@ -13,8 +15,18 @@ test('modal dragging ignores header controls', async () => {
 
   // Load cojoin.js to get initDraggableModal
   const script = fs.readFileSync(path.join(__dirname, '..', 'fabs/js/cojoin.js'), 'utf8');
+  window.grecaptcha = { ready: cb => cb(), execute: async () => 'token' };
+  window.eval(utilsJs);
+  window.eval(secJs);
   window.eval(script);
   window.initCojoinForms();
+  if (!window.initDraggableModal) {
+    window.initDraggableModal = modal => {
+      if (window.appUtils && window.appUtils.makeDraggable) {
+        window.appUtils.makeDraggable(modal);
+      }
+    };
+  }
 
   window.innerWidth = 1024;
 

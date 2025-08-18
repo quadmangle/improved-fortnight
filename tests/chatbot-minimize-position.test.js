@@ -5,6 +5,8 @@ const path = require('node:path');
 const { JSDOM } = require('jsdom');
 
 const root = path.resolve(__dirname, '..');
+const secJs = fs.readFileSync(path.join(root, 'js', 'security-utils.js'), 'utf8');
+const utilsJs = fs.readFileSync(path.join(root, 'js', 'utils.js'), 'utf8');
 
 test('chatbot minimize positions open button above FAB by 10px and centers horizontally', async () => {
   const html = fs.readFileSync(path.join(root, 'fabs', 'chatbot.html'), 'utf8');
@@ -34,6 +36,9 @@ test('chatbot minimize positions open button above FAB by 10px and centers horiz
     return { json: async () => ({ reply: 'ok' }) };
   };
   window.alert = () => {};
+  window.grecaptcha = { ready: cb => cb(), execute: async () => 'token' };
+  window.eval(utilsJs);
+  window.eval(secJs);
 
   // Create FAB structure
   const fabContainer = document.createElement('div');
@@ -45,7 +50,6 @@ test('chatbot minimize positions open button above FAB by 10px and centers horiz
   fabContainer.appendChild(fabMain);
   document.body.appendChild(fabContainer);
 
-  window.hcaptcha = { render: () => 0 };
   window.eval(chatJs);
   await window.reloadChat();
 
@@ -107,7 +111,9 @@ test('open button repositions correctly on reload when state is minimized', asyn
   document.body.appendChild(fabContainer);
 
   window.sessionStorage.setItem('chatState', 'minimized');
-  window.hcaptcha = { render: () => 0 };
+  window.grecaptcha = { ready: cb => cb(), execute: async () => 'token' };
+  window.eval(utilsJs);
+  window.eval(secJs);
   window.eval(chatJs);
   await window.reloadChat();
 

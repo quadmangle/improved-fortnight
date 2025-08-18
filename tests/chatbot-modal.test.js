@@ -11,6 +11,8 @@ const html = fs.readFileSync(htmlPath, 'utf8');
 const script = fs.readFileSync(jsPath, 'utf8');
 const dragScript = fs.readFileSync(dragJsPath, 'utf8');
 const style = fs.readFileSync(cssPath, 'utf8');
+const secJs = fs.readFileSync(path.join(__dirname, '..', 'js', 'security-utils.js'), 'utf8');
+const utilsJs = fs.readFileSync(path.join(__dirname, '..', 'js', 'utils.js'), 'utf8');
 test('Chattia chatbot basic interactions', async () => {
   const dom = new JSDOM(`<body></body>`, { url: 'https://example.com', runScripts: 'dangerously' });
   const { window } = dom;
@@ -33,6 +35,9 @@ test('Chattia chatbot basic interactions', async () => {
   };
 
   window.alert = () => {};
+  window.grecaptcha = { ready: cb => cb(), execute: async () => 'token' };
+  window.eval(utilsJs);
+  window.eval(secJs);
   window.eval(dragScript);
   window.eval(script);
   await window.reloadChat();
