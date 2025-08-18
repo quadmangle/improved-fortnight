@@ -198,9 +198,10 @@
     closeBtn = qs('#chatbot-close');
     minimizeBtn = qs('#minimizeBtn');
     openBtn = qs('#chat-open-btn');
-    langCtrl = qs('#langCtrl');
-    themeCtrl = qs('#themeCtrl');
-    brand = qs('#brand');
+      langCtrl = qs('#langCtrl');
+      themeCtrl = qs('#themeCtrl');
+      brand = qs('#brand');
+      themeCtrl.textContent = (window.currentTheme === 'light') ? 'Dark' : 'Light';
     hpText = qs('#hp_text');
     hpCheck = qs('#hp_check');
     const transNodes = qsa('[data-en]');
@@ -216,11 +217,13 @@
       phNodes.forEach(n => n.placeholder = goES ? (n.dataset.esPh || n.placeholder) : (n.dataset.enPh || n.placeholder));
       buildBrand(goES ? (brand.dataset.es || 'Soporte en Línea OPS') : (brand.dataset.en || 'Ops Online Support'));
     });
-    themeCtrl.addEventListener('click', ()=>{
-      const toDark = themeCtrl.textContent === 'Dark';
-      document.body.classList.toggle('dark', toDark);
-      themeCtrl.textContent = toDark ? 'Light' : 'Dark';
-    });
+      themeCtrl.addEventListener('click', ()=>{
+        const toDark = themeCtrl.textContent === 'Dark';
+        window.currentTheme = toDark ? 'dark' : 'light';
+        localStorage.setItem('theme', window.currentTheme);
+        updateTheme();
+        themeCtrl.textContent = toDark ? 'Light' : 'Dark';
+      });
 
     input.addEventListener('input', ()=>{ autoGrow(); updateSendEnabled(); });
     input.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); if(!send.disabled) form.requestSubmit(); }});
