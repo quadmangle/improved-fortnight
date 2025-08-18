@@ -1,0 +1,7 @@
+name = "your-project-name"
+
+pages_build_output_dir = "dist"
+
+main_branch = "main"
+
+compatibility_date = "2024-01-01"

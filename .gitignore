@@ -1,1 +1,57 @@
-node_modules
+# Gitignore for React (Vite) and Node.js projects
+
+# Node.js dependencies
+/node_modules
+
+# Build output directories
+# Vite's default output directory for client-side
+/dist
+# Common build output directory for Node.js servers or other build tools
+/build
+# Alternative build output directory
+/out
+
+# Environment variables
+# Local .env files should not be committed, as they often contain sensitive information
+.env
+.env.*.local
+.env.local
+
+# Logs and debug files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+*.log
+
+# Cache and temporary files
+.eslintcache
+.cache/
+.parcel-cache/
+.pnp
+.pnp.js
+.pnpm-store/ # pnpm specific store
+
+# IDE and OS generated files
+.DS_Store # macOS directory services store
+Thumbs.db # Windows thumbnail cache
+ehthumbs.db # Windows thumbnail cache
+*.code-workspace # VS Code workspace files
+.idea/ # IntelliJ/WebStorm project files
+.vscode/ # VS Code directory (ignore all by default)
+# Uncomment lines below if you want to commit specific VS Code config files
+# !.vscode/settings.json
+# !.vscode/tasks.json
+# !.vscode/launch.json
+# !.vscode/extensions.json
+*.sublime-project
+*.sublime-workspace
+*.swp # Vim swap files
+*~ # Emacs backup files
+
+# Test coverage reports
+/coverage
+/.nyc_output
+
+# Temporary Vite/rollup files
+/.vite/
