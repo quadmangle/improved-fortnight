@@ -79,7 +79,7 @@
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (window.antibot.isHoneypotTriggered(form)) {
+    if (window.antibot && window.antibot.isHoneypotTriggered && window.antibot.isHoneypotTriggered(form)) {
       reportHoneypot('honeypot_on_submit').then(lockUIForHoneypot);
       return;
     }
@@ -96,7 +96,9 @@
     addMsg('…', 'bot');
     const botMsgElement = log.lastChild;
     try {
-      const token = await window.antibot.getRecaptchaToken('chat');
+      const token = window.antibot && window.antibot.getRecaptchaToken
+        ? await window.antibot.getRecaptchaToken('chat')
+        : '';
       const r = await fetch(WORKER_CHAT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -123,7 +125,9 @@
   }
 
   function openChat(){
-    window.antibot.loadRecaptcha();
+    if (window.antibot && window.antibot.loadRecaptcha) {
+      window.antibot.loadRecaptcha();
+    }
     clearTimeout(inactivityTimer);
     container.style.display='';
     container.removeAttribute('aria-hidden');
@@ -198,41 +202,54 @@
     closeBtn = qs('#chatbot-close');
     minimizeBtn = qs('#minimizeBtn');
     openBtn = qs('#chat-open-btn');
-      langCtrl = qs('#langCtrl');
-      themeCtrl = qs('#themeCtrl');
-      brand = qs('#brand');
+    langCtrl = qs('#langCtrl');
+    themeCtrl = qs('#themeCtrl');
+    brand = qs('#brand');
+
+    if (themeCtrl) {
       themeCtrl.textContent = (window.currentTheme === 'light') ? 'Dark' : 'Light';
-    window.antibot.injectChatbotHoneypot(form);
+    }
+    if (window.antibot && window.antibot.injectChatbotHoneypot && form) {
+      window.antibot.injectChatbotHoneypot(form);
+    }
     hpText = qs('#hp_text');
     hpCheck = qs('#hp_check');
     const transNodes = qsa('[data-en]');
     const phNodes = qsa('[data-en-ph]');
 
-    buildBrand(brand.dataset.en || 'Ops Online Support');
-    langCtrl.textContent='ES';
-    langCtrl.addEventListener('click', ()=>{
-      const goES = langCtrl.textContent === 'ES';
-      document.documentElement.lang = goES ? 'es' : 'en';
-      langCtrl.textContent = goES ? 'EN' : 'ES';
-      transNodes.forEach(n => n.textContent = goES ? (n.dataset.es || n.textContent) : (n.dataset.en || n.textContent));
-      phNodes.forEach(n => n.placeholder = goES ? (n.dataset.esPh || n.placeholder) : (n.dataset.enPh || n.placeholder));
-      buildBrand(goES ? (brand.dataset.es || 'Soporte en Línea OPS') : (brand.dataset.en || 'Ops Online Support'));
-    });
-      themeCtrl.addEventListener('click', ()=>{
+    if (brand) {
+      buildBrand(brand.dataset.en || 'Ops Online Support');
+    }
+    if (langCtrl) {
+      langCtrl.textContent = 'ES';
+      langCtrl.addEventListener('click', () => {
+        const goES = langCtrl.textContent === 'ES';
+        document.documentElement.lang = goES ? 'es' : 'en';
+        langCtrl.textContent = goES ? 'EN' : 'ES';
+        transNodes.forEach(n => n.textContent = goES ? (n.dataset.es || n.textContent) : (n.dataset.en || n.textContent));
+        phNodes.forEach(n => n.placeholder = goES ? (n.dataset.esPh || n.placeholder) : (n.dataset.enPh || n.placeholder));
+        buildBrand(goES ? (brand.dataset.es || 'Soporte en Línea OPS') : (brand.dataset.en || 'Ops Online Support'));
+      });
+    }
+    if (themeCtrl) {
+      themeCtrl.addEventListener('click', () => {
         const toDark = themeCtrl.textContent === 'Dark';
         window.currentTheme = toDark ? 'dark' : 'light';
         localStorage.setItem('theme', window.currentTheme);
-        updateTheme();
+        if (typeof updateTheme === 'function') { updateTheme(); }
         themeCtrl.textContent = toDark ? 'Light' : 'Dark';
       });
+    }
 
-    input.addEventListener('input', ()=>{ autoGrow(); updateSendEnabled(); });
-    input.addEventListener('keydown', e=>{ if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); if(!send.disabled) form.requestSubmit(); }});
-    window.addEventListener('load', ()=>{ autoGrow(); updateSendEnabled(); });
+    if (input) {
+      input.addEventListener('input', () => { autoGrow(); updateSendEnabled(); });
+      input.addEventListener('keydown', e => { if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); if(!send.disabled && form) form.requestSubmit(); }});
+    }
+    window.addEventListener('load', () => { autoGrow(); updateSendEnabled(); });
 
-    form.addEventListener('submit', handleSubmit);
-    minimizeBtn.addEventListener('click', minimizeChat);
-    closeBtn.addEventListener('click', closeChat);
+    if (form) { form.addEventListener('submit', handleSubmit); }
+    if (minimizeBtn) { minimizeBtn.addEventListener('click', minimizeChat); }
+    if (closeBtn) { closeBtn.addEventListener('click', closeChat); }
 
     escKeyHandler = (e)=>{
       if(e.key === 'Escape'){
@@ -251,15 +268,17 @@
     document.addEventListener('keydown', escKeyHandler);
     document.addEventListener('click', outsideClickHandler);
     ['change','input','click'].forEach(ev=>{
-      hpText.addEventListener(ev, ()=>{ reportHoneypot('hp_text_touched'); lockUIForHoneypot(); }, { passive:true });
-      hpCheck.addEventListener(ev, ()=>{ reportHoneypot('hp_check_ticked'); lockUIForHoneypot(); }, { passive:true });
+      if (hpText) { hpText.addEventListener(ev, ()=>{ reportHoneypot('hp_text_touched'); lockUIForHoneypot(); }, { passive:true }); }
+      if (hpCheck) { hpCheck.addEventListener(ev, ()=>{ reportHoneypot('hp_check_ticked'); lockUIForHoneypot(); }, { passive:true }); }
     });
 
     // Start with chat hidden until the user explicitly opens it.
     container.style.display = 'none';
     container.setAttribute('aria-hidden', 'true');
-    openBtn.style.display = 'none';
-    openBtn.setAttribute('aria-expanded', 'false');
+    if (openBtn) {
+      openBtn.style.display = 'none';
+      openBtn.setAttribute('aria-expanded', 'false');
+    }
     loadHistory();
     window.addEventListener('beforeunload', saveHistory);
   }
