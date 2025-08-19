@@ -313,6 +313,33 @@ li {
   background: linear-gradient(45deg, #8e24aa, #5e35b1);
 }
 
+/* Contact CTA Button */
+.cta-button.contact-button {
+  background: linear-gradient(45deg, var(--clr-cta-other), var(--clr-cta-other-hover));
+  padding: 16px 38px;
+  font-size: 1.15rem;
+  border-radius: 10px;
+  box-shadow: 0 8px 25px rgba(171, 71, 188, 0.6);
+  color: var(--clr-primary);
+  transition: color 0.3s, background 0.3s, box-shadow 0.3s, border-color 0.3s;
+  animation: contact-edge-shine 75s infinite;
+}
+
+.cta-button.contact-button:hover {
+  box-shadow: 0 14px 40px rgba(171, 71, 188, 0.9);
+  background: linear-gradient(45deg, #8e24aa, #5e35b1);
+  color: var(--clr-accent);
+}
+
+@keyframes contact-edge-shine {
+  0%, 97%, 100% {
+    box-shadow: 0 8px 25px rgba(171, 71, 188, 0.6);
+  }
+  98%, 99% {
+    box-shadow: 0 0 20px 6px var(--clr-primary);
+  }
+}
+
 /* Contact CTA */
 .contact-cta {
   text-align: center;
