@@ -40,8 +40,9 @@
 
   function injectFormHoneypot(form){
     if(!form) return;
+    let node;
     if(templates.form){
-      form.appendChild(templates.form.content.cloneNode(true));
+      node = templates.form.content.cloneNode(true);
     } else {
       const div = document.createElement('div');
       div.hidden = true;
@@ -50,14 +51,21 @@
       input.id = 'hp_text';
       input.name = 'hp_text';
       div.appendChild(input);
-      form.appendChild(div);
+      node = div;
+    }
+    const firstField = form.querySelector('input, select, textarea, button');
+    if(firstField){
+      form.insertBefore(node, firstField);
+    } else {
+      form.prepend(node);
     }
   }
 
   function injectChatbotHoneypot(form){
     if(!form) return;
+    let node;
     if(templates.chat){
-      form.appendChild(templates.chat.content.cloneNode(true));
+      node = templates.chat.content.cloneNode(true);
     } else {
       const div = document.createElement('div');
       div.hidden = true;
@@ -71,7 +79,13 @@
       check.name = 'hp_check';
       div.appendChild(text);
       div.appendChild(check);
-      form.appendChild(div);
+      node = div;
+    }
+    const firstField = form.querySelector('input, select, textarea, button');
+    if(firstField){
+      form.insertBefore(node, firstField);
+    } else {
+      form.prepend(node);
     }
   }
 
