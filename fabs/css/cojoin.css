@@ -199,25 +199,41 @@ form {
   flex-direction: column;
 }
 
-/* Ensure readable black text on the Join Us form for mobile and tablet screens */
-@media (max-width: 1024px) {
-  #joinForm,
-  #joinForm label,
-  #joinForm input,
-  #joinForm select,
-  #joinForm textarea,
-  #joinForm option,
-  #joinForm h1,
-  #joinForm h2,
-  #joinForm h3 {
-    color: #000;
-  }
+/* Ensure readable black text on the Contact Us and Join Us forms */
+#contactForm,
+#contactForm label,
+#contactForm input,
+#contactForm select,
+#contactForm textarea,
+#contactForm option,
+#contactForm h1,
+#contactForm h2,
+#contactForm h3,
+#joinForm,
+#joinForm label,
+#joinForm input,
+#joinForm select,
+#joinForm textarea,
+#joinForm option,
+#joinForm h1,
+#joinForm h2,
+#joinForm h3 {
+  color: #000;
+}
 
-  #joinForm input::placeholder,
-  #joinForm textarea::placeholder {
-    color: #000;
-    opacity: 1;
-  }
+#contactForm input::placeholder,
+#contactForm textarea::placeholder,
+#joinForm input::placeholder,
+#joinForm textarea::placeholder {
+  color: #000;
+  opacity: 1;
+}
+
+#contact-modal .modal-header,
+#join-modal .modal-header,
+#contact-modal .modal-close,
+#join-modal .modal-close {
+  color: #000;
 }
 
 label {
