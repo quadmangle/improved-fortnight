@@ -10,14 +10,16 @@ function initCojoinForms() {
   const contactForm = document.getElementById('contactForm');
   const joinForm = document.getElementById('joinForm');
 
-  window.securityUtils.loadRecaptcha();
+  window.antibot.loadRecaptcha();
 
   if (contactForm && !contactForm.dataset.cojoinInitialized) {
+    window.antibot.injectFormHoneypot(contactForm);
     contactForm.addEventListener('submit', handleContactSubmit);
     contactForm.dataset.cojoinInitialized = 'true';
   }
 
   if (joinForm && !joinForm.dataset.cojoinInitialized) {
+    window.antibot.injectFormHoneypot(joinForm);
     joinForm.addEventListener('submit', handleJoinSubmit);
     joinForm.dataset.cojoinInitialized = 'true';
     initJoinForm();
@@ -130,15 +132,13 @@ function initCojoinForms() {
   async function handleContactSubmit(e) {
     e.preventDefault();
 
-    // 1. Honeypot check: Block if this hidden field is filled
-    const honeypotField = document.getElementById('honeypot-contact');
-    if (honeypotField && honeypotField.value !== '') {
+    const form = e.target;
+    // 1. Honeypot check
+    if (window.antibot.isHoneypotTriggered(form)) {
       console.warn('Honeypot filled. Blocking form submission.');
-      e.target.reset(); // Reset form to clear any malicious data
+      form.reset();
       return;
     }
-
-    const form = e.target;
     const formData = new FormData(form);
 
     const data = Object.fromEntries(formData.entries());
@@ -152,7 +152,7 @@ function initCojoinForms() {
 
     // Obtain reCAPTCHA token
     try {
-      sanitizedData.recaptchaToken = await window.securityUtils.getRecaptchaToken('contact');
+      sanitizedData.recaptchaToken = await window.antibot.getRecaptchaToken('contact');
     } catch (err) {
       alert('Security check failed.');
       return;
@@ -174,15 +174,13 @@ function initCojoinForms() {
   async function handleJoinSubmit(e) {
     e.preventDefault();
 
+    const form = e.target;
     // 1. Honeypot check
-    const honeypotField = document.getElementById('honeypot-join');
-    if (honeypotField && honeypotField.value !== '') {
+    if (window.antibot.isHoneypotTriggered(form)) {
       console.warn('Honeypot filled. Blocking form submission.');
-      e.target.reset();
+      form.reset();
       return;
     }
-
-    const form = e.target;
     const formData = new FormData(form);
 
     const data = Object.fromEntries(formData.entries());
@@ -206,7 +204,7 @@ function initCojoinForms() {
 
     // Obtain reCAPTCHA token
     try {
-      sanitizedData.recaptchaToken = await window.securityUtils.getRecaptchaToken('join');
+      sanitizedData.recaptchaToken = await window.antibot.getRecaptchaToken('join');
     } catch (err) {
       alert('Security check failed.');
       return;

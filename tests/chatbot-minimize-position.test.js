@@ -5,7 +5,8 @@ const path = require('node:path');
 const { JSDOM } = require('jsdom');
 
 const root = path.resolve(__dirname, '..');
-const secJs = fs.readFileSync(path.join(root, 'js', 'security-utils.js'), 'utf8');
+const antibotJs = fs.readFileSync(path.join(root, 'js', 'antibot.js'), 'utf8');
+const hpHtml = fs.readFileSync(path.join(root, 'security', 'honeypots.html'), 'utf8');
 const utilsJs = fs.readFileSync(path.join(root, 'js', 'utils.js'), 'utf8');
 const langThemeJs = fs.readFileSync(path.join(root, 'js', 'langtheme.js'), 'utf8');
 
@@ -32,6 +33,9 @@ test('chatbot minimize positions open button above FAB by 10px and centers horiz
     if (url.includes('chatbot.html')) {
       return { text: async () => html };
     }
+    if (url.includes('security/honeypots.html')) {
+      return { ok: true, text: async () => hpHtml };
+    }
     if (url.includes('honeypot') || url.includes('end-session')) {
       return {};
     }
@@ -40,7 +44,7 @@ test('chatbot minimize positions open button above FAB by 10px and centers horiz
   window.alert = () => {};
   window.grecaptcha = { ready: cb => cb(), execute: async () => 'token' };
     window.eval(utilsJs);
-    window.eval(secJs);
+    window.eval(antibotJs);
     window.eval(langThemeJs);
     window.eval(dragJs);
 
@@ -99,6 +103,9 @@ test('open button repositions correctly on reload when state is minimized', asyn
     if (url.includes('chatbot.html')) {
       return { text: async () => html };
     }
+    if (url.includes('security/honeypots.html')) {
+      return { ok: true, text: async () => hpHtml };
+    }
     if (url.includes('honeypot') || url.includes('end-session')) {
       return {};
     }
@@ -118,7 +125,7 @@ test('open button repositions correctly on reload when state is minimized', asyn
   window.sessionStorage.setItem('chatState', 'minimized');
   window.grecaptcha = { ready: cb => cb(), execute: async () => 'token' };
     window.eval(utilsJs);
-    window.eval(secJs);
+    window.eval(antibotJs);
     window.eval(langThemeJs);
     window.eval(dragJs);
     window.eval(chatJs);

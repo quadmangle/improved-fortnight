@@ -79,7 +79,7 @@
 
   async function handleSubmit(e) {
     e.preventDefault();
-    if (hpText.value.trim() !== '' || hpCheck.checked) {
+    if (window.antibot.isHoneypotTriggered(form)) {
       reportHoneypot('honeypot_on_submit').then(lockUIForHoneypot);
       return;
     }
@@ -96,7 +96,7 @@
     addMsg('…', 'bot');
     const botMsgElement = log.lastChild;
     try {
-      const token = await window.securityUtils.getRecaptchaToken('chat');
+      const token = await window.antibot.getRecaptchaToken('chat');
       const r = await fetch(WORKER_CHAT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -123,7 +123,7 @@
   }
 
   function openChat(){
-    window.securityUtils.loadRecaptcha();
+    window.antibot.loadRecaptcha();
     clearTimeout(inactivityTimer);
     container.style.display='';
     container.removeAttribute('aria-hidden');
@@ -202,6 +202,7 @@
       themeCtrl = qs('#themeCtrl');
       brand = qs('#brand');
       themeCtrl.textContent = (window.currentTheme === 'light') ? 'Dark' : 'Light';
+    window.antibot.injectChatbotHoneypot(form);
     hpText = qs('#hp_text');
     hpCheck = qs('#hp_check');
     const transNodes = qsa('[data-en]');
