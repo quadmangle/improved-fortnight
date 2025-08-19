@@ -1,0 +1,8 @@
+{
+  "name": "OPS Online Support",
+  "short_name": "OPS",
+  "start_url": "index.html",
+  "display": "standalone",
+  "icons": []
+}
+
