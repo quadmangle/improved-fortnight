@@ -17,8 +17,8 @@ test('notify routes channel failures to logAlertFailure', async (t) => {
     return Promise.reject(new Error('kv fail'));
   });
   const env = {
-    APPS_SCRIPT_URL: 'https://example.com',
-    SECURITY_EMAIL: 'team@example.com',
+    APPS_SCRIPT_URL: 'https://opsonlinessupport.com',
+    SECURITY_EMAIL: 'team@opsonlinessupport.com',
     AUDIT_LOG: { put: putMock }
   };
   t.mock.method(global, 'fetch', () => Promise.reject(new Error('network')));
@@ -43,7 +43,7 @@ test('logAlertFailure warns if KV put fails', async (t) => {
 });
 
 test('notify warns when AUDIT_LOG missing', async (t) => {
-  const env = { APPS_SCRIPT_URL: 'https://example.com' };
+  const env = { APPS_SCRIPT_URL: 'https://opsonlinessupport.com' };
   const warnMock = t.mock.method(console, 'warn');
   t.mock.method(global, 'fetch', () => Promise.resolve(new Response('ok')));
 

@@ -14,7 +14,7 @@ test('learn-more buttons link to service pages', () => {
     </section>
   </body></html>`;
 
-  const dom = new JSDOM(html, { runScripts: 'outside-only', url: 'http://example.com/' });
+  const dom = new JSDOM(html, { runScripts: 'outside-only', url: 'http://opsonlinessupport.com/' });
   const { window } = dom;
   window.fetch = async () => ({
     ok: true,

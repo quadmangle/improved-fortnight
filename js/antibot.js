@@ -1,5 +1,6 @@
 (function(){
-  const SITE_KEY = '6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI'; // Google test key
+  const siteMeta = document.querySelector('meta[name="recaptcha-site-key"]');
+  const SITE_KEY = siteMeta ? siteMeta.content : '';
   const templates = {};
 
   // Preload honeypot templates
@@ -17,6 +18,9 @@
     return new Promise((resolve, reject) => {
       if (window.grecaptcha){
         return resolve(window.grecaptcha);
+      }
+      if (!SITE_KEY) {
+        return reject(new Error('reCAPTCHA site key not configured'));
       }
       const script = document.createElement('script');
       script.id = 'recaptcha-script';

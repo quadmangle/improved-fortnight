@@ -1,7 +1,7 @@
 (function(){
-  const WORKER_CHAT_URL = 'https://your-cloudflare-worker.example.com/chat';
-  const WORKER_END_SESSION_URL = 'https://your-cloudflare-worker.example.com/end-session';
-  const WORKER_HONEYPOT_URL = 'https://your-cloudflare-worker.example.com/honeypot-trip';
+  const WORKER_CHAT_URL = 'https://your-cloudflare-worker.opsonlinessupport.com/chat';
+  const WORKER_END_SESSION_URL = 'https://your-cloudflare-worker.opsonlinessupport.com/end-session';
+  const WORKER_HONEYPOT_URL = 'https://your-cloudflare-worker.opsonlinessupport.com/honeypot-trip';
   const INACTIVITY_LIMIT_MS = window.CHATBOT_INACTIVITY_MS || 120000;
   let container, log, form, input, send, closeBtn, minimizeBtn, openBtn;
   let langCtrl, themeCtrl, brand, hpText, hpCheck;

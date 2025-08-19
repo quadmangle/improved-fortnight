@@ -94,7 +94,7 @@ async function sendEmail(address, content) {
     headers: { 'content-type': 'application/json' },
     body: JSON.stringify({
       personalizations: [{ to: [{ email: address }] }],
-      from: { email: 'noreply@example.com' },
+      from: { email: 'noreply@opsonlinessupport.com' },
       subject: 'Security Test Alert',
       content: [{ type: 'text/plain', value: content }]
     })

@@ -37,7 +37,7 @@ function initCojoinForms() {
     // IMPORTANT: AES Key Service Endpoint
     // Replace the URL below with your actual endpoint for fetching the AES key.
     // ====================================================================================
-    const res = await fetch('https://your-server.example.com/kms/aes-key');
+    const res = await fetch('https://your-server.opsonlinessupport.com/kms/aes-key');
     const { key } = await res.json(); // base64 encoded key material
     const rawKey = base64ToArrayBuffer(key);
     return crypto.subtle.importKey('raw', rawKey, { name: 'AES-GCM' }, false, ['encrypt']);
@@ -54,7 +54,7 @@ function initCojoinForms() {
     // IMPORTANT: Auth Token Service Endpoint
     // Replace the URL below with your actual endpoint for fetching the auth token.
     // ====================================================================================
-    const res = await fetch('https://your-server.example.com/auth/token');
+    const res = await fetch('https://your-server.opsonlinessupport.com/auth/token');
     return res.json(); // { token: base64CipherText, iv: base64IV }
   }
 
@@ -106,7 +106,7 @@ function initCojoinForms() {
       // IMPORTANT: Cloudflare Worker API Endpoint
       // Replace the URL below with your actual Cloudflare Worker API endpoint.
       // ====================================================================================
-      const response = await fetch('https://your-cloudflare-worker.example.com/api', {
+      const response = await fetch('https://your-cloudflare-worker.opsonlinessupport.com/api', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
