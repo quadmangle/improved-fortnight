@@ -296,7 +296,8 @@ function updateContent() {
 
   // Update language toggle buttons
   langButtons.forEach(btn => {
-    btn.textContent = currentLanguage.toUpperCase();
+    const nextLang = currentLanguage === 'en' ? 'ES' : 'EN';
+    btn.textContent = nextLang;
     btn.setAttribute('aria-pressed', currentLanguage === 'es');
   });
 }
