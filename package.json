@@ -4,7 +4,8 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "NODE_PATH=./node_modules node --test --test-concurrency=1"
+    "test": "NODE_PATH=./node_modules node --test --test-concurrency=1",
+    "build": "echo 'No build step required'"
   },
   "devDependencies": {
     "jsdom": "26.1.0",
