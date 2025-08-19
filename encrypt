@@ -1328,7 +1328,6 @@ test('Continued Education section adds textarea with specific placeholder', () =
   const textarea = document.querySelector('.form-section[data-section="Continued Education"] textarea');
   assert.strictEqual(textarea.placeholder, 'Online Courses, Seminars, Webinars with Completion Certification');
 });
-```
 
 ## tests/chatbot-modal.test.js
 ```javascript
@@ -1449,5 +1448,3 @@ test('Chattia chatbot basic interactions', async () => {
   closeBtn.click();
   assert.strictEqual(document.getElementById('chatbot-container'), null);
 });
-```
-
