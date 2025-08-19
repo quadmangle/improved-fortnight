@@ -11,7 +11,8 @@ const html = fs.readFileSync(htmlPath, 'utf8');
 const script = fs.readFileSync(jsPath, 'utf8');
 const dragScript = fs.readFileSync(dragJsPath, 'utf8');
 const style = fs.readFileSync(cssPath, 'utf8');
-const secJs = fs.readFileSync(path.join(__dirname, '..', 'js', 'security-utils.js'), 'utf8');
+const antibotJs = fs.readFileSync(path.join(__dirname, '..', 'js', 'antibot.js'), 'utf8');
+const hpHtml = fs.readFileSync(path.join(__dirname, '..', 'security', 'honeypots.html'), 'utf8');
 const utilsJs = fs.readFileSync(path.join(__dirname, '..', 'js', 'utils.js'), 'utf8');
 const langThemeJs = fs.readFileSync(path.join(__dirname, '..', 'js', 'langtheme.js'), 'utf8');
 test('Chattia closes on ESC and closes on inactivity after minimize', async () => {
@@ -27,6 +28,9 @@ test('Chattia closes on ESC and closes on inactivity after minimize', async () =
     if (url && url.includes('chatbot.html')) {
       return { text: async () => html };
     }
+    if (url && url.includes('security/honeypots.html')) {
+      return { ok: true, text: async () => hpHtml };
+    }
     if (url && url.includes('honeypot')) {
       return {};
     }
@@ -39,7 +43,7 @@ test('Chattia closes on ESC and closes on inactivity after minimize', async () =
   window.alert = () => {};
   window.grecaptcha = { ready: cb => cb(), execute: async () => 'token' };
     window.eval(utilsJs);
-    window.eval(secJs);
+    window.eval(antibotJs);
     window.eval(langThemeJs);
     window.eval(dragScript);
     window.eval(script);
@@ -75,6 +79,9 @@ test('Chat history persists while minimized and clears on close', async () => {
     if (url && url.includes('chatbot.html')) {
       return { text: async () => html };
     }
+    if (url && url.includes('security/honeypots.html')) {
+      return { ok: true, text: async () => hpHtml };
+    }
     if (url && url.includes('honeypot')) {
       return {};
     }
@@ -87,7 +94,7 @@ test('Chat history persists while minimized and clears on close', async () => {
   window.alert = () => {};
   window.grecaptcha = { ready: cb => cb(), execute: async () => 'token' };
     window.eval(utilsJs);
-    window.eval(secJs);
+    window.eval(antibotJs);
     window.eval(langThemeJs);
     window.eval(dragScript);
     window.eval(script);

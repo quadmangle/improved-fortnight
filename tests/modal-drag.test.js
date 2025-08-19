@@ -3,7 +3,8 @@ const assert = require('node:assert');
 const fs = require('node:fs');
 const path = require('node:path');
 const { JSDOM } = require('jsdom');
-const secJs = fs.readFileSync(path.join(__dirname, '..', 'js', 'security-utils.js'), 'utf8');
+const antibotJs = fs.readFileSync(path.join(__dirname, '..', 'js', 'antibot.js'), 'utf8');
+const hpHtml = fs.readFileSync(path.join(__dirname, '..', 'security', 'honeypots.html'), 'utf8');
 const utilsJs = fs.readFileSync(path.join(__dirname, '..', 'js', 'utils.js'), 'utf8');
 
 test('modal dragging ignores header controls', async () => {
@@ -15,9 +16,15 @@ test('modal dragging ignores header controls', async () => {
 
   // Load cojoin.js to get initDraggableModal
   const script = fs.readFileSync(path.join(__dirname, '..', 'fabs/js/cojoin.js'), 'utf8');
+  window.fetch = (url) => {
+    if (url && url.includes('security/honeypots.html')) {
+      return Promise.resolve({ ok: true, text: async () => hpHtml });
+    }
+    return Promise.resolve({ ok: true, json: async () => ({}) });
+  };
   window.grecaptcha = { ready: cb => cb(), execute: async () => 'token' };
   window.eval(utilsJs);
-  window.eval(secJs);
+  window.eval(antibotJs);
   window.eval(script);
   window.initCojoinForms();
   if (!window.initDraggableModal) {
