@@ -1,0 +1,41 @@
+# Encryption, Workers, and h/reCAPTCHA References
+
+## fabs/js/cojoin.js
+- 13: loads reCAPTCHA.
+- 29-43: retrieves AES-GCM key from KMS.
+- 46-58: requests AES-GCM encrypted bearer token.
+- 80-105: encrypts payload and sends to Cloudflare Worker.
+- 153-156: attaches reCAPTCHA token to Contact form.
+- 205-208: attaches reCAPTCHA token to Join form.
+
+## worker/secureWorker.js
+- 43-74: decrypts bearer token and payload using AES-GCM.
+- 76-83: verifies hCaptcha token.
+
+## worker/testRunner.js
+- 41-64: dispatches notifications with RSA-signed payloads.
+- 104-123: imports RSA key and signs payloads.
+
+## server.js
+- 38-46: generates session tokens and 128-bit nonces.
+
+## wrangler-nonce.toml
+- 1-7: configures nonce enforcement worker and KV namespace.
+
+## js/antibot.js
+- 16-35: loads Google reCAPTCHA and retrieves tokens.
+- 37-76: inserts honeypot fields and checks triggers.
+
+## fabs/js/chattia.js
+- 99-104: sends reCAPTCHA token with chat messages.
+- 205: injects honeypot into chatbot form.
+
+## netlify.toml
+- 15: CSP whitelists hCaptcha domains.
+
+## tests/join-form.test.js
+- 23: mocks `window.grecaptcha` for form tests.
+
+## tests/chatbot-modal.test.js
+- 43: mocks `window.grecaptcha` for chatbot tests.
+- 100-102: triggers reCAPTCHA script load during tests.
