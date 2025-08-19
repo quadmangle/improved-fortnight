@@ -1,0 +1,8 @@
+# type(scope): short summary
+# Examples:
+#   feat(ui): add dark theme toggle
+#   fix(ci): correct worker route for /api/*
+#
+# Body (optional): explain what/why, not how.
+#
+# Footer (optional): references, BREAKING CHANGE notes.
