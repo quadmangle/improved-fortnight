@@ -1,6 +1,12 @@
 # Consolidated encryption, worker, and hCaptcha code
 This file aggregates the complete contents of key files for audit.
 
+## Non-compliant or Questionable Items
+- **Session management:** `server.js` line 29 sets `saveUninitialized: true`, which conflicts with data minimization practices in NIST SP 800-53 and PCI DSS Requirement 8.
+- **CSP vs. reCAPTCHA:** `js/antibot.js` lines 16-24 load Google's reCAPTCHA script while the HTML files restrict `script-src` to `'self'`, creating a policy mismatch (NIST CSF PR.DS, CISA CPG).
+- **Missing SEO metadata:** `index.html` lines 1-15 lack `<meta name="description">` and `<meta name="robots">` tags, contrary to Web Governance guidelines.
+- **Absent governance files:** `robots.txt`, `sitemap.xml`, and `manifest.json` are missing from the repository, leaving search engine and PWA expectations unmet.
+
 ## fabs/js/cojoin.js
 ```javascript
 /**
