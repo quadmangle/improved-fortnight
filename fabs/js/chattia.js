@@ -224,34 +224,52 @@
     }
     if (langCtrl) {
       langCtrl.textContent = 'ES';
-      langCtrl.addEventListener('click', () => {
-        const goES = langCtrl.textContent === 'ES';
+    }
+    // Delegated click handling for header controls and buttons
+    container.addEventListener('click', (e) => {
+      const langEl = e.target.closest('#langCtrl');
+      const themeEl = e.target.closest('#themeCtrl');
+      const minimizeEl = e.target.closest('#minimizeBtn');
+      const closeEl = e.target.closest('#chatbot-close');
+
+      if (langEl) {
+        const goES = langEl.textContent === 'ES';
         document.documentElement.lang = goES ? 'es' : 'en';
-        langCtrl.textContent = goES ? 'EN' : 'ES';
+        langEl.textContent = goES ? 'EN' : 'ES';
         transNodes.forEach(n => n.textContent = goES ? (n.dataset.es || n.textContent) : (n.dataset.en || n.textContent));
         phNodes.forEach(n => n.placeholder = goES ? (n.dataset.esPh || n.placeholder) : (n.dataset.enPh || n.placeholder));
         buildBrand(goES ? (brand.dataset.es || 'Soporte en Línea OPS') : (brand.dataset.en || 'Ops Online Support'));
-      });
-    }
-    if (themeCtrl) {
-      themeCtrl.addEventListener('click', () => {
-        const toDark = themeCtrl.textContent === 'Dark';
+      } else if (themeEl) {
+        const toDark = themeEl.textContent === 'Dark';
         window.currentTheme = toDark ? 'dark' : 'light';
         localStorage.setItem('theme', window.currentTheme);
         if (typeof updateTheme === 'function') { updateTheme(); }
-        themeCtrl.textContent = toDark ? 'Light' : 'Dark';
-      });
-    }
+        themeEl.textContent = toDark ? 'Light' : 'Dark';
+      } else if (minimizeEl) {
+        minimizeChat();
+      } else if (closeEl) {
+        closeChat();
+      }
+    });
 
     if (input) {
       input.addEventListener('input', () => { autoGrow(); updateSendEnabled(); });
-      input.addEventListener('keydown', e => { if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); if(!send.disabled && form) form.requestSubmit(); }});
+      input.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          if (!send.disabled && form) {
+            if (typeof form.requestSubmit === 'function') {
+              form.requestSubmit();
+            } else {
+              form.dispatchEvent(new Event('submit', { cancelable: true }));
+            }
+          }
+        }
+      });
     }
     window.addEventListener('load', () => { autoGrow(); updateSendEnabled(); });
 
     if (form) { form.addEventListener('submit', handleSubmit); }
-    if (minimizeBtn) { minimizeBtn.addEventListener('click', minimizeChat); }
-    if (closeBtn) { closeBtn.addEventListener('click', closeChat); }
 
     escKeyHandler = (e)=>{
       if(e.key === 'Escape'){
