@@ -179,9 +179,7 @@
     document.removeEventListener('click', outsideClickHandler);
     document.removeEventListener('keydown', escKeyHandler);
     container.remove();
-    if (openBtn && openBtn.remove) {
-      openBtn.remove();
-    }
+    document.querySelectorAll('#chat-open-btn').forEach(el => el.remove());
     openBtn = null;
   }
 
@@ -205,6 +203,10 @@
     langCtrl = qs('#langCtrl');
     themeCtrl = qs('#themeCtrl');
     brand = qs('#brand');
+
+    if (openBtn) {
+      openBtn.addEventListener('click', openChat);
+    }
 
     if (themeCtrl) {
       themeCtrl.textContent = (window.currentTheme === 'light') ? 'Dark' : 'Light';
@@ -287,10 +289,8 @@
     try{
       // Remove any existing FAB or chatbot fragment before reloading to avoid
       // background overlays or duplicate floating buttons.
-      if(openBtn && typeof openBtn.remove === 'function'){
-        openBtn.remove();
-        openBtn = null;
-      }
+      document.querySelectorAll('#chat-open-btn').forEach(el => el.remove());
+      openBtn = null;
       const existing = document.getElementById('chatbot-container');
       if(existing && typeof existing.remove === 'function'){
         existing.remove();

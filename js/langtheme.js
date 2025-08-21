@@ -309,6 +309,7 @@ function toggleLanguage() {
 }
 
 function updateTheme() {
+  currentTheme = window.currentTheme || currentTheme || 'light';
   document.documentElement.classList.remove('light', 'dark');
   document.documentElement.classList.add(currentTheme);
   document.documentElement.style.backgroundColor = currentTheme === 'dark' ? '#121212' : '#ffffff';
@@ -322,6 +323,7 @@ function updateTheme() {
 
 function toggleTheme() {
   currentTheme = (currentTheme === 'light') ? 'dark' : 'light';
+  window.currentTheme = currentTheme;
   localStorage.setItem('theme', currentTheme);
   updateTheme();
 }

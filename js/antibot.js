@@ -54,7 +54,7 @@
       node = div;
     }
     const firstField = form.querySelector('input, select, textarea, button');
-    if(firstField){
+    if(firstField && firstField.parentNode === form){
       form.insertBefore(node, firstField);
     } else {
       form.prepend(node);
@@ -82,7 +82,7 @@
       node = div;
     }
     const firstField = form.querySelector('input, select, textarea, button');
-    if(firstField){
+    if(firstField && firstField.parentNode === form){
       form.insertBefore(node, firstField);
     } else {
       form.prepend(node);
