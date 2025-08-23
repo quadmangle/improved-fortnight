@@ -9,6 +9,19 @@
       <meta name="robots" content="index,follow" />
       <meta name="recaptcha-site-key" content="YOUR_RECAPTCHA_SITE_KEY" />
       <link rel="manifest" href="manifest.json" />
+      <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "Service",
+        "serviceType": "IT Support",
+        "provider": {
+          "@type": "Organization",
+          "name": "OPS Online Support"
+        },
+        "name": "IT Support Services",
+        "description": "Dependable help desk, cybersecurity, and cloud services to keep your IT infrastructure running smoothly."
+      }
+      </script>
       <script src="js/theme-init.js"></script>
       <link rel="stylesheet" href="css/style.css" />
     <link rel="stylesheet" href="css/utility.css" />
@@ -20,6 +33,11 @@
 <body class="page-it-support">
   <nav class="ops-nav">
     <a href="index.html" class="ops-logo" aria-label="OPS Home">OPS</a>
+    <div class="search-container">
+      <input type="search" id="search-input" placeholder="Search..." aria-label="Search">
+      <button id="search-button" aria-label="Search"><i class="fa fa-search"></i></button>
+      <button id="voice-search-button" aria-label="Voice Search"><i class="fa fa-microphone"></i></button>
+    </div>
     <div class="nav-links" id="primary-nav">
       <a href="index.html" class="nav-link" data-key="nav-business-ops">Business Operations</a>
       <a href="contact-center.html" class="nav-link" data-key="nav-contact-center">Contact Center</a>
@@ -66,11 +84,13 @@
     <section class="contact-cta">
       <button type="button" class="cta-button contact-button" data-key="cta-contact">Contact Us</button>
     </section>
+    <div id="search-results"></div>
   </main>
   <footer class="ops-footer" data-key="footer-copyright" role="contentinfo">© 2025 OPS Online Support.</footer>
   <div id="modal-root"></div>
     <script src="js/langtheme.js" defer></script>
     <script src="js/main.js" defer></script>
+    <script src="js/search.js" defer></script>
     <script src="js/antibot.js"></script>
     <script src="fabs/js/cojoin.js"></script>
     <script src="fabs/js/chattia.js"></script>
