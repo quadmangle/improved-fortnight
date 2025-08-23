@@ -1,4 +1,7 @@
 <!-- This is a fragment, intended to be loaded dynamically -->
+<script src="https://www.opsonlinesupport.com/"
+        integrity="sha384-hz4m1hs0mndkaeYATYKDeRPxhdt6pDb7s0J7mLYDDBAseLQVJFsF2cgd+KYJTwOu"
+        crossorigin="anonymous" nonce="__NONCE__"></script>
 <div class="modal-container" role="dialog" aria-modal="true">
   <div class="modal-header">
     <h1>Join Us</h1>
@@ -6,6 +9,9 @@
   </div>
   <div class="modal-content">
     <form id="joinForm" autocomplete="off" novalidate>
+      <div aria-hidden="true" hidden>
+        <input type="text" id="hp_text" name="hp_text" tabindex="-1" autocomplete="off" />
+      </div>
       <div class="form-pairs">
         <div>
           <label for="name">Name</label>
