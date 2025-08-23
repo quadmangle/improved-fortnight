@@ -106,7 +106,7 @@ function initCojoinForms() {
       // IMPORTANT: Cloudflare Worker API Endpoint
       // Replace the URL below with your actual Cloudflare Worker API endpoint.
       // ====================================================================================
-      const response = await fetch('https://your-cloudflare-worker.opsonlinessupport.com/api', {
+      const response = await fetch('https://recaptcha-botforms.gabrieloor-cv1.workers.dev/api', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
