@@ -8,7 +8,15 @@ const cookie = require('cookie');
 
 const app = express();
 
-app.use(helmet());
+app.use(
+  helmet({
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+  })
+);
 app.use(express.json());
 const isProduction = process.env.NODE_ENV === 'production';
 const sessionSecret = process.env.SESSION_SECRET;
