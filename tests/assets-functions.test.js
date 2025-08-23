@@ -70,7 +70,15 @@ function createDocumentStub() {
 const utilsCode = fs.readFileSync(path.join(root, 'js/utils.js'), 'utf-8');
 const mainCode = fs.readFileSync(path.join(root, 'js/main.js'), 'utf-8');
 const documentStub = createDocumentStub();
-const sandbox = { window: { innerWidth: 1024 }, document: documentStub, console };
+const sandbox = {
+  window: {
+    innerWidth: 1024,
+    addEventListener: () => {}
+  },
+  document: documentStub,
+  navigator: { serviceWorker: { register: () => Promise.resolve() } },
+  console
+};
 vm.createContext(sandbox);
 vm.runInContext(utilsCode, sandbox);
 vm.runInContext(mainCode, sandbox);
