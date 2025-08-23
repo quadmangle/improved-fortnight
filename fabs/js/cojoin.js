@@ -10,16 +10,12 @@ function initCojoinForms() {
   const contactForm = document.getElementById('contactForm');
   const joinForm = document.getElementById('joinForm');
 
-  window.antibot.loadRecaptcha();
-
   if (contactForm && !contactForm.dataset.cojoinInitialized) {
-    window.antibot.injectFormHoneypot(contactForm);
     contactForm.addEventListener('submit', handleContactSubmit);
     contactForm.dataset.cojoinInitialized = 'true';
   }
 
   if (joinForm && !joinForm.dataset.cojoinInitialized) {
-    window.antibot.injectFormHoneypot(joinForm);
     joinForm.addEventListener('submit', handleJoinSubmit);
     joinForm.dataset.cojoinInitialized = 'true';
     initJoinForm();
@@ -106,7 +102,7 @@ function initCojoinForms() {
       // IMPORTANT: Cloudflare Worker API Endpoint
       // Replace the URL below with your actual Cloudflare Worker API endpoint.
       // ====================================================================================
-      const response = await fetch('https://your-cloudflare-worker.opsonlinessupport.com/api', {
+      const response = await fetch('https://contact-field-3604.gabrieloor-cv1.workers.dev', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -114,6 +110,7 @@ function initCojoinForms() {
         },
         body: JSON.stringify(payload),
       });
+      // [1] KV link; Apps Script handles decryption of stored file
 
       if (response.ok) {
         console.log('Data successfully sent and processed by Cloudflare worker.');
@@ -150,15 +147,8 @@ function initCojoinForms() {
       sanitizedData[key] = sanitizedValue;
     }
 
-    // Obtain reCAPTCHA token
-    try {
-      sanitizedData.recaptchaToken = await window.antibot.getRecaptchaToken('contact');
-    } catch (err) {
-      alert('Security check failed.');
-      return;
-    }
-
-    // 3. Prepare and send sanitized data to worker
+    // 3. Attach nonce and send sanitized data to worker
+    sanitizedData.nonce = crypto.randomUUID();
     alert('Contact form submitted successfully!');
     await sendToCloudflareWorker(sanitizedData);
     form.reset();
@@ -202,15 +192,8 @@ function initCojoinForms() {
       sanitizedData[key] = sanitizedValue;
     }
 
-    // Obtain reCAPTCHA token
-    try {
-      sanitizedData.recaptchaToken = await window.antibot.getRecaptchaToken('join');
-    } catch (err) {
-      alert('Security check failed.');
-      return;
-    }
-
-    // 3. Prepare and send sanitized data to worker
+    // 3. Attach nonce and send sanitized data to worker
+    sanitizedData.nonce = crypto.randomUUID();
     alert('Join form submitted successfully!');
     await sendToCloudflareWorker(sanitizedData);
     form.reset();

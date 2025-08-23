@@ -96,13 +96,10 @@
     addMsg('…', 'bot');
     const botMsgElement = log.lastChild;
     try {
-      const token = window.antibot && window.antibot.getRecaptchaToken
-        ? await window.antibot.getRecaptchaToken('chat')
-        : '';
       const r = await fetch(WORKER_CHAT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ message: msg, recaptchaToken: token })
+        body: JSON.stringify({ message: msg })
       });
       const d = await r.json();
       botMsgElement.textContent = d.reply || 'No reply.';
@@ -125,9 +122,6 @@
   }
 
   function openChat(){
-    if (window.antibot && window.antibot.loadRecaptcha) {
-      window.antibot.loadRecaptcha();
-    }
     clearTimeout(inactivityTimer);
     container.style.display='';
     container.removeAttribute('aria-hidden');

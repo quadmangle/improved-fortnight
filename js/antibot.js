@@ -1,6 +1,4 @@
 (function(){
-  const siteMeta = document.querySelector('meta[name="recaptcha-site-key"]');
-  const SITE_KEY = siteMeta ? siteMeta.content : '';
   const templates = {};
 
   // Preload honeypot templates
@@ -13,30 +11,6 @@
       templates.chat = t.content.querySelector('#chat-honeypot');
     })
     .catch(()=>{});
-
-  function loadRecaptcha(){
-    return new Promise((resolve, reject) => {
-      if (window.grecaptcha){
-        return resolve(window.grecaptcha);
-      }
-      if (!SITE_KEY) {
-        return reject(new Error('reCAPTCHA site key not configured'));
-      }
-      const script = document.createElement('script');
-      script.id = 'recaptcha-script';
-      script.src = `https://www.google.com/recaptcha/api.js?render=${SITE_KEY}`;
-      script.async = true;
-      script.defer = true;
-      script.onload = () => resolve(window.grecaptcha);
-      script.onerror = reject;
-      document.head.appendChild(script);
-    });
-  }
-
-  async function getRecaptchaToken(action='submit'){
-    const grecaptcha = await loadRecaptcha();
-    return grecaptcha.execute(SITE_KEY, { action });
-  }
 
   function injectFormHoneypot(form){
     if(!form) return;
@@ -96,8 +70,6 @@
   }
 
   window.antibot = {
-    loadRecaptcha,
-    getRecaptchaToken,
     injectFormHoneypot,
     injectChatbotHoneypot,
     isHoneypotTriggered
