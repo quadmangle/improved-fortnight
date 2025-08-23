@@ -18,3 +18,11 @@ test('netlify config sets referrer policy', () => {
 test('netlify config sets nosniff option', () => {
   assert.match(config, /X-Content-Type-Options\s*=\s*"nosniff"/);
 });
+
+test('netlify config prevents clickjacking with frame-ancestors', () => {
+  assert.match(config, /frame-ancestors 'none'/);
+});
+
+test('netlify config does not set x-frame-options', () => {
+  assert.doesNotMatch(config, /X-Frame-Options/);
+});
