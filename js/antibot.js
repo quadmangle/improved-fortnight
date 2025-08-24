@@ -69,9 +69,25 @@
     return (text && text.value.trim() !== '') || (check && check.checked);
   }
 
+  function cleanFormData(form){
+    if(!form) return null;
+    const formData = new FormData(form);
+    const sanitized = {};
+    const suspicious = /<[^>]*>|javascript:|data:|vbscript:|\b(select|insert|delete|update|drop|union)\b/gi;
+    for(const [key, value] of formData.entries()){
+      const cleaned = window.appUtils ? window.appUtils.sanitizeInput(value) : '';
+      if(suspicious.test(cleaned)){
+        return null;
+      }
+      sanitized[key] = cleaned;
+    }
+    return sanitized;
+  }
+
   window.antibot = {
     injectFormHoneypot,
     injectChatbotHoneypot,
-    isHoneypotTriggered
+    isHoneypotTriggered,
+    cleanFormData
   };
 })();
