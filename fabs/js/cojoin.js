@@ -11,11 +11,17 @@ function initCojoinForms() {
   const joinForm = document.getElementById('joinForm');
 
   if (contactForm && !contactForm.dataset.cojoinInitialized) {
+    if (!contactForm.querySelector('#hp_text')) {
+      window.antibot.injectFormHoneypot(contactForm);
+    }
     contactForm.addEventListener('submit', handleContactSubmit);
     contactForm.dataset.cojoinInitialized = 'true';
   }
 
   if (joinForm && !joinForm.dataset.cojoinInitialized) {
+    if (!joinForm.querySelector('#hp_text')) {
+      window.antibot.injectFormHoneypot(joinForm);
+    }
     joinForm.addEventListener('submit', handleJoinSubmit);
     joinForm.dataset.cojoinInitialized = 'true';
     initJoinForm();
@@ -110,10 +116,16 @@ function initCojoinForms() {
         },
         body: JSON.stringify(payload),
       });
-      // [1] KV link; Apps Script handles decryption of stored file
+      // [1] KV: https://developers.cloudflare.com/workers/runtime-apis/kv/
+      // Apps Script handles decryption of the stored file
+      const result = await response.json().catch(() => null);
 
       if (response.ok) {
-        console.log('Data successfully sent and processed by Cloudflare worker.');
+        if (result && result.kvLink) {
+          console.log('Data stored in KV:', result.kvLink);
+        } else {
+          console.log('Data successfully sent and processed by Cloudflare worker.');
+        }
       } else {
         console.error('Failed to send data to Cloudflare worker.');
       }
