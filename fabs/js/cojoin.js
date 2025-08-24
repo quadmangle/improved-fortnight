@@ -78,7 +78,7 @@ function initCojoinForms() {
    * This is where you would implement your data encryption logic before sending.
    * @param {object} data The sanitized form data to send.
    */
-  async function sendToCloudflareWorker(data) {
+  async function sendToCloudflareWorker(data, endpoint) {
     console.log("Data is clean. Encrypting and sending to Cloudflare worker...", data);
     try {
       // Retrieve managed key and short-lived token from the server
@@ -108,7 +108,7 @@ function initCojoinForms() {
       // IMPORTANT: Cloudflare Worker API Endpoint
       // Replace the URL below with your actual Cloudflare Worker API endpoint.
       // ====================================================================================
-      const response = await fetch('https://contact-field-3604.gabrieloor-cv1.workers.dev', {
+      const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -148,21 +148,15 @@ function initCojoinForms() {
       form.reset();
       return;
     }
-    const formData = new FormData(form);
-
-    const data = Object.fromEntries(formData.entries());
-
-    // 2. Malicious code check and sanitization
-    const sanitizedData = {};
-    for (const key in data) {
-      const sanitizedValue = window.appUtils.sanitizeInput(data[key]);
-      sanitizedData[key] = sanitizedValue;
+    const sanitizedData = window.antibot.cleanFormData(form);
+    if (!sanitizedData) {
+      alert('Potential malicious content detected. Submission blocked.');
+      form.reset();
+      return;
     }
-
-    // 3. Attach nonce and send sanitized data to worker
     sanitizedData.nonce = crypto.randomUUID();
     alert('Contact form submitted successfully!');
-    await sendToCloudflareWorker(sanitizedData);
+    await sendToCloudflareWorker(sanitizedData, 'https://contact-field-3604.gabrieloor-cv1.workers.dev');
     form.reset();
     if (window.hideActiveFabModal) {
       window.hideActiveFabModal();
@@ -183,10 +177,6 @@ function initCojoinForms() {
       form.reset();
       return;
     }
-    const formData = new FormData(form);
-
-    const data = Object.fromEntries(formData.entries());
-
     // Check that all dynamic sections are 'accepted' or empty
     const formSections = document.querySelectorAll('.form-section[data-section]');
     for (const section of formSections) {
@@ -196,18 +186,15 @@ function initCojoinForms() {
         return;
       }
     }
-
-    // 2. Malicious code check and sanitization
-    const sanitizedData = {};
-    for (const key in data) {
-      const sanitizedValue = window.appUtils.sanitizeInput(data[key]);
-      sanitizedData[key] = sanitizedValue;
+    const sanitizedData = window.antibot.cleanFormData(form);
+    if (!sanitizedData) {
+      alert('Potential malicious content detected. Submission blocked.');
+      form.reset();
+      return;
     }
-
-    // 3. Attach nonce and send sanitized data to worker
     sanitizedData.nonce = crypto.randomUUID();
     alert('Join form submitted successfully!');
-    await sendToCloudflareWorker(sanitizedData);
+    await sendToCloudflareWorker(sanitizedData, 'https://join-grass-733e.gabrieloor-cv1.workers.dev');
     form.reset();
     resetJoinFormState();
     if (window.hideActiveFabModal) {
