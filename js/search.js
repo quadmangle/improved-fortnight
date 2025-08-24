@@ -20,6 +20,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const results = searchIndex.filter(page => page.content.toLowerCase().includes(query));
 
+    if (results.length === 1) {
+      window.location.href = results[0].url;
+      return;
+    }
+
     displayResults(results);
   };
 

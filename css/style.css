@@ -258,9 +258,12 @@ li {
 
 /* Search Container */
 .search-container {
+  position: fixed;
+  right: 20px;
+  bottom: 65px;
   display: flex;
   align-items: center;
-  margin-right: 1rem;
+  z-index: 1000;
 }
 
 #search-input {
