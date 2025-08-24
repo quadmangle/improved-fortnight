@@ -258,12 +258,8 @@ li {
 
 /* Search Container */
 .search-container {
-  position: fixed;
-  right: 20px;
-  bottom: 65px;
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  z-index: 1000;
 }
 
 #search-input {
@@ -324,13 +320,17 @@ li {
   bottom: 0;
   left: 0;
   width: 100%;
-  text-align: center;
   padding: var(--space-sm) 0;
   padding-bottom: env(safe-area-inset-bottom);
   background: var(--clr-background);
   color: var(--clr-text);
   font-size: 0.9rem;
   border-top: 1px solid var(--clr-form-border);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 
