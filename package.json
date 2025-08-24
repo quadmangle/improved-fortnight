@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "test": "NODE_PATH=./node_modules node --test --test-concurrency=1",
-    "build": "echo 'No build step required'"
+    "build": "npm run build:search && echo \"No build step required\"",
+    "build:search": "node scripts/create-search-index.js"
   },
   "devDependencies": {
     "jsdom": "26.1.0",
