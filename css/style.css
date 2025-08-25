@@ -260,6 +260,7 @@ li {
 .search-container {
   display: inline-flex;
   align-items: center;
+  gap: 0.25rem;
 }
 
 #search-input {
@@ -269,6 +270,7 @@ li {
   width: 200px;
   background-color: var(--clr-form-input-bg);
   color: var(--clr-text);
+  max-width: 100%;
 }
 
 #search-button {
@@ -331,6 +333,16 @@ li {
   align-items: center;
   gap: 0.5rem;
   flex-wrap: wrap;
+}
+
+.ops-footer .sitemap-link {
+  color: var(--clr-text);
+  text-decoration: none;
+}
+
+.ops-footer .sitemap-link:hover,
+.ops-footer .sitemap-link:focus {
+  text-decoration: underline;
 }
 
 
